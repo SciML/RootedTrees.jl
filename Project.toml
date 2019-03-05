@@ -1,0 +1,13 @@
+name = "RootedTrees"
+uuid = "47965b36-3f3e-11e9-0dcf-4570dfd42a8c"
+authors = ["Hendrik Ranocha <h.ranocha@tu-bs.de>"]
+version = "0.0.0"
+
+[compat]
+julia = "1.0"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
