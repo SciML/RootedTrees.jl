@@ -3,6 +3,9 @@ uuid = "47965b36-3f3e-11e9-0dcf-4570dfd42a8c"
 authors = ["Hendrik Ranocha <h.ranocha@tu-bs.de>"]
 version = "0.0.0"
 
+[deps]
+LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+
 [compat]
 julia = "1.0"
 

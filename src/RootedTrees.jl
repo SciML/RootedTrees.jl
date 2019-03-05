@@ -1,6 +1,8 @@
 module RootedTrees
 
 
+using LinearAlgebra
+
 import Base: show, isless, ==, iterate
 
 
@@ -18,12 +20,18 @@ export rooted_trees, count_trees
 Represents a rooted tree using its level sequence.
 
 Reference:
-Beyer, Terry, and Sandra Mitchell Hedetniemi.
-"Constant time generation of rooted trees."
-SIAM Journal on Computing 9.4 (1980): 706-712.
+  Beyer, Terry, and Sandra Mitchell Hedetniemi.
+  "Constant time generation of rooted trees."
+  SIAM Journal on Computing 9.4 (1980): 706-712.
 """
-struct RootedTree{T<:Integer}
-  level_sequence::Vector{T}
+struct RootedTree{T<:Integer, V<:AbstractVector}
+  level_sequence::V
+end
+
+function RootedTree(level_sequence::AbstractVector)
+  T = eltype(level_sequence)
+  V = typeof(level_sequence)
+  RootedTree{T,V}(level_sequence)
 end
 #TODO: Validate rooted tree in constructor?
 #TODO: Allow other vector types?
@@ -56,9 +64,8 @@ end
 
 
 function show(io::IO, t::RootedTree{T}) where {T}
-  print(io, "RootedTree{", T, "} ")
+  print(io, "RootedTree{", T, "}: ")
   show(io, t.level_sequence)
-  print(io, "\n")
 end
 
 
@@ -80,26 +87,37 @@ end
 
 # generation and caonical representation
 """
-    canonical_representation(t::RootedTree)
+    canonical_representation!(t::RootedTree)
 
-Returns the canonical representation of a rooted tree, i.e. the one with
+Use the canonical representation of the rooted tree `t`, i.e. the one with
 lexicographically biggest level sequence.
 """
-function canonical_representation(t::RootedTree)
+function canonical_representation!(t::RootedTree)
   subtr = subtrees(t)
   for i in eachindex(subtr)
     subtr[i] = canonical_representation(subtr[i])
   end
   sort!(subtr, rev=true)
-  sequence = zero(t.level_sequence)
+
   i = 2
-  sequence[1] = t.level_sequence[1]
   for τ in subtr
-    sequence[i:i+order(τ)-1] = τ.level_sequence[:]
+    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence[:]
     i += order(τ)
   end
-  RootedTree(sequence)
+
+  t
 end
+
+"""
+    canonical_representation(t::RootedTree)
+
+Returns the canonical representation of the rooted tree `t`, i.e. the one with
+lexicographically biggest level sequence.
+"""
+function canonical_representation(t::RootedTree)
+  canonical_representation!(RootedTree(copy(t.level_sequence)))
+end
+
 
 
 """
@@ -108,16 +126,13 @@ end
 Iterator over all rooted trees of given `order`.
 """
 struct RootedTreeIterator{T<:Integer}
-  level_sequence::Vector{T}
-  t::RootedTree{T}
+  t::RootedTree{T,Vector{T}}
 
-  function RootedTreeIterator(sequence::AbstractVector{T}) where {T<:Integer}
-    level_sequence = Array{T}(undef, length(sequence))
-    level_sequence[:] = sequence
-    t_level_sequence = copy(level_sequence)
-    new{T}(level_sequence, RootedTree(t_level_sequence))
+  function RootedTreeIterator(level_sequence::AbstractVector{T}) where {T<:Integer}
+    new{T}(RootedTree(Vector{T}(level_sequence)))
   end
 end
+#TODO: change types?
 
 """
     rooted_trees(order::Integer)
@@ -138,30 +153,27 @@ end
 function iterate(iter::RootedTreeIterator{T}, state) where {T}
   state && return nothing
 
-  two = iter.level_sequence[1] + one(T)
+  two = iter.t.level_sequence[1] + one(T)
   p = 1
   q = 1
-  for i in 2:length(iter.level_sequence)
-    if iter.level_sequence[i] > two
+  @inbounds for i in 2:length(iter.t.level_sequence)
+    if iter.t.level_sequence[i] > two
       p = i
     end
   end
 
-  level_q = iter.level_sequence[p] - one(T)
-  for i in 1:p
-    if iter.level_sequence[i] == level_q
+  level_q = iter.t.level_sequence[p] - one(T)
+  @inbounds for i in 1:p
+    if iter.t.level_sequence[i] == level_q
       q = i
     end
   end
 
-  if p == 1
-    return nothing
-  else
-    for i in p:length(iter.level_sequence)
-      iter.level_sequence[i] = iter.level_sequence[i - (p-q)]
-    end
+  p == 1 && return nothing
+
+  @inbounds for i in p:length(iter.t.level_sequence)
+    iter.t.level_sequence[i] = iter.t.level_sequence[i - (p-q)]
   end
-  iter.t.level_sequence[:] = iter.level_sequence
 
   (iter.t, false)
 end
@@ -175,20 +187,49 @@ Counts all rooted trees of `order`.
 function count_trees(order)
   order < 1 && throw(ArgumentError("The `order` must be at least one."))
 
-   num = 0
-   for _ in rooted_trees(order)
-     num += 1
-   end
-   num
+  num = 0
+  for _ in rooted_trees(order)
+    num += 1
+  end
+  num
 end
 
 
 # subtrees
+struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
+  level_sequence::Vector{T}
+  indices::Vector{T}
+
+  function Subtrees(t::RootedTree{T}) where {T}
+    level_sequence = t.level_sequence
+    indices = Vector{T}()
+
+    start = 2
+    i = 3
+    while i <= length(level_sequence)
+      if level_sequence[i] <= level_sequence[start]
+        push!(indices, start)
+        start = i
+      end
+      i += 1
+    end
+    push!(indices, start)
+
+    # in order to get the stopping index for the last subtree
+    push!(indices, length(level_sequence)+1)
+
+    new{T}(level_sequence, indices)
+  end
+end
+
+Base.size(s::Subtrees) = (length(s.indices)-1, )
+Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices[i]:s.indices[i+1]-1))
+
 
 """
+    subtrees(t::RootedTree)
 
-
-Returns a tuple of subtrees of `t`.
+Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::RootedTree{T}) where {T}
   subtr = RootedTree{T}[]
@@ -227,9 +268,9 @@ The symmetry `σ` of a rooted tree `t`, i.e. the order of the group of automorph
 on a particular labelling (of the vertices) of `t`.
 
 Reference: Section 301 of
-Butcher, John Charles.
-Numerical methods for ordinary differential equations.
-John Wiley & Sons, 2008.
+  Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2008.
 """
 function σ(t::RootedTree, is_canonical::Bool = false)
   if order(t) == 1
@@ -242,10 +283,11 @@ function σ(t::RootedTree, is_canonical::Bool = false)
     t = canonical_representation(t)
   end
 
-  subtr = subtrees(t)
-  sym::Int = 1
-  num::Int = 1
-  for i in 2:length(subtr)
+  subtr = Subtrees(t)
+  sym = 1
+  num = 1
+
+  @inbounds for i in 2:length(subtr)
     if subtr[i] == subtr[i-1]
       num += 1
     else
@@ -275,7 +317,7 @@ function γ(t::RootedTree)
     return 2
   end
 
-  subtr = subtrees(t)
+  subtr = Subtrees(t)
   den = order(t)
   for τ in subtr
     den *= γ(τ)
@@ -290,9 +332,9 @@ end
 The number of monotonic labellings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
-Butcher, John Charles.
-Numerical methods for ordinary differential equations.
-John Wiley & Sons, 2008.
+  Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2008.
 """
 function α(t::RootedTree)
   div(factorial(order(t)), σ(t)*γ(t))
@@ -305,9 +347,9 @@ end
 The total number of labellings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
-Butcher, John Charles.
-Numerical methods for ordinary differential equations.
-John Wiley & Sons, 2008.
+  Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2008.
 """
 function β(t::RootedTree)
   div(factorial(order(t)), σ(t))
@@ -381,10 +423,10 @@ function derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::V
   end
 
   subtr = subtrees(t)
-  res = zeros(c)
-  derivative_weight!(subtr[1], A, b, c, result)
+  res = zero(c)
+  derivative_weight!(result, subtr[1], A, b, c)
   for i in 2:length(subtr)
-    derivative_weight!(subtr[i], A, b, c, res)
+    derivative_weight!(res, subtr[i], A, b, c)
     result[:] .*= res
   end
   result[:] = A*result
@@ -411,7 +453,10 @@ Reference: Section 315 of
   John Wiley & Sons, 2008.
 """
 function residual_order_condition(t::RootedTree, A, b, c)
-  (elementary_weight(t, A, b, c) - inv(γ(t))) / σ(t)
+  ew = elementary_weight(t, A, b, c)
+  T = typeof(ew)
+
+  (elementary_weight(t, A, b, c) - one(T) / γ(t)) / σ(t)
 end
 
 
