@@ -3,7 +3,7 @@ module RootedTrees
 
 using LinearAlgebra
 
-import Base: show, isless, ==, iterate
+import Base: show, isless, ==, iterate, copy
 
 
 export RootedTree, RootedTreeIterator
@@ -34,6 +34,8 @@ function RootedTree(level_sequence::AbstractVector)
   RootedTree{T,V}(level_sequence)
 end
 #TODO: Validate rooted tree in constructor?
+
+copy(t::RootedTree) = RootedTree(copy(t.level_sequence))
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
@@ -114,7 +116,7 @@ Returns a new tree using the canonical representation of the rooted tree `t`,
 i.e. the one with lexicographically biggest level sequence.
 """
 function canonical_representation(t::RootedTree)
-  canonical_representation!(RootedTree(copy(t.level_sequence)))
+  canonical_representation!(copy(t))
 end
 
 
@@ -122,7 +124,9 @@ end
 """
     RootedTreeIterator{T<:Integer}
 
-Iterator over all rooted trees of given `order`.
+Iterator over all rooted trees of given `order`. The returned trees are views to
+an internal tree modified during the iteration. If the returned trees shall be
+stored or modified during the iteration, a `copy` has to be made.
 """
 struct RootedTreeIterator{T<:Integer}
   order::T
