@@ -94,7 +94,7 @@ one with lexicographically biggest level sequence.
 function canonical_representation!(t::RootedTree)
   subtr = subtrees(t)
   for i in eachindex(subtr)
-    subtr[i] = canonical_representation(subtr[i])
+    canonical_representation!(subtr[i])
   end
   sort!(subtr, rev=true)
 
@@ -321,13 +321,16 @@ end
 
 The number of monotonic labellings of `t` not equivalent under the symmetry group.
 
+If `is_canonical`, it is assumed that `t` is given using the canonical
+representation.
+
 Reference: Section 302 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function α(t::RootedTree)
-  div(factorial(order(t)), σ(t)*γ(t))
+function α(t::RootedTree, is_canonical=false)
+  div(factorial(order(t)), σ(t, is_canonical)*γ(t))
 end
 
 
@@ -336,13 +339,16 @@ end
 
 The total number of labellings of `t` not equivalent under the symmetry group.
 
+If `is_canonical`, it is assumed that `t` is given using the canonical
+representation.
+
 Reference: Section 302 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function β(t::RootedTree)
-  div(factorial(order(t)), σ(t))
+function β(t::RootedTree, is_canonical=false)
+  div(factorial(order(t)), σ(t, is_canonical))
 end
 
 
