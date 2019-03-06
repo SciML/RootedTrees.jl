@@ -129,3 +129,13 @@ for order in 1:10
   end
   @test num == number_of_rooted_trees[order] == count_trees(order)
 end
+
+# Runge-Kutta method SSPRK33
+A = [0 0 0; 1 0 0; 1/4 1/4 0]
+b = [1/6, 1/6, 2/3]
+c = A * fill(1, length(b))
+for order in 1:3
+  for t in RootedTreeIterator(order)
+    @test residual_order_condition(t, A, b, c) ≈ 0 atol=eps()
+  end
+end

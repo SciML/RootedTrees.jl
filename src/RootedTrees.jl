@@ -110,8 +110,8 @@ end
 """
     canonical_representation(t::RootedTree)
 
-Returns the canonical representation of the rooted tree `t`, i.e. the one with
-lexicographically biggest level sequence.
+Returns a new tree using the canonical representation of the rooted tree `t`,
+i.e. the one with lexicographically biggest level sequence.
 """
 function canonical_representation(t::RootedTree)
   canonical_representation!(RootedTree(copy(t.level_sequence)))
@@ -262,9 +262,7 @@ Reference: Section 301 of
   John Wiley & Sons, 2008.
 """
 function σ(t::RootedTree, is_canonical::Bool = false)
-  if order(t) == 1
-    return 1
-  elseif order(t) == 2
+  if order(t) == 1 || order(t) == 2
     return 1
   end
 
@@ -346,17 +344,10 @@ end
 
 
 """
-The elementary weight Φ(`t`) of `t` is an expression in terms of the
-Butcher coefficients A, b, c of a Runge-Kutta method.
+    elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
 
-Inputs:
-  `t`          : RootedTree defining the expression in terms of `A`, `b` and `c`
-                 of the derivative weight.
-  `A`, `b`, `c`: Matrix and vectors of the Butcher coefficients of a Runge-Kutta
-                 method.
-
-Output:
-  Φ(`t`) is a scalar of the same type `T` as `A`, `b` and `c`.
+Compute the elementary weight Φ(`t`) of `t` for the Butcher coefficients
+`A, b, c` of a Runge-Kutta method.
 
 Reference: Section 312 of
   Butcher, John Charles.
@@ -369,56 +360,63 @@ function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, 
 end
 
 function elementary_weight(t::RootedTree, A::AbstractMatrix{T}, b::AbstractVector{T}, c::AbstractVector{T}) where {T}
-  if order(t) == 1
-    return sum(b)
-  end
-
-  subtr = subtrees(t)
-  res1 = zero(c)
-  res2 = zero(c)
-  derivative_weight!(res1, subtr[1], A, b, c)
-  for i in 2:length(subtr)
-    derivative_weight!(res2, subtr[i], A, b, c)
-    res1 .*= res2
-  end
-  dot(b, res1)
+  result = fill(zero(T), length(c))
+  tmp = fill(zero(T), length(c))
+  elementary_weight!(result, tmp, t, A, b, c)
 end
 
-
 """
-The derivative weight of `t` is an expression in terms of the
-Butcher coefficients A, b, c of a Runge-Kutta method.
+    elementary_weight!(result, tmp, t::RootedTree, A, b, c)
 
-Inputs:
-  `result`     : Vector used as storage for the result.
-  `t`          : RootedTree defining the expression in terms of `A`, `b` and `c`
-                 of the derivative weight.
-  `A`, `b`, `c`: Matrix and vectors of the Butcher coefficients of a Runge-Kutta
-                 method.
+Compute the elementary weight Φ(`t`) of `t` for the Butcher coefficients
+`A, b, c` of a Runge-Kutta method as `result` using `tmp` as temporary storage.
 
 Reference: Section 312 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function elementary_weight!(result::AbstractVector, t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-  T = eltype(result)
-  elementary_weight(result, t, Matrix{T}(A), Vector{T}(b), Vector{T}(c))
-end
-
-function derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::Vector{T}, c::Vector{T}) where {T}
+function elementary_weight!(result, tmp, t::RootedTree, A, b, c)
   if order(t) == 1
-    return result .= c
+    return sum(b)
   end
 
   subtr = subtrees(t)
-  res = zero(c)
+  derivative_weight!(result, subtr[1], A, b, c)
+  @inbounds for i in 2:length(subtr)
+    derivative_weight!(tmp, subtr[i], A, b, c)
+    result .*= tmp
+  end
+  dot(b, result)
+end
+
+
+"""
+    derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::Vector{T}, c::Vector{T}) where {T}
+
+Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients
+`A, b, c` of a Runge-Kutta method as `result`.
+
+Reference: Section 312 of
+  Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2008.
+"""
+function derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::Vector{T}, c::Vector{T}) where {T}
+  if order(t) == 1
+    result[:] = c
+    return result
+  end
+
+  subtr = subtrees(t)
+  tmp = similar(result)
   derivative_weight!(result, subtr[1], A, b, c)
   for i in 2:length(subtr)
-    derivative_weight!(res, subtr[i], A, b, c)
-    result[:] .*= res
+    derivative_weight!(tmp, subtr[i], A, b, c)
+    result[:] .*= tmp
   end
   result[:] = A*result
+  return result
 end
 
 
