@@ -256,12 +256,15 @@ order(t::RootedTree) = length(t.level_sequence)
 The symmetry `σ` of a rooted tree `t`, i.e. the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
 
+If `is_canonical`, it is assumed that `t` is given using the canonical
+representation.
+
 Reference: Section 301 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function σ(t::RootedTree, is_canonical::Bool = false)
+function σ(t::RootedTree, is_canonical=false)
   if order(t) == 1 || order(t) == 2
     return 1
   end
@@ -360,8 +363,8 @@ function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, 
 end
 
 function elementary_weight(t::RootedTree, A::AbstractMatrix{T}, b::AbstractVector{T}, c::AbstractVector{T}) where {T}
-  result = fill(zero(T), length(c))
-  tmp = fill(zero(T), length(c))
+  result = similar(c)
+  tmp = similar(c)
   elementary_weight!(result, tmp, t, A, b, c)
 end
 
@@ -381,7 +384,7 @@ function elementary_weight!(result, tmp, t::RootedTree, A, b, c)
     return sum(b)
   end
 
-  subtr = subtrees(t)
+  subtr = Subtrees(t)
   derivative_weight!(result, subtr[1], A, b, c)
   @inbounds for i in 2:length(subtr)
     derivative_weight!(tmp, subtr[i], A, b, c)
@@ -392,7 +395,7 @@ end
 
 
 """
-    derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::Vector{T}, c::Vector{T}) where {T}
+    derivative_weight!(result, t::RootedTree, A, b, c)
 
 Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients
 `A, b, c` of a Runge-Kutta method as `result`.
@@ -402,13 +405,13 @@ Reference: Section 312 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function derivative_weight!(result::Vector{T}, t::RootedTree, A::Matrix{T}, b::Vector{T}, c::Vector{T}) where {T}
+function derivative_weight!(result, t::RootedTree, A, b, c)
   if order(t) == 1
     result[:] = c
     return result
   end
 
-  subtr = subtrees(t)
+  subtr = Subtrees(t)
   tmp = similar(result)
   derivative_weight!(result, subtr[1], A, b, c)
   for i in 2:length(subtr)
@@ -421,29 +424,27 @@ end
 
 
 """
+    residual_order_condition(t::RootedTree, A, b, c, is_canonical=false)
+
 The residual of the order condition
-  `Φ(t) - 1/γ(t)`
-with elementary weight `Φ(t)` and density `γ(t)` divided by the symmetry `σ(t)`.
+  `(Φ(t) - 1/γ(t)) / σ(t)`
+with elementary weight `Φ(t)`, density `γ(t)`, and symmetry `σ(t)` of the
+rooted tree `t` for the Runge-Kutta method with Butcher coefficients
+`A, b, c`.
 
-Inputs:
-  `t`          : RootedTree defining the expression in terms of `A`, `b` and `c`
-                 of the derivative weight.
-  `A`, `b`, `c`: Matrix and vectors of the Butcher coefficients of a Runge-Kutta
-                 method.
-
-Output:
-  Returns `(Φ(t) - 1/γ(t)) / σ(t)`.
+If `is_canonical`, it is assumed that `t` is given using the canonical
+representation.
 
 Reference: Section 315 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function residual_order_condition(t::RootedTree, A, b, c)
+function residual_order_condition(t::RootedTree, A, b, c, is_canonical=false)
   ew = elementary_weight(t, A, b, c)
   T = typeof(ew)
 
-  (elementary_weight(t, A, b, c) - one(T) / γ(t)) / σ(t)
+  (ew - one(T) / γ(t)) / σ(t, is_canonical)
 end
 
 
