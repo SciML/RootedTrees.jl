@@ -363,63 +363,43 @@ function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, 
 end
 
 function elementary_weight(t::RootedTree, A::AbstractMatrix{T}, b::AbstractVector{T}, c::AbstractVector{T}) where {T}
-  result = similar(c)
-  tmp = similar(c)
-  elementary_weight!(result, tmp, t, A, b, c)
-end
-
-"""
-    elementary_weight!(result, tmp, t::RootedTree, A, b, c)
-
-Compute the elementary weight Φ(`t`) of `t` for the Butcher coefficients
-`A, b, c` of a Runge-Kutta method as `result` using `tmp` as temporary storage.
-
-Reference: Section 312 of
-  Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function elementary_weight!(result, tmp, t::RootedTree, A, b, c)
   if order(t) == 1
     return sum(b)
   end
 
   subtr = Subtrees(t)
-  derivative_weight!(result, subtr[1], A, b, c)
+  result = derivative_weight(subtr[1], A, b, c)
   @inbounds for i in 2:length(subtr)
-    derivative_weight!(tmp, subtr[i], A, b, c)
-    result .*= tmp
+    tmp = derivative_weight(subtr[i], A, b, c)
+    result = result .* tmp
   end
   dot(b, result)
 end
 
 
 """
-    derivative_weight!(result, t::RootedTree, A, b, c)
+    derivative_weight(t::RootedTree, A, b, c)
 
 Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients
-`A, b, c` of a Runge-Kutta method as `result`.
+`A, b, c` of a Runge-Kutta method.
 
 Reference: Section 312 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function derivative_weight!(result, t::RootedTree, A, b, c)
+function derivative_weight(t::RootedTree, A, b, c)
   if order(t) == 1
-    result[:] = c
-    return result
+    return c
   end
 
   subtr = Subtrees(t)
-  tmp = similar(result)
-  derivative_weight!(result, subtr[1], A, b, c)
+  result = derivative_weight(subtr[1], A, b, c)
   for i in 2:length(subtr)
-    derivative_weight!(tmp, subtr[i], A, b, c)
-    result[:] .*= tmp
+    tmp = derivative_weight(subtr[i], A, b, c)
+    result = result .* tmp
   end
-  result[:] = A*result
-  return result
+  return A*result
 end
 
 
