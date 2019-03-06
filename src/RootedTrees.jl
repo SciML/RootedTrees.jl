@@ -6,11 +6,11 @@ using LinearAlgebra
 import Base: show, isless, ==, iterate
 
 
-export RootedTree
+export RootedTree, RootedTreeIterator
 
 export α, β, γ, σ, order, residual_order_condition
 
-export rooted_trees, count_trees
+export count_trees
 
 
 
@@ -34,7 +34,6 @@ function RootedTree(level_sequence::AbstractVector)
   RootedTree{T,V}(level_sequence)
 end
 #TODO: Validate rooted tree in constructor?
-#TODO: Allow other vector types?
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
@@ -89,8 +88,8 @@ end
 """
     canonical_representation!(t::RootedTree)
 
-Use the canonical representation of the rooted tree `t`, i.e. the one with
-lexicographically biggest level sequence.
+Change the representation of the rooted tree `t` to the canonical one, i.e. the
+one with lexicographically biggest level sequence.
 """
 function canonical_representation!(t::RootedTree)
   subtr = subtrees(t)
@@ -126,27 +125,17 @@ end
 Iterator over all rooted trees of given `order`.
 """
 struct RootedTreeIterator{T<:Integer}
+  order::T
   t::RootedTree{T,Vector{T}}
 
-  function RootedTreeIterator(level_sequence::AbstractVector{T}) where {T<:Integer}
-    new{T}(RootedTree(Vector{T}(level_sequence)))
+  function RootedTreeIterator(order::T) where {T<:Integer}
+    new{T}(order, RootedTree(Vector{T}(one(T):order)))
   end
 end
-#TODO: change types?
-
-"""
-    rooted_trees(order::Integer)
-
-Returns an iterator over all rooted trees of given `order`.
-"""
-function rooted_trees(order::Integer)
-  order < 1 && throw(ArgumentError("The `order` must be at least one."))
-
-  RootedTreeIterator(Vector(one(order):order))
-end
 
 
-function iterate(iter::RootedTreeIterator)
+function iterate(iter::RootedTreeIterator{T}) where {T}
+  iter.t.level_sequence[:] = one(T):iter.order
   (iter.t, false)
 end
 
@@ -188,7 +177,7 @@ function count_trees(order)
   order < 1 && throw(ArgumentError("The `order` must be at least one."))
 
   num = 0
-  for _ in rooted_trees(order)
+  for _ in RootedTreeIterator(order)
     num += 1
   end
   num

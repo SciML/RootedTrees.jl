@@ -124,7 +124,7 @@ t = RootedTree([1, 2, 3, 4, 5])
 number_of_rooted_trees = [1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
 for order in 1:10
   num = 0
-  for t in rooted_trees(order)
+  for t in RootedTreeIterator(order)
     num += 1
   end
   @test num == number_of_rooted_trees[order] == count_trees(order)
