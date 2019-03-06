@@ -1,5 +1,5 @@
 using Test
-
+using StaticArrays
 using RootedTrees
 
 t1 = RootedTree([1,2,3])
@@ -134,6 +134,15 @@ end
 A = [0 0 0; 1 0 0; 1/4 1/4 0]
 b = [1/6, 1/6, 2/3]
 c = A * fill(1, length(b))
+for order in 1:3
+  for t in RootedTreeIterator(order)
+    @test residual_order_condition(t, A, b, c) ≈ 0 atol=eps()
+  end
+end
+
+A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
+b = @SArray [1/6, 1/6, 2/3]
+c = A * SVector(1, 1, 1)
 for order in 1:3
   for t in RootedTreeIterator(order)
     @test residual_order_condition(t, A, b, c) ≈ 0 atol=eps()
