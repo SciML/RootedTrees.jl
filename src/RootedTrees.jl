@@ -8,7 +8,7 @@ import Base: show, isless, ==, iterate
 
 export RootedTree, RootedTreeIterator
 
-export α, β, γ, σ, order, residual_order_condition
+export α, β, γ, σ, order, residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
@@ -369,17 +369,7 @@ function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, 
 end
 
 function elementary_weight(t::RootedTree, A::AbstractMatrix{T}, b::AbstractVector{T}, c::AbstractVector{T}) where {T}
-  if order(t) == 1
-    return sum(b)
-  end
-
-  subtr = Subtrees(t)
-  result = derivative_weight(subtr[1], A, b, c)
-  @inbounds for i in 2:length(subtr)
-    tmp = derivative_weight(subtr[i], A, b, c)
-    result = result .* tmp
-  end
-  dot(b, result)
+  dot(b, derivative_weight(t, A, b, c))
 end
 
 
@@ -396,16 +386,16 @@ Reference: Section 312 of
 """
 function derivative_weight(t::RootedTree, A, b, c)
   if order(t) == 1
-    return c
+    return zero(c) .+ one(eltype(c))
   end
 
   subtr = Subtrees(t)
-  result = derivative_weight(subtr[1], A, b, c)
+  result = A * derivative_weight(subtr[1], A, b, c)
   for i in 2:length(subtr)
-    tmp = derivative_weight(subtr[i], A, b, c)
+    tmp = A * derivative_weight(subtr[i], A, b, c)
     result = result .* tmp
   end
-  return A*result
+  return result
 end
 
 
