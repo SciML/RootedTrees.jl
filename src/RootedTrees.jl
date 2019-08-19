@@ -225,7 +225,7 @@ Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices
 Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::RootedTree{T}) where {T}
-  subtr = RootedTree{T}[]
+  subtr = typeof(t)[]
 
   if length(t.level_sequence) < 2
     return subtr

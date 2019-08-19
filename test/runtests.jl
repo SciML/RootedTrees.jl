@@ -68,6 +68,7 @@ t = RootedTree([1, 2, 2, 2])
 @test β(t) == α(t)*γ(t)
 
 t = RootedTree([1, 2, 2, 3])
+@inferred RootedTrees.subtrees(t)
 @test order(t) == 4
 @test σ(t) == 1
 @test γ(t) == 8
