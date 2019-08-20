@@ -2,17 +2,12 @@ using Test
 using StaticArrays
 using RootedTrees
 
-trees_array = (RootedTree([1,2,3]),
-               RootedTree([1,2,3]),
-               RootedTree([1,2,2]),
-               RootedTree([1,2,3,3]))
+trees_array = (rootedtree([1,2,3]),
+               rootedtree([1,2,3]),
+               rootedtree([1,2,2]),
+               rootedtree([1,2,3,3]))
 
-trees_marray = (RootedTree(@MArray [1,2,3]),
-                RootedTree(@MArray [1,2,3]),
-                RootedTree(@MArray [1,2,2]),
-                RootedTree(@MArray [1,2,3,3]))
-
-for (t1,t2,t3,t4) in (trees_array, trees_marray)
+for (t1,t2,t3,t4) in (trees_array,)
   @test t1 == t1
   @test t1 == t2
   @test !(t1 == t3)
@@ -32,42 +27,42 @@ for (t1,t2,t3,t4) in (trees_array, trees_marray)
 end
 
 
-t = RootedTree([1])
+t = rootedtree([1])
 @test order(t) == 1
 @test σ(t) == 1
 @test γ(t) == 1
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2])
+t = rootedtree([1, 2])
 @test order(t) == 2
 @test σ(t) == 1
 @test γ(t) == 2
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 2])
+t = rootedtree([1, 2, 2])
 @test order(t) == 3
 @test σ(t) == 2
 @test γ(t) == 3
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3])
+t = rootedtree([1, 2, 3])
 @test order(t) == 3
 @test σ(t) == 1
 @test γ(t) == 6
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 2, 2])
+t = rootedtree([1, 2, 2, 2])
 @test order(t) == 4
 @test σ(t) == 6
 @test γ(t) == 4
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 2, 3])
+t = rootedtree([1, 2, 2, 3])
 @inferred RootedTrees.subtrees(t)
 @test order(t) == 4
 @test σ(t) == 1
@@ -75,74 +70,74 @@ t = RootedTree([1, 2, 2, 3])
 @test α(t) == 3
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 3])
+t = rootedtree([1, 2, 3, 3])
 @test order(t) == 4
 @test σ(t) == 2
 @test γ(t) == 12
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 4])
+t = rootedtree([1, 2, 3, 4])
 @test order(t) == 4
 @test σ(t) == 1
 @test γ(t) == 24
 @test α(t) == 1
 
-t = RootedTree([1, 2, 2, 2, 2])
+t = rootedtree([1, 2, 2, 2, 2])
 @test order(t) == 5
 @test σ(t) == 24
 @test γ(t) == 5
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 2, 2, 3])
+t = rootedtree([1, 2, 2, 2, 3])
 @test order(t) == 5
 @test σ(t) == 2
 @test γ(t) == 10
 @test α(t) == 6
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 2, 3, 3])
+t = rootedtree([1, 2, 2, 3, 3])
 @test order(t) == 5
 @test σ(t) == 2
 @test γ(t) == 15
 @test α(t) == 4
 
-t = RootedTree([1, 2, 2, 3, 4])
+t = rootedtree([1, 2, 2, 3, 4])
 @test order(t) == 5
 @test σ(t) == 1
 @test γ(t) == 30
 @test α(t) == 4
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 2, 3])
+t = rootedtree([1, 2, 3, 2, 3])
 @test order(t) == 5
 @test σ(t) == 2
 @test γ(t) == 20
 @test α(t) == 3
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 3, 3])
+t = rootedtree([1, 2, 3, 3, 3])
 @test order(t) == 5
 @test σ(t) == 6
 @test γ(t) == 20
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 3, 4])
+t = rootedtree([1, 2, 3, 3, 4])
 @test order(t) == 5
 @test σ(t) == 1
 @test γ(t) == 40
 @test α(t) == 3
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 4, 4])
+t = rootedtree([1, 2, 3, 4, 4])
 @test order(t) == 5
 @test σ(t) == 2
 @test γ(t) == 60
 @test α(t) == 1
 @test β(t) == α(t)*γ(t)
 
-t = RootedTree([1, 2, 3, 4, 5])
+t = rootedtree([1, 2, 3, 4, 5])
 @test order(t) == 5
 @test σ(t) == 1
 @test γ(t) == 120
@@ -171,7 +166,7 @@ end
 let order=4
   res = 0.
   for t in RootedTreeIterator(order)
-    res += abs(residual_order_condition(t, A, b, c, true))
+    res += abs(residual_order_condition(t, A, b, c))
   end
   @test res > 10*eps()
 end
@@ -187,7 +182,7 @@ end
 let order=4
   res = 0.
   for t in RootedTreeIterator(order)
-    res += abs(residual_order_condition(t, A, b, c, true))
+    res += abs(residual_order_condition(t, A, b, c))
   end
   @test res > 10*eps()
 end
