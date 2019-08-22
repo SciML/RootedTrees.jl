@@ -286,7 +286,7 @@ function σ(t::RootedTree)
     return 1
   end
 
-  if iscanonical(t)
+  if !iscanonical(t)
     t = canonical_representation(t)
   end
 
