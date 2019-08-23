@@ -6,7 +6,7 @@ using LinearAlgebra
 import Base: show, isless, ==, iterate, copy
 
 
-export RootedTree, RootedTreeIterator
+export rootedtree, RootedTreeIterator
 
 export α, β, γ, σ, order, residual_order_condition, elementary_weight, derivative_weight
 
@@ -15,7 +15,7 @@ export count_trees
 
 
 """
-    RootedTree{T<:Integer}
+    RootedTree
 
 Represents a rooted tree using its level sequence.
 
@@ -24,18 +24,33 @@ Reference:
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
 """
-struct RootedTree{T<:Integer, V<:AbstractVector}
+mutable struct RootedTree{T<:Integer, V<:AbstractVector}
   level_sequence::V
+  iscanonical::Bool
 end
 
-function RootedTree(level_sequence::AbstractVector)
+function RootedTree(level_sequence::AbstractVector, iscanonical=false)
   T = eltype(level_sequence)
   V = typeof(level_sequence)
-  RootedTree{T,V}(level_sequence)
+  RootedTree{T,V}(level_sequence, iscanonical)
 end
+
+"""
+    rootedtree
+
+Construct a canonical `RootedTree` object from a level sequence.
+
+Reference:
+  Beyer, Terry, and Sandra Mitchell Hedetniemi.
+  "Constant time generation of rooted trees."
+  SIAM Journal on Computing 9.4 (1980): 706-712.
+"""
+rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree(level_sequence))
+
+iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
-copy(t::RootedTree) = RootedTree(copy(t.level_sequence))
+copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
@@ -86,7 +101,7 @@ function ==(t1::RootedTree, t2::RootedTree)
 end
 
 
-# generation and caonical representation
+# generation and canonical representation
 """
     canonical_representation!(t::RootedTree)
 
@@ -105,6 +120,7 @@ function canonical_representation!(t::RootedTree)
     t.level_sequence[i:i+order(τ)-1] = τ.level_sequence[:]
     i += order(τ)
   end
+  t.iscanonical = true
 
   t
 end
@@ -133,7 +149,7 @@ struct RootedTreeIterator{T<:Integer}
   t::RootedTree{T,Vector{T}}
 
   function RootedTreeIterator(order::T) where {T<:Integer}
-    new{T}(order, RootedTree(Vector{T}(one(T):order)))
+    new{T}(order, RootedTree(Vector{T}(one(T):order), true))
   end
 end
 
@@ -154,6 +170,7 @@ function iterate(iter::RootedTreeIterator{T}, state) where {T}
       p = i
     end
   end
+  p == 1 && return nothing
 
   level_q = iter.t.level_sequence[p] - one(T)
   @inbounds for i in 1:p
@@ -161,8 +178,6 @@ function iterate(iter::RootedTreeIterator{T}, state) where {T}
       q = i
     end
   end
-
-  p == 1 && return nothing
 
   @inbounds for i in p:length(iter.t.level_sequence)
     iter.t.level_sequence[i] = iter.t.level_sequence[i - (p-q)]
@@ -192,6 +207,7 @@ end
 struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
   level_sequence::Vector{T}
   indices::Vector{T}
+  iscanonical::Bool
 
   function Subtrees(t::RootedTree{T}) where {T}
     level_sequence = t.level_sequence
@@ -211,12 +227,12 @@ struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
     # in order to get the stopping index for the last subtree
     push!(indices, length(level_sequence)+1)
 
-    new{T}(level_sequence, indices)
+    new{T}(level_sequence, indices, iscanonical(t))
   end
 end
 
 Base.size(s::Subtrees) = (length(s.indices)-1, )
-Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices[i]:s.indices[i+1]-1))
+Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices[i]:s.indices[i+1]-1), s.iscanonical)
 
 
 """
@@ -225,7 +241,7 @@ Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices
 Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::RootedTree{T}) where {T}
-  subtr = RootedTree{T}[]
+  subtr = typeof(t)[]
 
   if length(t.level_sequence) < 2
     return subtr
@@ -255,25 +271,22 @@ order(t::RootedTree) = length(t.level_sequence)
 
 
 """
-    σ(t::RootedTree, is_canonical::Bool = false)
+    σ(t::RootedTree)
 
 The symmetry `σ` of a rooted tree `t`, i.e. the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
-
-If `is_canonical`, it is assumed that `t` is given using the canonical
-representation.
 
 Reference: Section 301 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function σ(t::RootedTree, is_canonical=false)
+function σ(t::RootedTree)
   if order(t) == 1 || order(t) == 2
     return 1
   end
 
-  if !is_canonical
+  if !iscanonical(t)
     t = canonical_representation(t)
   end
 
@@ -325,16 +338,13 @@ end
 
 The number of monotonic labellings of `t` not equivalent under the symmetry group.
 
-If `is_canonical`, it is assumed that `t` is given using the canonical
-representation.
-
 Reference: Section 302 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function α(t::RootedTree, is_canonical=false)
-  div(factorial(order(t)), σ(t, is_canonical)*γ(t))
+function α(t::RootedTree)
+  div(factorial(order(t)), σ(t)*γ(t))
 end
 
 
@@ -343,16 +353,13 @@ end
 
 The total number of labellings of `t` not equivalent under the symmetry group.
 
-If `is_canonical`, it is assumed that `t` is given using the canonical
-representation.
-
 Reference: Section 302 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function β(t::RootedTree, is_canonical=false)
-  div(factorial(order(t)), σ(t, is_canonical))
+function β(t::RootedTree)
+  div(factorial(order(t)), σ(t))
 end
 
 
@@ -404,7 +411,7 @@ end
 
 
 """
-    residual_order_condition(t::RootedTree, A, b, c, is_canonical=false)
+    residual_order_condition(t::RootedTree, A, b, c)
 
 The residual of the order condition
   `(Φ(t) - 1/γ(t)) / σ(t)`
@@ -412,19 +419,16 @@ with elementary weight `Φ(t)`, density `γ(t)`, and symmetry `σ(t)` of the
 rooted tree `t` for the Runge-Kutta method with Butcher coefficients
 `A, b, c`.
 
-If `is_canonical`, it is assumed that `t` is given using the canonical
-representation.
-
 Reference: Section 315 of
   Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function residual_order_condition(t::RootedTree, A, b, c, is_canonical=false)
+function residual_order_condition(t::RootedTree, A, b, c)
   ew = elementary_weight(t, A, b, c)
   T = typeof(ew)
 
-  (ew - one(T) / γ(t)) / σ(t, is_canonical)
+  (ew - one(T) / γ(t)) / σ(t)
 end
 
 
