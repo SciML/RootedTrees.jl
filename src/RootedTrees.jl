@@ -3,7 +3,7 @@ module RootedTrees
 
 using LinearAlgebra
 
-import Base: show, isless, ==, iterate, copy
+import Base: show, isless, ==, iterate, copy     
 
 
 export rootedtree, RootedTreeIterator
@@ -429,6 +429,24 @@ function residual_order_condition(t::RootedTree, A, b, c)
   T = typeof(ew)
 
   (ew - one(T) / γ(t)) / σ(t)
+end
+
+
+"""
+    t1 ∘ t2
+
+The non-associative Butcher product of rooted trees. It is formed
+by adding an edge from the root of `t1` to the root of `t2`.
+
+Reference: Section 301 of
+  Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2016.
+"""
+function Base.:∘(t1::RootedTree, t2::RootedTree)
+  offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
+  level_sequence = vcat(t1.level_sequence, t2.level_sequence .+ offset)
+  rootedtree(level_sequence)
 end
 
 
