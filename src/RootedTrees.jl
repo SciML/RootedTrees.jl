@@ -1,5 +1,7 @@
 module RootedTrees
 
+@doc read(joinpath(dirname(@__DIR__), "README.md"), String) RootedTrees
+
 
 using LinearAlgebra
 
@@ -455,7 +457,7 @@ end
 
 
 """
-  butcher_represetation(t::RootedTree)
+    butcher_represetation(t::RootedTree)
 
 Returns the representation of `t::RootedTree` as introduced by Butcher.
 
