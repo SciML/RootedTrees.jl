@@ -45,6 +45,24 @@ julia> butcher_representation(t)
 A `RootedTreeIterator(order::Integer)` can be used to iterate efficiently
 over all `RootedTree`s of a given `order`.
 
+Be careful that the iterator is stateful for efficiency reasons, so you might
+need to use `copy` appropriately, e.g.
+```julia
+julia> map(identity, RootedTreeIterator(4))
+4-element Array{RootedTrees.RootedTree{Int64,Array{Int64,1}},1}:
+ RootedTree{Int64}: [1, 2, 2, 2]
+ RootedTree{Int64}: [1, 2, 2, 2]
+ RootedTree{Int64}: [1, 2, 2, 2]
+ RootedTree{Int64}: [1, 2, 2, 2]
+
+julia> map(copy, RootedTreeIterator(4))
+4-element Array{RootedTrees.RootedTree{Int64,Array{Int64,1}},1}:
+ RootedTree{Int64}: [1, 2, 3, 4]
+ RootedTree{Int64}: [1, 2, 3, 3]
+ RootedTree{Int64}: [1, 2, 3, 2]
+ RootedTree{Int64}: [1, 2, 2, 2]
+```
+
 ### Functions on Trees
 
 The usual functions on `RootedTree`s are implemented, cf.
