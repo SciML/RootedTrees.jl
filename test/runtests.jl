@@ -217,10 +217,11 @@ A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
 b = @SArray [1/6, 1/6, 2/3]
 c = A * SVector(1, 1, 1)
 for order in 1:3
-  for t in RootedTreeIterator(order)
-    @test residual_order_condition(t, A, b, c) ≈ 0 atol=eps()
-  end
+    @test all(RootedTreeIterator(order)) do t
+        abs(residual_order_condition(t, A, b, c)) < eps()
+    end
 end
+
 let order=4
   res = 0.
   for t in RootedTreeIterator(order)

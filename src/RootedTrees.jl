@@ -157,6 +157,8 @@ struct RootedTreeIterator{T<:Integer}
   end
 end
 
+Base.IteratorSize(::Type{<:RootedTreeIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{RootedTreeIterator{T}}) where T = RootedTree{T,Vector{T}}
 
 function iterate(iter::RootedTreeIterator{T}) where {T}
   iter.t.level_sequence[:] = one(T):iter.order
