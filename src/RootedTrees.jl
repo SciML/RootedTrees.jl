@@ -66,7 +66,7 @@ copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 #    #  # Test, whether there is exactly one root element at the beginning of sequence, if necessary.
 #    #  root = sequence[1]
 #    #  for level in sequence[2:end]
-#    #    level <= root && throw(ArgumentError("Rooted trees must have exactly one element at root-level at the beginning."))
+#    #    level <= root && throw(ArgumentError("Rooted trees must have exactly one element at root level at the beginning."))
 #    #  end
 #    #end
 #    # If there is only one element, the sequence must be valid.
@@ -74,7 +74,7 @@ copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 #      # Test, whether there is exactly one root element at the beginning of sequence, if necessary.
 #      root = sequence[1]
 #      for level in sequence[2:end]
-#        level <= root && throw(ArgumentError("Rooted trees must have exactly one element at root-level at the beginning."))
+#        level <= root && throw(ArgumentError("Rooted trees must have exactly one element at root level at the beginning."))
 #      end
 #    end
 #
@@ -109,7 +109,7 @@ end
 """
     canonical_representation!(t::RootedTree)
 
-Change the representation of the rooted tree `t` to the canonical one, i.e. the
+Change the representation of the rooted tree `t` to the canonical one, i.e., the
 one with lexicographically biggest level sequence.
 """
 function canonical_representation!(t::RootedTree)
@@ -133,7 +133,7 @@ end
     canonical_representation(t::RootedTree)
 
 Returns a new tree using the canonical representation of the rooted tree `t`,
-i.e. the one with lexicographically biggest level sequence.
+i.e., the one with lexicographically biggest level sequence.
 """
 function canonical_representation(t::RootedTree)
   canonical_representation!(copy(t))
@@ -271,7 +271,7 @@ end
 """
     order(t::RootedTree)
 
-The `order` of a rooted tree, i.e. the length of it's level sequence.
+The `order` of a rooted tree, i.e., the length of its level sequence.
 """
 order(t::RootedTree) = length(t.level_sequence)
 
@@ -279,7 +279,7 @@ order(t::RootedTree) = length(t.level_sequence)
 """
     σ(t::RootedTree)
 
-The symmetry `σ` of a rooted tree `t`, i.e. the order of the group of automorphisms
+The symmetry `σ` of a rooted tree `t`, i.e., the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
 
 Reference: Section 301 of
@@ -315,7 +315,7 @@ end
 """
     γ(t::RootedTree)
 
-The density `γ(t)` of a rooted tree, i.e. the product over all vertices of `t`
+The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t`
 of the order of the subtree rooted at that vertex.
 
 Reference: Section 301 of
@@ -342,7 +342,7 @@ end
 """
     α(t::RootedTree)
 
-The number of monotonic labellings of `t` not equivalent under the symmetry group.
+The number of monotonic labelings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
   Butcher, John Charles.
@@ -357,7 +357,7 @@ end
 """
     β(t::RootedTree)
 
-The total number of labellings of `t` not equivalent under the symmetry group.
+The total number of labelings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
   Butcher, John Charles.
@@ -480,9 +480,9 @@ function butcher_representation(t::RootedTree)
   end
   result = "[" * result * "]"
 
-  # normalise the result by grouping repeated occurences of τ
+  # normalize the result by grouping repeated occurrences of τ
   # TODO: Decide whether powers should also be used for subtrees,
-  #       e.g. "[[τ]²]" instead of "[[τ][τ]]"
+  #       e.g., "[[τ]²]" instead of "[[τ][τ]]"
   #       for rootedtree([1, 2, 3, 2, 3]).
   #       Currently, powers are only used for τ.
   for n in order(t):-1:2

@@ -16,7 +16,7 @@ many breaking changes in the near future.
 
 ### Construction
 
-`RootedTree`s are represented using level sequences, i.e. `AbstractVector`s
+`RootedTree`s are represented using level sequences, i.e., `AbstractVector`s
 containing the distances of the nodes from the root, cf.
 Beyer, Terry, and Sandra Mitchell Hedetniemi.
 "Constant time generation of rooted trees."
@@ -28,7 +28,7 @@ RootedTree{Int64}: [1, 2, 3, 2]
 ```
 In the notation of [Butcher (Numerical Methods for ODEs, 2016)](https://doi.org/10.1002/9781119121534),
 this tree can be written as `[[τ²] τ]` or `(τ ∘ τ) ∘ (τ ∘ τ)`, where
-`∘` is the non-asociative Butcher product of `RootedTree`s, which is also
+`∘` is the non-associative Butcher product of `RootedTree`s, which is also
 implemented.
 
 To get the representation of a `RootedTree` introduced by Butcher, use `butcher_representation`:
@@ -46,7 +46,7 @@ A `RootedTreeIterator(order::Integer)` can be used to iterate efficiently
 over all `RootedTree`s of a given `order`.
 
 Be careful that the iterator is stateful for efficiency reasons, so you might
-need to use `copy` appropriately, e.g.
+need to use `copy` appropriately, e.g.,
 ```julia
 julia> map(identity, RootedTreeIterator(4))
 4-element Array{RootedTrees.RootedTree{Int64,Array{Int64,1}},1}:
@@ -67,11 +67,11 @@ julia> map(copy, RootedTreeIterator(4))
 
 The usual functions on `RootedTree`s are implemented, cf.
 [Butcher (Numerical Methods for ODEs, 2016)](https://doi.org/10.1002/9781119121534).
-- `order(t::RootedTree)`: The order of a `RootedTree`, i.e. the length of it's level sequence.
-- `σ(t::RootedTree)`:The symmetry `σ` of a rooted tree, i.e. the order of the group of automorphisms on a particular labelling (of the vertices) of `t`.
-- `γ(t::RootedTree)`: The density `γ(t)` of a rooted tree, i.e. the product over all vertices of `t` of the order of the subtree rooted at that vertex.
-- `α(t::RootedTree)`: The number of monotonic labellings of `t` not equivalent under the symmetry group.
-- `β(t::RootedTree)`: The total number of labellings of `t` not equivalent under the symmetry group.
+- `order(t::RootedTree)`: The order of a `RootedTree`, i.e., the length of its level sequence.
+- `σ(t::RootedTree)`: The symmetry `σ` of a rooted tree, i.e., the order of the group of automorphisms on a particular labelling (of the vertices) of `t`.
+- `γ(t::RootedTree)`: The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t` of the order of the subtree rooted at that vertex.
+- `α(t::RootedTree)`: The number of monotonic labelings of `t` not equivalent under the symmetry group.
+- `β(t::RootedTree)`: The total number of labelings of `t` not equivalent under the symmetry group.
 
 Additionally, functions on trees connected to Runge-Kutta methods are implemented.
 - `elementary_weight(t, A, b, c)`: Compute the elementary weight Φ(`t`) of `t::RootedTree` for the Butcher coefficients `A, b, c` of a Runge-Kutta method.
