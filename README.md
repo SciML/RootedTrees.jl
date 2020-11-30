@@ -1,7 +1,6 @@
 # RootedTrees
 
-[![Build Status](https://travis-ci.com/SciML/RootedTrees.jl.svg?branch=master)](https://travis-ci.com/SciML/RootedTrees.jl)
-[![Build status](https://ci.appveyor.com/api/projects/status/o9w0cl0mokfpnj0d?svg=true)](https://ci.appveyor.com/project/ranocha/RootedTrees-jl)
+[![Build Status](https://github.com/SciML/RootedTrees.jl/workflows/CI/badge.svg)](https://github.com/SciML/RootedTrees.jl/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/SciML/RootedTrees.jl/badge.svg?branch=master)](https://coveralls.io/github/SciML/RootedTrees.jl?branch=master)
 [![codecov](https://codecov.io/gh/SciML/RootedTrees.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/SciML/RootedTrees.jl)
 
