@@ -67,8 +67,8 @@ julia> map(copy, RootedTreeIterator(4))
 The usual functions on `RootedTree`s are implemented, cf.
 [Butcher (Numerical Methods for ODEs, 2016)](https://doi.org/10.1002/9781119121534).
 - `order(t::RootedTree)`: The order of a `RootedTree`, i.e., the length of its level sequence.
-- `σ(t::RootedTree)`: The symmetry `σ` of a rooted tree, i.e., the order of the group of automorphisms on a particular labelling (of the vertices) of `t`.
-- `γ(t::RootedTree)`: The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t` of the order of the subtree rooted at that vertex.
+- `σ(t::RootedTree)` or `symmetry(t)`: The symmetry `σ` of a rooted tree, i.e., the order of the group of automorphisms on a particular labelling (of the vertices) of `t`.
+- `γ(t::RootedTree)` or `density(t)`: The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t` of the order of the subtree rooted at that vertex.
 - `α(t::RootedTree)`: The number of monotonic labelings of `t` not equivalent under the symmetry group.
 - `β(t::RootedTree)`: The total number of labelings of `t` not equivalent under the symmetry group.
 
