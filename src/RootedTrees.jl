@@ -12,7 +12,9 @@ export rootedtree, RootedTreeIterator
 
 export butcher_representation
 
-export α, β, γ, σ, order, residual_order_condition, elementary_weight, derivative_weight
+export α, β, γ, density, σ, symmetry, order
+
+export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
@@ -24,11 +26,12 @@ export count_trees
 Represents a rooted tree using its level sequence.
 
 Reference:
-  Beyer, Terry, and Sandra Mitchell Hedetniemi.
+- Beyer, Terry, and Sandra Mitchell Hedetniemi.
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
+  [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
-mutable struct RootedTree{T<:Integer, V<:AbstractVector}
+mutable struct RootedTree{T<:Integer, V<:AbstractVector{T}}
   level_sequence::V
   iscanonical::Bool
 end
@@ -45,9 +48,10 @@ end
 Construct a canonical `RootedTree` object from a level sequence.
 
 Reference:
-  Beyer, Terry, and Sandra Mitchell Hedetniemi.
+- Beyer, Terry, and Sandra Mitchell Hedetniemi.
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
+  [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
 rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree(level_sequence))
 
@@ -278,16 +282,17 @@ order(t::RootedTree) = length(t.level_sequence)
 
 """
     σ(t::RootedTree)
+    symmetry(t::RootedTree)
 
 The symmetry `σ` of a rooted tree `t`, i.e., the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
 
 Reference: Section 301 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function σ(t::RootedTree)
+function symmetry(t::RootedTree)
   if order(t) == 1 || order(t) == 2
     return 1
   end
@@ -304,26 +309,29 @@ function σ(t::RootedTree)
     if subtr[i] == subtr[i-1]
       num += 1
     else
-      sym *= factorial(num) * σ(subtr[i-1])^num
+      sym *= factorial(num) * symmetry(subtr[i-1])^num
       num = 1
     end
   end
-  sym *= factorial(num) * σ(subtr[end])^num
+  sym *= factorial(num) * symmetry(subtr[end])^num
 end
+
+const σ = symmetry
 
 
 """
     γ(t::RootedTree)
+    density(t::RootedTree)
 
 The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t`
 of the order of the subtree rooted at that vertex.
 
 Reference: Section 301 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function γ(t::RootedTree)
+function density(t::RootedTree)
   if order(t) == 1
     return 1
   elseif order(t) == 2
@@ -333,10 +341,12 @@ function γ(t::RootedTree)
   subtr = Subtrees(t)
   den = order(t)
   for τ in subtr
-    den *= γ(τ)
+    den *= density(τ)
   end
   den
 end
+
+const γ = density
 
 
 """
@@ -345,7 +355,7 @@ end
 The number of monotonic labelings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
@@ -360,7 +370,7 @@ end
 The total number of labelings of `t` not equivalent under the symmetry group.
 
 Reference: Section 302 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
@@ -376,7 +386,7 @@ Compute the elementary weight Φ(`t`) of `t` for the Butcher coefficients
 `A, b, c` of a Runge-Kutta method.
 
 Reference: Section 312 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
@@ -397,7 +407,7 @@ Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients
 `A, b, c` of a Runge-Kutta method.
 
 Reference: Section 312 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
@@ -426,7 +436,7 @@ rooted tree `t` for the Runge-Kutta method with Butcher coefficients
 `A, b, c`.
 
 Reference: Section 315 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
@@ -447,7 +457,7 @@ The non-associative Butcher product of rooted trees. It is formed
 by adding an edge from the root of `t1` to the root of `t2`.
 
 Reference: Section 301 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2016.
 """
@@ -464,7 +474,7 @@ end
 Returns the representation of `t::RootedTree` as introduced by Butcher.
 
 Reference: Section 301 of
-  Butcher, John Charles.
+- Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
