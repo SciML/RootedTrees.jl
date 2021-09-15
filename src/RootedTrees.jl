@@ -18,6 +18,8 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
+export partition_forest
+
 
 
 """
@@ -268,6 +270,82 @@ function subtrees(t::RootedTree{T}) where {T}
   end
   push!(subtr, RootedTree(t.level_sequence[start:end]))
 end
+
+
+# partitions
+
+"""
+    partition_forest(t::RootedTree, edge_set)
+
+Form the partition forest of the rooted tree `t` where edges marked with `false`
+in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
+corresponds to the edge connecting node `i+1` in the level sequence to its parent.
+See Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function partition_forest(t::RootedTree, edge_set)
+  @boundscheck begin
+    @assert length(t.level_sequence) == length(edge_set) + 1
+  end
+
+  ls = t.level_sequence
+  T = eltype(ls)
+  forest = RootedTree{T, Vector{T}}[]
+
+  while !all(edge_set)
+    # Find next removed edge
+    subtree_root_index = findfirst(==(false), edge_set) + 1
+
+    # Detach the corresponding subtree and add its partition forest.
+    # The subtree goes up to the next node that has the same (or lower)
+    # rank as its root
+    subtree_size = 0
+    while subtree_root_index + subtree_size + 1 < length(ls)
+      if ls[subtree_root_index + subtree_size + 1] > ls[subtree_root_index]
+        subtree_size += 1
+      else
+        break
+      end
+    end
+
+    # Extract the subtree and the edge set on it. Note that the corresponding
+    # edge set contains one element less than the subtree itself.
+    subtree     = rootedtree(ls[subtree_root_index:subtree_root_index+subtree_size])
+    subtree_edge_set = edge_set[subtree_root_index:subtree_root_index+subtree_size-1]
+
+    # Remove subtree from base tree
+    ls = vcat(ls[begin:subtree_root_index-1],
+              ls[subtree_root_index+subtree_size+1:end])
+    edge_set = vcat(edge_set[begin:subtree_root_index-2],
+                    edge_set[subtree_root_index+subtree_size:end])
+    append!(forest, partition_forest(subtree, subtree_edge_set))
+  end
+  push!(forest, RootedTree(ls))
+  return forest
+end
+
+# def partition_skeleton(tree,edge_set):
+#     ls = tree._level_sequence.copy()
+#     edge_set = edge_set.copy()
+#     while 1 in edge_set:
+#         # Find next edge to contract
+#         subtree_root_index = edge_set.index(1)+1
+#         # Contract corresponding edge by removing the subtree root and promoting the rest of the subtree
+#         i = 1
+#         while subtree_root_index+i<len(ls):
+#             if ls[subtree_root_index+i]>ls[subtree_root_index]:
+#                 ls[subtree_root_index+i] -= 1
+#                 i += 1
+#             else:
+#                 break
+#         # Remove root node
+#         del ls[subtree_root_index]
+#         del edge_set[subtree_root_index-1]
+#     return trees.RootedTree(ls)
+
 
 
 # functions on trees
