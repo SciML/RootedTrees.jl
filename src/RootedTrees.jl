@@ -301,7 +301,7 @@ function partition_forest(t::RootedTree, edge_set)
 
     # Detach the corresponding subtree and add its partition forest.
     # The subtree goes up to the next node that has the same (or lower)
-    # rank as its root
+    # rank as its root.
     subtree_size = 0
     while subtree_root_index + subtree_size + 1 < length(ls)
       if ls[subtree_root_index + subtree_size + 1] > ls[subtree_root_index]
@@ -317,6 +317,7 @@ function partition_forest(t::RootedTree, edge_set)
     subtree_edge_set = edge_set[subtree_root_index:subtree_root_index+subtree_size-1]
 
     # Remove subtree from base tree
+    # TODO: Consider using keepat! in Julia v1.7
     ls = vcat(ls[begin:subtree_root_index-1],
               ls[subtree_root_index+subtree_size+1:end])
     edge_set = vcat(edge_set[begin:subtree_root_index-2],
