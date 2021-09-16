@@ -161,6 +161,18 @@ function canonical_representation(t::RootedTree)
 end
 
 
+"""
+    normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+
+Normalize the level sequence of the rooted tree `t` such that the root is
+set to `root`.
+"""
+function normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+  t.level_sequence .+= root - first(t.level_sequence)
+  t
+end
+
+
 
 """
     RootedTreeIterator{T<:Integer}

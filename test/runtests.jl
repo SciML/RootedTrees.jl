@@ -238,7 +238,7 @@ end
   end
 end
 
-# See See Section 2.3 and Table 2 of
+# See Section 2.3 and Table 2 of
 # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
 #   Algebraic Structures of B-series
 #   Foundations of Computational Mathematics
@@ -344,4 +344,54 @@ end
     reference_skeleton = rootedtree([1, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
+end
+
+# See Table 3 of
+# - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+#   Algebraic Structures of B-series
+#   Foundations of Computational Mathematics
+#   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+@testset "all_partitions" begin
+  t = rootedtree([1, 2, 3, 3])
+  forests, skeletons = all_partitions(t)
+  for forest in forests
+    for tree in forest
+      RootedTrees.normalize_root!(tree)
+    end
+    sort!(forest)
+  end
+  sort!(forests)
+  for tree in skeletons
+    RootedTrees.normalize_root!(tree)
+  end
+  sort!(skeletons)
+
+  reference_forests = [
+    [rootedtree([1, 2, 3, 3]),],
+    [rootedtree([1]), rootedtree([1, 2, 2])],
+    [rootedtree([1]), rootedtree([1, 2, 3])],
+    [rootedtree([1]), rootedtree([1, 2, 3]),],
+    [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
+    [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
+    [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
+    [rootedtree([1]), rootedtree([1]), rootedtree([1]), rootedtree([1])],
+  ]
+  reference_skeletons = [
+    rootedtree([1]),
+    rootedtree([1, 2]),
+    rootedtree([1, 2]),
+    rootedtree([1, 2]),
+    rootedtree([1, 2, 2]),
+    rootedtree([1, 2, 3]),
+    rootedtree([1, 2, 3]),
+    rootedtree([1, 2, 3, 3]),
+  ]
+  for forest in reference_forests
+    sort!(forest)
+  end
+  sort!(reference_forests)
+  sort!(reference_skeletons)
+
+  @test forests == reference_forests
+  @test skeletons == reference_skeletons
 end
