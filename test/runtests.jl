@@ -250,6 +250,8 @@ end
                         rootedtree([4]),
                         rootedtree([3])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 2])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 4, 3])
@@ -258,6 +260,8 @@ end
                         rootedtree([2, 3, 4]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 3])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 4, 3])
@@ -267,6 +271,8 @@ end
                         rootedtree([2, 3]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 3, 3])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 2, 2, 2])
@@ -275,6 +281,8 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 2])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 2, 2])
@@ -284,12 +292,16 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 3, 2])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 2, 2])
     edge_set = [true, true, true, true]
     reference_forest = [rootedtree([1, 2, 3, 2, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 2, 3])
@@ -298,6 +310,8 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2, 3])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 3])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 2, 3])
@@ -307,6 +321,8 @@ end
                         rootedtree([2]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 2, 3])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 
   let t = rootedtree([1, 2, 3, 3, 3])
@@ -315,5 +331,7 @@ end
                         rootedtree([2, 3, 3]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2, 3])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
   end
 end
