@@ -342,7 +342,7 @@ function partition_forest(t::RootedTree, _edge_set)
 
     # Extract the subtree and the edge set on it. Note that the corresponding
     # edge set contains one element less than the subtree itself.
-    subtree     = rootedtree(ls[subtree_root_index:subtree_last_index])
+    subtree = rootedtree(@view ls[subtree_root_index:subtree_last_index])
     subtree_edge_set = edge_set[subtree_root_index:subtree_last_index-1]
 
     # Remove the subtree from the base tree and continue recursively
