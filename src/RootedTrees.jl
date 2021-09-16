@@ -273,7 +273,7 @@ end
 
 
 # partitions
-
+# TODO: partitions; add documentation in the README to make them public API
 """
     partition_forest(t::RootedTree, edge_set)
 
@@ -286,12 +286,13 @@ See Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-function partition_forest(t::RootedTree, edge_set)
+function partition_forest(t::RootedTree, _edge_set)
   @boundscheck begin
-    @assert length(t.level_sequence) == length(edge_set) + 1
+    @assert length(t.level_sequence) == length(_edge_set) + 1
   end
 
-  ls = t.level_sequence
+  edge_set = copy(_edge_set)
+  ls = copy(t.level_sequence)
   T = eltype(ls)
   forest = RootedTree{T, Vector{T}}[]
 
@@ -302,10 +303,10 @@ function partition_forest(t::RootedTree, edge_set)
     # Detach the corresponding subtree and add its partition forest.
     # The subtree goes up to the next node that has the same (or lower)
     # rank as its root.
-    subtree_size = 0
-    while subtree_root_index + subtree_size + 1 < length(ls)
-      if ls[subtree_root_index + subtree_size + 1] > ls[subtree_root_index]
-        subtree_size += 1
+    subtree_last_index = subtree_root_index
+    while subtree_last_index < length(ls)
+      if ls[subtree_last_index + 1] > ls[subtree_root_index]
+        subtree_last_index += 1
       else
         break
       end
@@ -313,15 +314,12 @@ function partition_forest(t::RootedTree, edge_set)
 
     # Extract the subtree and the edge set on it. Note that the corresponding
     # edge set contains one element less than the subtree itself.
-    subtree     = rootedtree(ls[subtree_root_index:subtree_root_index+subtree_size])
-    subtree_edge_set = edge_set[subtree_root_index:subtree_root_index+subtree_size-1]
+    subtree     = rootedtree(ls[subtree_root_index:subtree_last_index])
+    subtree_edge_set = edge_set[subtree_root_index:subtree_last_index-1]
 
-    # Remove subtree from base tree
-    # TODO: Consider using keepat! in Julia v1.7
-    ls = vcat(ls[begin:subtree_root_index-1],
-              ls[subtree_root_index+subtree_size+1:end])
-    edge_set = vcat(edge_set[begin:subtree_root_index-2],
-                    edge_set[subtree_root_index+subtree_size:end])
+    # Remove the subtree from the base tree and continue recursively
+    deleteat!(ls, subtree_root_index:subtree_last_index)
+    deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
     append!(forest, partition_forest(subtree, subtree_edge_set))
   end
   push!(forest, RootedTree(ls))
