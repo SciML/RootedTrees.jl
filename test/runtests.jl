@@ -334,4 +334,14 @@ end
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
+
+  # additional tests not included in the examples of the paper
+  let t = rootedtree([1, 2, 3, 2, 3])
+    edge_set = [true, false, true, true]
+    reference_forest = [rootedtree([1, 2, 3, 2]),
+                        rootedtree([3])]
+    @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    reference_skeleton = rootedtree([1, 2])
+    @test reference_skeleton == partition_skeleton(t, edge_set)
+  end
 end

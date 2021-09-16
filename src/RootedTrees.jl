@@ -18,7 +18,7 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest, partition_skeleton
+export partition_forest, partition_skeleton, all_partitions
 
 
 
@@ -339,7 +339,10 @@ function partition_forest(t::RootedTree, _edge_set)
     append!(forest, partition_forest(subtree, subtree_edge_set))
   end
 
-  # The level sequence `ls` will not automatically be a canonical representation
+  # The level sequence `ls` will not automatically be a canonical representation.
+  # TODO: partitions;
+  #       Decide whether canonical representations should be used. Disabling
+  #       them will increase the performance.
   push!(forest, rootedtree!(ls))
   return forest
 end
@@ -387,8 +390,40 @@ function partition_skeleton(t::RootedTree, _edge_set)
     deleteat!(edge_set, subtree_root_index-1)
   end
 
-  # The level sequence `ls` will not automatically be a canonical representation
+  # The level sequence `ls` will not automatically be a canonical representation.
+  # TODO: partitions;
+  #       Decide whether canonical representations should be used. Disabling
+  #       them will increase the performance.
   return rootedtree!(ls)
+end
+
+
+# TODO: partitions; add documentation in the README to make them public API
+"""
+    all_partitions(t::RootedTree)
+
+Create all partition forests and skeletons of a rooted tree `t`. This returns
+vectors of the return values of `partition_forest` and `partition_skeleton`
+when looping over all possible edge sets.
+
+See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function all_partitions(t::RootedTree)
+  edge_set = zeros(Bool, order(t) - 1)
+  forests   = [partition_forest(t, edge_set)]
+  skeletons = [partition_skeleton(t, edge_set)]
+
+  for edge_set_value in 1:(2^length(edge_set) - 1)
+    digits!(edge_set, edge_set_value, base=2)
+    push!(forests,   partition_forest(t, edge_set))
+    push!(skeletons, partition_skeleton(t, edge_set))
+  end
+
+  return (; forests, skeletons)
 end
 
 
