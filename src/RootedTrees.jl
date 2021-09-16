@@ -8,7 +8,7 @@ using LinearAlgebra
 import Base: show, isless, ==, iterate, copy
 
 
-export rootedtree, RootedTreeIterator
+export rootedtree, rootedtree!, RootedTreeIterator
 
 export butcher_representation
 
@@ -45,9 +45,10 @@ function RootedTree(level_sequence::AbstractVector, iscanonical=false)
 end
 
 """
-    rootedtree
+    rootedtree(level_sequence)
 
-Construct a canonical `RootedTree` object from a level sequence.
+Construct a canonical `RootedTree` object from a `level_sequence`, i.e.,
+a vector of integers representing the levels of each node of the tree.
 
 Reference:
 - Beyer, Terry, and Sandra Mitchell Hedetniemi.
@@ -56,6 +57,20 @@ Reference:
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
 rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree(level_sequence))
+
+"""
+    rootedtree!(level_sequence)
+
+Construct a canonical `RootedTree` object from a `level_sequence` which may be
+modified in this process. See also `rootedtree`.
+
+Reference:
+- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+  "Constant time generation of rooted trees."
+  SIAM Journal on Computing 9.4 (1980): 706-712.
+  [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
+"""
+rootedtree!(level_sequence::AbstractVector) = canonical_representation!(RootedTree(level_sequence))
 
 iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
@@ -127,7 +142,7 @@ function canonical_representation!(t::RootedTree)
 
   i = 2
   for τ in subtr
-    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence[:]
+    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
     i += order(τ)
   end
   t.iscanonical = true
@@ -323,7 +338,7 @@ function partition_forest(t::RootedTree, _edge_set)
     deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
     append!(forest, partition_forest(subtree, subtree_edge_set))
   end
-  push!(forest, RootedTree(ls))
+  push!(forest, rootedtree!(ls))
   return forest
 end
 
@@ -369,7 +384,7 @@ function partition_skeleton(t::RootedTree, _edge_set)
     deleteat!(ls, subtree_root_index)
     deleteat!(edge_set, subtree_root_index-1)
   end
-  return RootedTree(ls)
+  return rootedtree!(ls)
 end
 
 
