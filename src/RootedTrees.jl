@@ -342,7 +342,11 @@ function partition_forest(t::RootedTree, _edge_set)
 
     # Extract the subtree and the edge set on it. Note that the corresponding
     # edge set contains one element less than the subtree itself.
-    subtree = rootedtree(@view ls[subtree_root_index:subtree_last_index])
+    # There is no need to use a canonical representation of the temporary
+    # subtree. Thus, we do not use `rootedtree` but the (unsafe) constructor.
+    # Since we `copy` the level sequence in the recursive call, we can also
+    # use a `view` to reduce memory allocations.
+    subtree = RootedTree(@view ls[subtree_root_index:subtree_last_index])
     subtree_edge_set = @view edge_set[subtree_root_index:subtree_last_index-1]
 
     # Form the partition forest recursively
