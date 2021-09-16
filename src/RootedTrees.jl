@@ -18,7 +18,7 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest
+export partition_forest, partition_skeleton
 
 
 
@@ -280,6 +280,7 @@ end
 Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
+
 See Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
@@ -326,24 +327,50 @@ function partition_forest(t::RootedTree, _edge_set)
   return forest
 end
 
-# def partition_skeleton(tree,edge_set):
-#     ls = tree._level_sequence.copy()
-#     edge_set = edge_set.copy()
-#     while 1 in edge_set:
-#         # Find next edge to contract
-#         subtree_root_index = edge_set.index(1)+1
-#         # Contract corresponding edge by removing the subtree root and promoting the rest of the subtree
-#         i = 1
-#         while subtree_root_index+i<len(ls):
-#             if ls[subtree_root_index+i]>ls[subtree_root_index]:
-#                 ls[subtree_root_index+i] -= 1
-#                 i += 1
-#             else:
-#                 break
-#         # Remove root node
-#         del ls[subtree_root_index]
-#         del edge_set[subtree_root_index-1]
-#     return trees.RootedTree(ls)
+
+# TODO: partitions; add documentation in the README to make them public API
+"""
+    partition_skeleton(t::RootedTree, edge_set)
+
+Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtained
+by contracting each tree of the partition forest to a single vertex and re-establishing
+the edges removed to obtain the partition forest.
+
+See `partition_forest` and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function partition_skeleton(t::RootedTree, _edge_set)
+  @boundscheck begin
+    @assert length(t.level_sequence) == length(_edge_set) + 1
+  end
+
+  edge_set = copy(_edge_set)
+  ls = copy(t.level_sequence)
+
+  while any(edge_set)
+    # Find next edge to contract
+    subtree_root_index = findfirst(==(true), edge_set) + 1
+
+    # Contract the corresponding edge by removing the subtree root and promoting
+    # the rest of the subtree
+    subtree_last_index = subtree_root_index + 1
+    while subtree_last_index <= length(ls)
+      if ls[subtree_last_index] > ls[subtree_root_index]
+        ls[subtree_last_index] -= 1
+        subtree_last_index += 1
+      else
+        break
+      end
+    end
+    # Remove the root node
+    deleteat!(ls, subtree_root_index)
+    deleteat!(edge_set, subtree_root_index-1)
+  end
+  return RootedTree(ls)
+end
 
 
 
