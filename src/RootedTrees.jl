@@ -338,6 +338,8 @@ function partition_forest(t::RootedTree, _edge_set)
     deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
     append!(forest, partition_forest(subtree, subtree_edge_set))
   end
+
+  # The level sequence `ls` will not automatically be a canonical representation
   push!(forest, rootedtree!(ls))
   return forest
 end
@@ -384,6 +386,8 @@ function partition_skeleton(t::RootedTree, _edge_set)
     deleteat!(ls, subtree_root_index)
     deleteat!(edge_set, subtree_root_index-1)
   end
+
+  # The level sequence `ls` will not automatically be a canonical representation
   return rootedtree!(ls)
 end
 
