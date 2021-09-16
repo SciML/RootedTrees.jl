@@ -8,7 +8,7 @@ using LinearAlgebra
 import Base: show, isless, ==, iterate, copy
 
 
-export rootedtree, RootedTreeIterator
+export rootedtree, rootedtree!, RootedTreeIterator
 
 export butcher_representation
 
@@ -17,6 +17,8 @@ export α, β, γ, density, σ, symmetry, order
 export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
+
+export partition_forest, partition_skeleton, all_partitions
 
 
 
@@ -43,9 +45,10 @@ function RootedTree(level_sequence::AbstractVector, iscanonical=false)
 end
 
 """
-    rootedtree
+    rootedtree(level_sequence)
 
-Construct a canonical `RootedTree` object from a level sequence.
+Construct a canonical `RootedTree` object from a `level_sequence`, i.e.,
+a vector of integers representing the levels of each node of the tree.
 
 Reference:
 - Beyer, Terry, and Sandra Mitchell Hedetniemi.
@@ -54,6 +57,20 @@ Reference:
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
 rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree(level_sequence))
+
+"""
+    rootedtree!(level_sequence)
+
+Construct a canonical `RootedTree` object from a `level_sequence` which may be
+modified in this process. See also `rootedtree`.
+
+Reference:
+- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+  "Constant time generation of rooted trees."
+  SIAM Journal on Computing 9.4 (1980): 706-712.
+  [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
+"""
+rootedtree!(level_sequence::AbstractVector) = canonical_representation!(RootedTree(level_sequence))
 
 iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
@@ -125,7 +142,7 @@ function canonical_representation!(t::RootedTree)
 
   i = 2
   for τ in subtr
-    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence[:]
+    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
     i += order(τ)
   end
   t.iscanonical = true
@@ -141,6 +158,18 @@ i.e., the one with lexicographically biggest level sequence.
 """
 function canonical_representation(t::RootedTree)
   canonical_representation!(copy(t))
+end
+
+
+"""
+    normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+
+Normalize the level sequence of the rooted tree `t` such that the root is
+set to `root`.
+"""
+function normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+  t.level_sequence .+= root - first(t.level_sequence)
+  t
 end
 
 
@@ -268,6 +297,147 @@ function subtrees(t::RootedTree{T}) where {T}
   end
   push!(subtr, RootedTree(t.level_sequence[start:end]))
 end
+
+
+# partitions
+# TODO: partitions; add documentation in the README to make them public API
+"""
+    partition_forest(t::RootedTree, edge_set)
+
+Form the partition forest of the rooted tree `t` where edges marked with `false`
+in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
+corresponds to the edge connecting node `i+1` in the level sequence to its parent.
+
+See Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function partition_forest(t::RootedTree, _edge_set)
+  @boundscheck begin
+    @assert length(t.level_sequence) == length(_edge_set) + 1
+  end
+
+  edge_set = copy(_edge_set)
+  ls = copy(t.level_sequence)
+  T = eltype(ls)
+  forest = RootedTree{T, Vector{T}}[]
+
+  while !all(edge_set)
+    # Find next removed edge
+    subtree_root_index = findfirst(==(false), edge_set) + 1
+
+    # Detach the corresponding subtree and add its partition forest.
+    # The subtree goes up to the next node that has the same (or lower)
+    # rank as its root.
+    subtree_last_index = subtree_root_index
+    while subtree_last_index < length(ls)
+      if ls[subtree_last_index + 1] > ls[subtree_root_index]
+        subtree_last_index += 1
+      else
+        break
+      end
+    end
+
+    # Extract the subtree and the edge set on it. Note that the corresponding
+    # edge set contains one element less than the subtree itself.
+    subtree     = rootedtree(ls[subtree_root_index:subtree_last_index])
+    subtree_edge_set = edge_set[subtree_root_index:subtree_last_index-1]
+
+    # Remove the subtree from the base tree and continue recursively
+    deleteat!(ls, subtree_root_index:subtree_last_index)
+    deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
+    append!(forest, partition_forest(subtree, subtree_edge_set))
+  end
+
+  # The level sequence `ls` will not automatically be a canonical representation.
+  # TODO: partitions;
+  #       Decide whether canonical representations should be used. Disabling
+  #       them will increase the performance.
+  push!(forest, rootedtree!(ls))
+  return forest
+end
+
+
+# TODO: partitions; add documentation in the README to make them public API
+"""
+    partition_skeleton(t::RootedTree, edge_set)
+
+Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtained
+by contracting each tree of the partition forest to a single vertex and re-establishing
+the edges removed to obtain the partition forest.
+
+See `partition_forest` and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function partition_skeleton(t::RootedTree, _edge_set)
+  @boundscheck begin
+    @assert length(t.level_sequence) == length(_edge_set) + 1
+  end
+
+  edge_set = copy(_edge_set)
+  ls = copy(t.level_sequence)
+
+  while any(edge_set)
+    # Find next edge to contract
+    subtree_root_index = findfirst(==(true), edge_set) + 1
+
+    # Contract the corresponding edge by removing the subtree root and promoting
+    # the rest of the subtree
+    subtree_last_index = subtree_root_index + 1
+    while subtree_last_index <= length(ls)
+      if ls[subtree_last_index] > ls[subtree_root_index]
+        ls[subtree_last_index] -= 1
+        subtree_last_index += 1
+      else
+        break
+      end
+    end
+    # Remove the root node
+    deleteat!(ls, subtree_root_index)
+    deleteat!(edge_set, subtree_root_index-1)
+  end
+
+  # The level sequence `ls` will not automatically be a canonical representation.
+  # TODO: partitions;
+  #       Decide whether canonical representations should be used. Disabling
+  #       them will increase the performance.
+  return rootedtree!(ls)
+end
+
+
+# TODO: partitions; add documentation in the README to make them public API
+"""
+    all_partitions(t::RootedTree)
+
+Create all partition forests and skeletons of a rooted tree `t`. This returns
+vectors of the return values of `partition_forest` and `partition_skeleton`
+when looping over all possible edge sets.
+
+See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function all_partitions(t::RootedTree)
+  edge_set = zeros(Bool, order(t) - 1)
+  forests   = [partition_forest(t, edge_set)]
+  skeletons = [partition_skeleton(t, edge_set)]
+
+  for edge_set_value in 1:(2^length(edge_set) - 1)
+    digits!(edge_set, edge_set_value, base=2)
+    push!(forests,   partition_forest(t, edge_set))
+    push!(skeletons, partition_skeleton(t, edge_set))
+  end
+
+  return (; forests, skeletons)
+end
+
 
 
 # functions on trees
