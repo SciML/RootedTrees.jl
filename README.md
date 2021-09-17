@@ -16,10 +16,12 @@ many breaking changes in the near future.
 ### Construction
 
 `RootedTree`s are represented using level sequences, i.e., `AbstractVector`s
-containing the distances of the nodes from the root, cf.
-Beyer, Terry, and Sandra Mitchell Hedetniemi.
-"Constant time generation of rooted trees."
-SIAM Journal on Computing 9.4 (1980): 706-712.
+containing the distances of the nodes from the root, see
+
+- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+  "Constant time generation of rooted trees."
+  SIAM Journal on Computing 9.4 (1980): 706-712.
+
 `RootedTree`s can be constructed from their level sequence using
 ```julia
 julia> t = rootedtree([1, 2, 3, 2])
