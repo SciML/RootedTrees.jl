@@ -3,7 +3,7 @@ module RootedTrees
 @doc read(joinpath(dirname(@__DIR__), "README.md"), String) RootedTrees
 
 
-using LinearAlgebra
+using LinearAlgebra: dot
 
 
 export rootedtree, rootedtree!, RootedTreeIterator
