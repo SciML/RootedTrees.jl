@@ -5,8 +5,6 @@ module RootedTrees
 
 using LinearAlgebra
 
-import Base: show, isless, ==, iterate, copy
-
 
 export rootedtree, rootedtree!, RootedTreeIterator
 
@@ -75,7 +73,7 @@ rootedtree!(level_sequence::AbstractVector) = canonical_representation!(RootedTr
 iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
-copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
+Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
@@ -104,7 +102,7 @@ copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 #RootedTree{T<:Integer}(sequence::Vector{T}) = RootedTree{T}(sequence, false)
 
 
-function show(io::IO, t::RootedTree{T}) where {T}
+function Base.show(io::IO, t::RootedTree{T}) where {T}
   print(io, "RootedTree{", T, "}: ")
   show(io, t.level_sequence)
 end
@@ -117,7 +115,7 @@ end
 
 Compares two rooted trees using a lexicographical comparison of their level sequences.
 """
-function isless(t1::RootedTree, t2::RootedTree)
+function Base.isless(t1::RootedTree, t2::RootedTree)
   isless(t1.level_sequence, t2.level_sequence)
 end
 
@@ -143,7 +141,7 @@ julia> t1 == t3
 false
 ```
 """
-function ==(t1::RootedTree, t2::RootedTree)
+function Base.:(==)(t1::RootedTree, t2::RootedTree)
   length(t1.level_sequence) == length(t2.level_sequence) || return false
 
   root1 = first(t1.level_sequence)
@@ -153,6 +151,15 @@ function ==(t1::RootedTree, t2::RootedTree)
   end
 
   return true
+end
+
+# Factor out equivalence classes given by different roots
+function Base.hash(t::RootedTree, h::UInt)
+  root = first(t.level_sequence)
+  for l in t.level_sequence
+    h = hash(l - root, h)
+  end
+  return h
 end
 
 
@@ -223,12 +230,12 @@ end
 Base.IteratorSize(::Type{<:RootedTreeIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{RootedTreeIterator{T}}) where T = RootedTree{T,Vector{T}}
 
-function iterate(iter::RootedTreeIterator{T}) where {T}
+function Base.iterate(iter::RootedTreeIterator{T}) where {T}
   iter.t.level_sequence[:] = one(T):iter.order
   (iter.t, false)
 end
 
-function iterate(iter::RootedTreeIterator{T}, state) where {T}
+function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
   state && return nothing
 
   two = iter.t.level_sequence[1] + one(T)
