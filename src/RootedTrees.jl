@@ -113,10 +113,18 @@ end
 """
     isless(t1::RootedTree, t2::RootedTree)
 
-Compares two rooted trees using a lexicographical comparison of their level sequences.
+Compares two rooted trees using a lexicographical comparison of their level
+sequences while considering equivalence classes given by different root indices.
 """
 function Base.isless(t1::RootedTree, t2::RootedTree)
-  isless(t1.level_sequence, t2.level_sequence)
+  root1 = first(t1.level_sequence)
+  root2 = first(t2.level_sequence)
+  for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
+    v1 = e1 - root1
+    v2 = e2 - root2
+    v1 == v2 || return isless(v1, v2)
+  end
+  return isless(length(t1.level_sequence), length(t2.level_sequence))
 end
 
 """

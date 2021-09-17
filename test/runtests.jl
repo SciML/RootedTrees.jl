@@ -23,6 +23,11 @@ using RootedTrees
     @test !(hash(t1) == hash(t3))
     @test !(hash(t1) == hash(t4))
 
+    @test !(t1 < t1)
+    @test !(t1 < t2)
+    @test !(t2 < t1)
+    @test !(t1 > t2)
+    @test !(t2 > t1)
     @test t3 < t2    && t2 > t3
     @test !(t2 < t3) && !(t3 > t2)
     @test t1 < t4    && t4 > t1
