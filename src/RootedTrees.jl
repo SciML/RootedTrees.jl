@@ -121,8 +121,38 @@ function isless(t1::RootedTree, t2::RootedTree)
   isless(t1.level_sequence, t2.level_sequence)
 end
 
+"""
+    ==(t1::RootedTree, t2::RootedTree)
+
+Compares two rooted trees based on their level sequences while considering
+equivalence classes given by different root indices.
+
+# Examples
+
+```jldoctest
+julia> t1 = rootedtree([1, 2, 3]);
+
+julia> t2 = rootedtree([2, 3, 4]);
+
+julia> t3 = rootedtree([1, 2, 2]);
+
+julia> t1 == t2
+true
+
+julia> t1 == t3
+false
+```
+"""
 function ==(t1::RootedTree, t2::RootedTree)
-  t1.level_sequence == t2.level_sequence
+  length(t1.level_sequence) == length(t2.level_sequence) || return false
+
+  root1 = first(t1.level_sequence)
+  root2 = first(t2.level_sequence)
+  for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
+    e1 - root1 == e2 - root2 || return false
+  end
+
+  return true
 end
 
 

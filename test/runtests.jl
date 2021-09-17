@@ -3,16 +3,25 @@ using StaticArrays
 using RootedTrees
 
 @testset "comparisons etc." begin
-  trees_array = (rootedtree([1,2,3]),
-                rootedtree([1,2,3]),
-                rootedtree([1,2,2]),
-                rootedtree([1,2,3,3]))
+  trees = (rootedtree([1, 2, 3]),
+           rootedtree([1, 2, 3]),
+           rootedtree([1, 2, 2]),
+           rootedtree([1, 2, 3, 3]))
+  trees_shifted = (rootedtree([1, 2, 3]),
+                   rootedtree([2, 3, 4]),
+                   rootedtree([1, 2, 2]),
+                   rootedtree([1, 2, 3, 3]))
 
-  for (t1,t2,t3,t4) in (trees_array,)
+  for (t1,t2,t3,t4) in (trees, trees_shifted)
     @test t1 == t1
     @test t1 == t2
     @test !(t1 == t3)
     @test !(t1 == t4)
+
+    @test hash(t1) == hash(t1)
+    @test hash(t1) == hash(t2)
+    @test !(hash(t1) == hash(t3))
+    @test !(hash(t1) == hash(t4))
 
     @test t3 < t2    && t2 > t3
     @test !(t2 < t3) && !(t3 > t2)
