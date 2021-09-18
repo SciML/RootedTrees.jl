@@ -79,3 +79,9 @@ Additionally, functions on trees connected to Runge-Kutta methods are implemente
 - `derivative_weight(t, A, b, c)`: Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients `A, b, c` of a Runge-Kutta method.
 - `residual_order_condition(t, A, b, c)`: The residual of the order condition
   `(Φ(t) - 1/γ(t)) / σ(t)` with elementary weight `Φ(t)`, density `γ(t)`, and symmetry `σ(t)` of the rooted tree `t` for the Runge-Kutta method with Butcher coefficients `A, b, c`.
+
+
+## Brief Changelog
+
+- v2.0: Rooted trees are considered up to isomorphisms introduced by shifting
+  each coefficient of their level sequence by the same number.
