@@ -2,6 +2,8 @@ using Test
 using StaticArrays
 using RootedTrees
 
+@testset "RootedTrees" begin
+
 @testset "comparisons etc." begin
   trees = (rootedtree([1, 2, 3]),
            rootedtree([1, 2, 3]),
@@ -424,4 +426,18 @@ end
 
   @test forests == reference_forests
   @test skeletons == reference_skeletons
+
+  partitions = collect(PartitionIterator(t))
+  iterator_forests = map(first, partitions)
+  iterator_skeletons = map(last, partitions)
+  for forest in iterator_forests
+    sort!(forest)
+  end
+  sort!(iterator_forests)
+  sort!(iterator_skeletons)
+  @test iterator_forests == forests
+  @test iterator_skeletons == skeletons
 end
+
+
+end # @testset "RootedTrees"

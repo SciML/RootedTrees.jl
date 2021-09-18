@@ -16,7 +16,7 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest, partition_skeleton, all_partitions
+export partition_forest, partition_skeleton, all_partitions, PartitionIterator
 
 
 
@@ -507,6 +507,55 @@ function all_partitions(t::RootedTree)
   end
 
   return (; forests, skeletons)
+end
+
+
+"""
+    PartitionIterator(t::RootedTree)
+
+Iterator over all partition forests and skeletons of the rooted tree `t`.
+
+See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct PartitionIterator{T<:RootedTree}
+  t::T
+  edge_set::Vector{Bool}
+
+  function PartitionIterator(t::T) where {T<:RootedTree}
+    edge_set = zeros(Bool, order(t) - 1)
+    new{T}(t, edge_set)
+  end
+end
+
+Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
+Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
+Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{T}, T}
+
+function Base.iterate(partitions::PartitionIterator)
+  edge_set_value = 0
+  t = partitions.t
+  edge_set = partitions.edge_set
+
+  digits!(edge_set, edge_set_value, base=2)
+  forest = partition_forest(t, edge_set)
+  skeleton = partition_skeleton(t, edge_set)
+  ((forest, skeleton), edge_set_value + 1)
+end
+
+function Base.iterate(partitions::PartitionIterator, edge_set_value)
+  edge_set_value >= length(partitions) && return nothing
+
+  t = partitions.t
+  edge_set = partitions.edge_set
+
+  digits!(edge_set, edge_set_value, base=2)
+  forest = partition_forest(t, edge_set)
+  skeleton = partition_skeleton(t, edge_set)
+  ((forest, skeleton), edge_set_value + 1)
 end
 
 
