@@ -2,24 +2,56 @@ using Test
 using StaticArrays
 using RootedTrees
 
-@testset "comparisons etc." begin
-  trees_array = (rootedtree([1,2,3]),
-                rootedtree([1,2,3]),
-                rootedtree([1,2,2]),
-                rootedtree([1,2,3,3]))
+@testset "RootedTrees" begin
 
-  for (t1,t2,t3,t4) in (trees_array,)
+@testset "comparisons etc." begin
+  trees = (rootedtree([1, 2, 3]),
+           rootedtree([1, 2, 3]),
+           rootedtree([1, 2, 2]),
+           rootedtree([1, 2, 3, 3]),
+           rootedtree(Int[]))
+  trees_shifted = (rootedtree([1, 2, 3]),
+                   rootedtree([2, 3, 4]),
+                   rootedtree([1, 2, 2]),
+                   rootedtree([1, 2, 3, 3]),
+                   rootedtree(Int[]))
+
+  for (t1,t2,t3,t4,t5) in (trees, trees_shifted)
     @test t1 == t1
     @test t1 == t2
     @test !(t1 == t3)
     @test !(t1 == t4)
+    @test !(t1 == t5)
+    @test !(t2 == t5)
+    @test !(t3 == t5)
+    @test !(t4 == t5)
+    @test t5 == t5
 
+    @test hash(t1) == hash(t1)
+    @test hash(t1) == hash(t2)
+    @test !(hash(t1) == hash(t3))
+    @test !(hash(t1) == hash(t4))
+    @test hash(t1) != hash(t5)
+    @test hash(t2) != hash(t5)
+    @test hash(t3) != hash(t5)
+    @test hash(t4) != hash(t5)
+    @test hash(t5) == hash(t5)
+
+    @test !(t1 < t1)
+    @test !(t1 < t2)
+    @test !(t2 < t1)
+    @test !(t1 > t2)
+    @test !(t2 > t1)
     @test t3 < t2    && t2 > t3
     @test !(t2 < t3) && !(t3 > t2)
     @test t1 < t4    && t4 > t1
     @test !(t4 < t1) && !(t1 > t4)
     @test t1 <= t2   && t2 >= t1
     @test t2 <= t2   && t2 >= t2
+    @test t5 < t1
+    @test t1 > t5
+    @test !(t5 < t5)
+    @test !(t1 < t5)
 
     println(devnull, t1)
     println(devnull, t2)
@@ -394,4 +426,18 @@ end
 
   @test forests == reference_forests
   @test skeletons == reference_skeletons
+
+  partitions = collect(PartitionIterator(t))
+  iterator_forests = map(first, partitions)
+  iterator_skeletons = map(last, partitions)
+  for forest in iterator_forests
+    sort!(forest)
+  end
+  sort!(iterator_forests)
+  sort!(iterator_skeletons)
+  @test iterator_forests == forests
+  @test iterator_skeletons == skeletons
 end
+
+
+end # @testset "RootedTrees"

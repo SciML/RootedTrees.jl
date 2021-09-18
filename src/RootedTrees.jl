@@ -3,9 +3,7 @@ module RootedTrees
 @doc read(joinpath(dirname(@__DIR__), "README.md"), String) RootedTrees
 
 
-using LinearAlgebra
-
-import Base: show, isless, ==, iterate, copy
+using LinearAlgebra: dot
 
 
 export rootedtree, rootedtree!, RootedTreeIterator
@@ -18,7 +16,7 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest, partition_skeleton, all_partitions
+export partition_forest, partition_skeleton, all_partitions, PartitionIterator
 
 
 
@@ -75,7 +73,7 @@ rootedtree!(level_sequence::AbstractVector) = canonical_representation!(RootedTr
 iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
-copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
+Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
@@ -104,7 +102,7 @@ copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 #RootedTree{T<:Integer}(sequence::Vector{T}) = RootedTree{T}(sequence, false)
 
 
-function show(io::IO, t::RootedTree{T}) where {T}
+function Base.show(io::IO, t::RootedTree{T}) where {T}
   print(io, "RootedTree{", T, "}: ")
   show(io, t.level_sequence)
 end
@@ -115,14 +113,81 @@ end
 """
     isless(t1::RootedTree, t2::RootedTree)
 
-Compares two rooted trees using a lexicographical comparison of their level sequences.
+Compares two rooted trees using a lexicographical comparison of their level
+sequences while considering equivalence classes given by different root indices.
 """
-function isless(t1::RootedTree, t2::RootedTree)
-  isless(t1.level_sequence, t2.level_sequence)
+function Base.isless(t1::RootedTree, t2::RootedTree)
+  if isempty(t1.level_sequence)
+    if isempty(t2.level_sequence)
+      # empty trees are equal
+      return false
+    else
+      # the empty tree `isless` than any other tree
+      return true
+    end
+  elseif isempty(t2.level_sequence)
+    # the empty tree `isless` than any other tree
+    return false
+  end
+
+  root1 = first(t1.level_sequence)
+  root2 = first(t2.level_sequence)
+  for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
+    v1 = e1 - root1
+    v2 = e2 - root2
+    v1 == v2 || return isless(v1, v2)
+  end
+  return isless(length(t1.level_sequence), length(t2.level_sequence))
 end
 
-function ==(t1::RootedTree, t2::RootedTree)
-  t1.level_sequence == t2.level_sequence
+"""
+    ==(t1::RootedTree, t2::RootedTree)
+
+Compares two rooted trees based on their level sequences while considering
+equivalence classes given by different root indices.
+
+# Examples
+
+```jldoctest
+julia> t1 = rootedtree([1, 2, 3]);
+
+julia> t2 = rootedtree([2, 3, 4]);
+
+julia> t3 = rootedtree([1, 2, 2]);
+
+julia> t1 == t2
+true
+
+julia> t1 == t3
+false
+```
+"""
+function Base.:(==)(t1::RootedTree, t2::RootedTree)
+  length(t1.level_sequence) == length(t2.level_sequence) || return false
+
+  if isempty(t1.level_sequence)
+    # empty trees are equal
+    return true
+  end
+
+  root1 = first(t1.level_sequence)
+  root2 = first(t2.level_sequence)
+  for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
+    e1 - root1 == e2 - root2 || return false
+  end
+
+  return true
+end
+
+
+# Factor out equivalence classes given by different roots
+function Base.hash(t::RootedTree, h::UInt)
+  isempty(t.level_sequence) && return h
+  root = first(t.level_sequence)
+  for l in t.level_sequence
+    h = hash(l - root, h)
+  end
+  return h
 end
 
 
@@ -193,12 +258,12 @@ end
 Base.IteratorSize(::Type{<:RootedTreeIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{RootedTreeIterator{T}}) where T = RootedTree{T,Vector{T}}
 
-function iterate(iter::RootedTreeIterator{T}) where {T}
+function Base.iterate(iter::RootedTreeIterator{T}) where {T}
   iter.t.level_sequence[:] = one(T):iter.order
   (iter.t, false)
 end
 
-function iterate(iter::RootedTreeIterator{T}, state) where {T}
+function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
   state && return nothing
 
   two = iter.t.level_sequence[1] + one(T)
@@ -442,6 +507,55 @@ function all_partitions(t::RootedTree)
   end
 
   return (; forests, skeletons)
+end
+
+
+"""
+    PartitionIterator(t::RootedTree)
+
+Iterator over all partition forests and skeletons of the rooted tree `t`.
+
+See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct PartitionIterator{T<:RootedTree}
+  t::T
+  edge_set::Vector{Bool}
+
+  function PartitionIterator(t::T) where {T<:RootedTree}
+    edge_set = zeros(Bool, order(t) - 1)
+    new{T}(t, edge_set)
+  end
+end
+
+Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
+Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
+Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{T}, T}
+
+function Base.iterate(partitions::PartitionIterator)
+  edge_set_value = 0
+  t = partitions.t
+  edge_set = partitions.edge_set
+
+  digits!(edge_set, edge_set_value, base=2)
+  forest = partition_forest(t, edge_set)
+  skeleton = partition_skeleton(t, edge_set)
+  ((forest, skeleton), edge_set_value + 1)
+end
+
+function Base.iterate(partitions::PartitionIterator, edge_set_value)
+  edge_set_value >= length(partitions) && return nothing
+
+  t = partitions.t
+  edge_set = partitions.edge_set
+
+  digits!(edge_set, edge_set_value, base=2)
+  forest = partition_forest(t, edge_set)
+  skeleton = partition_skeleton(t, edge_set)
+  ((forest, skeleton), edge_set_value + 1)
 end
 
 
