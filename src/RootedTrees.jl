@@ -117,6 +117,19 @@ Compares two rooted trees using a lexicographical comparison of their level
 sequences while considering equivalence classes given by different root indices.
 """
 function Base.isless(t1::RootedTree, t2::RootedTree)
+  if isempty(t1.level_sequence)
+    if isempty(t2.level_sequence)
+      # empty trees are equal
+      return false
+    else
+      # the empty tree `isless` than any other tree
+      return true
+    end
+  elseif isempty(t2.level_sequence)
+    # the empty tree `isless` than any other tree
+    return false
+  end
+
   root1 = first(t1.level_sequence)
   root2 = first(t2.level_sequence)
   for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
@@ -152,6 +165,11 @@ false
 function Base.:(==)(t1::RootedTree, t2::RootedTree)
   length(t1.level_sequence) == length(t2.level_sequence) || return false
 
+  if isempty(t1.level_sequence)
+    # empty trees are equal
+    return true
+  end
+
   root1 = first(t1.level_sequence)
   root2 = first(t2.level_sequence)
   for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
@@ -161,8 +179,10 @@ function Base.:(==)(t1::RootedTree, t2::RootedTree)
   return true
 end
 
+
 # Factor out equivalence classes given by different roots
 function Base.hash(t::RootedTree, h::UInt)
+  isempty(t.level_sequence) && return h
   root = first(t.level_sequence)
   for l in t.level_sequence
     h = hash(l - root, h)

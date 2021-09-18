@@ -6,22 +6,34 @@ using RootedTrees
   trees = (rootedtree([1, 2, 3]),
            rootedtree([1, 2, 3]),
            rootedtree([1, 2, 2]),
-           rootedtree([1, 2, 3, 3]))
+           rootedtree([1, 2, 3, 3]),
+           rootedtree(Int[]))
   trees_shifted = (rootedtree([1, 2, 3]),
                    rootedtree([2, 3, 4]),
                    rootedtree([1, 2, 2]),
-                   rootedtree([1, 2, 3, 3]))
+                   rootedtree([1, 2, 3, 3]),
+                   rootedtree(Int[]))
 
-  for (t1,t2,t3,t4) in (trees, trees_shifted)
+  for (t1,t2,t3,t4,t5) in (trees, trees_shifted)
     @test t1 == t1
     @test t1 == t2
     @test !(t1 == t3)
     @test !(t1 == t4)
+    @test !(t1 == t5)
+    @test !(t2 == t5)
+    @test !(t3 == t5)
+    @test !(t4 == t5)
+    @test t5 == t5
 
     @test hash(t1) == hash(t1)
     @test hash(t1) == hash(t2)
     @test !(hash(t1) == hash(t3))
     @test !(hash(t1) == hash(t4))
+    @test hash(t1) != hash(t5)
+    @test hash(t2) != hash(t5)
+    @test hash(t3) != hash(t5)
+    @test hash(t4) != hash(t5)
+    @test hash(t5) == hash(t5)
 
     @test !(t1 < t1)
     @test !(t1 < t2)
@@ -34,6 +46,10 @@ using RootedTrees
     @test !(t4 < t1) && !(t1 > t4)
     @test t1 <= t2   && t2 >= t1
     @test t2 <= t2   && t2 >= t2
+    @test t5 < t1
+    @test t1 > t5
+    @test !(t5 < t5)
+    @test !(t1 < t5)
 
     println(devnull, t1)
     println(devnull, t2)
