@@ -16,7 +16,10 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest, partition_skeleton, all_partitions, PartitionIterator
+export partition_forest, partition_forest!,
+       partition_skeleton,
+       all_partitions, PartitionIterator,
+       create_cache
 
 
 
@@ -373,15 +376,41 @@ Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
 
-See Section 2.3 of
+See also [`partition_skeleton`](@ref) and [`partition_forest!`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-function partition_forest(t::RootedTree, _edge_set)
+@inline function partition_forest(t::RootedTree, edge_set)
+  partition_forest!(nothing, t, edge_set)
+end
+
+"""
+    partition_forest!(forests, t::RootedTree, edge_set)
+
+Like [`partition_forest`](@ref) but with possible speed-up from memoization
+(at the cost of more parmanent memory usage).
+
+`forests` should be a created by [`create_cache`](@ref). It will be updated
+to store all partition forests of trees used in the computation.
+"""
+function partition_forest!(forests, t::RootedTree, _edge_set)
   @boundscheck begin
     @assert length(t.level_sequence) == length(_edge_set) + 1
+  end
+
+  # `forests = nothing` is used internally to avoid duplicating logic
+  # for the implementation of `partition_forest`
+  if forests !== nothing
+    index_t_edge_set = hash(t, hash(_edge_set))
+    if haskey(forests, index_t_edge_set)
+      return forests[index_t_edge_set]
+    end
   end
 
   edge_set = copy(_edge_set)
@@ -415,7 +444,7 @@ function partition_forest(t::RootedTree, _edge_set)
     subtree_edge_set = @view edge_set[subtree_root_index:subtree_last_index-1]
 
     # Form the partition forest recursively
-    append!(forest, partition_forest(subtree, subtree_edge_set))
+    append!(forest, partition_forest!(forests, subtree, subtree_edge_set))
 
     # Remove the subtree from the base tree
     deleteat!(ls, subtree_root_index:subtree_last_index)
@@ -427,7 +456,21 @@ function partition_forest(t::RootedTree, _edge_set)
   #       Decide whether canonical representations should be used. Disabling
   #       them will increase the performance.
   push!(forest, rootedtree!(ls))
+  if forests !== nothing
+    forests[index_t_edge_set] = deepcopy(forest)
+  end
   return forest
+end
+
+"""
+    create_cache(::typeof(partition_forest!), t::RootedTree, edge_set)
+
+Creates the cache used for memoization in [`partition_forest!`](@ref).
+"""
+function create_cache(::typeof(partition_forest!), t::RootedTree, edge_set)
+  T = typeof(copy(t))
+  forests = Dict{UInt, Vector{T}}()
+  return forests
 end
 
 
@@ -439,7 +482,11 @@ Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtain
 by contracting each tree of the partition forest to a single vertex and re-establishing
 the edges removed to obtain the partition forest.
 
-See `partition_forest` and Section 2.3 of
+See also [`partition_forest`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
