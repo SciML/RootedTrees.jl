@@ -376,7 +376,11 @@ Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
 
-See Section 2.3 of
+See also [`partition_skeleton`](@ref) and [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -442,7 +446,11 @@ Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtain
 by contracting each tree of the partition forest to a single vertex and re-establishing
 the edges removed to obtain the partition forest.
 
-See `partition_forest` and Section 2.3 of
+See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -489,10 +497,14 @@ end
     all_partitions(t::RootedTree)
 
 Create all partition forests and skeletons of a rooted tree `t`. This returns
-vectors of the return values of `partition_forest` and `partition_skeleton`
-when looping over all possible edge sets.
+vectors of the return values of [`partition_forest`](@ref) and
+[`partition_skeleton`](@ref) when looping over all possible edge sets.
 
-See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+See also [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -517,8 +529,13 @@ end
     PartitionIterator(t::RootedTree)
 
 Iterator over all partition forests and skeletons of the rooted tree `t`.
+This is basically an iterator version of [`all_partitions`](@ref).
 
-See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -565,6 +582,20 @@ end
 
 # splittings
 # TODO: splittings; add documentation in the README to make them public API
+"""
+    all_splittings(t::RootedTree)
+
+Create all splitting forests and subtrees associated to ordered subtrees of a
+rooted tree `t`.
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
 function all_splittings(t::RootedTree)
   node_set = zeros(Bool, order(t))
   ls = t.level_sequence
@@ -618,43 +649,6 @@ function all_splittings(t::RootedTree)
 
   return (; forests, subtrees)
 end
-# def ordered_subtrees(t)
-#     num_nodes = len(t)
-#     ls = t._level_sequence
-#
-#     ordered_subtrees = []
-#     forests = []
-#     for i in range(2**(num_nodes)):
-#         node_set = bin(i)[2:].zfill(num_nodes)
-#         # Check that if a node is removed then all of its descendants are removed
-#         j = 0
-#         forest = []
-#         while j < len(t):
-#             if node_set[j] == '0': # This node is removed
-#                 subtree_size = 1
-#                 while j+subtree_size<len(ls):
-#                     if ls[j+subtree_size]>ls[j]:
-#                         subtree_size += 1
-#                     else:
-#                         break
-#                 # Check that subtree is all removed
-#                 if all([node == '0' for node in node_set[j:j+subtree_size]]):
-#                     forest.append(trees.RootedTree(ls[j:j+subtree_size]))
-#                     j += subtree_size
-#                 else:
-#                     break
-#             else:
-#                 j += 1
-#         if j == len(t):
-#             # This is a valid ordered subtree
-#             level_sequence = []
-#             for inode, keep in enumerate(node_set):
-#                 if keep == '1':
-#                     level_sequence.append(ls[inode])
-#             ordered_subtrees.append(trees.RootedTree(level_sequence))
-#             forests.append(forest)
-
-#     return ordered_subtrees, forests
 
 
 
