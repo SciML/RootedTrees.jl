@@ -18,6 +18,8 @@ export count_trees
 
 export partition_forest, partition_skeleton, all_partitions, PartitionIterator
 
+export all_splittings
+
 
 
 """
@@ -364,6 +366,7 @@ function subtrees(t::RootedTree{T}) where {T}
 end
 
 
+
 # partitions
 # TODO: partitions; add documentation in the README to make them public API
 """
@@ -387,7 +390,7 @@ function partition_forest(t::RootedTree, _edge_set)
   edge_set = copy(_edge_set)
   ls = copy(t.level_sequence)
   T = eltype(ls)
-  forest = RootedTree{T, Vector{T}}[]
+  forest = Vector{RootedTree{T, Vector{T}}}()
 
   while !all(edge_set)
     # Find next removed edge
@@ -557,6 +560,101 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   skeleton = partition_skeleton(t, edge_set)
   ((forest, skeleton), edge_set_value + 1)
 end
+
+
+
+# splittings
+# TODO: splittings; add documentation in the README to make them public API
+function all_splittings(t::RootedTree)
+  node_set = zeros(Bool, order(t))
+  ls = t.level_sequence
+  T = eltype(ls)
+  forests  = Vector{Vector{RootedTree{T, Vector{T}}}}()
+  subtrees = Vector{RootedTree{T, Vector{T}}}() # ordered subtrees
+
+  for node_set_value in 0:(2^order(t) - 1)
+    digits!(node_set, node_set_value, base=2)
+
+    # Check that if a node is removed then all of its descendants are removed
+    subtree_root_index = 1
+    forest = Vector{typeof(t)}()
+    while subtree_root_index <= order(t)
+      if node_set[subtree_root_index] == false # This node is removed
+        subtree_last_index = subtree_root_index
+        while subtree_last_index < length(ls)
+          if ls[subtree_last_index + 1] > ls[subtree_root_index]
+            subtree_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Check that subtree is all removed
+        if !any(@view node_set[subtree_root_index:subtree_last_index])
+          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          subtree_root_index = subtree_last_index + 1
+        else
+          break
+        end
+      else
+        subtree_root_index += 1
+      end
+    end
+
+    if subtree_root_index == order(t) + 1
+      # This is a valid ordered subtree
+      level_sequence = empty(ls)
+      for (inode, keep) in enumerate(node_set)
+        if keep
+          push!(level_sequence, ls[inode])
+        end
+      end
+
+      subtree = rootedtree!(level_sequence)
+      push!(subtrees, subtree)
+      push!(forests, forest)
+    end
+  end
+
+  return (; forests, subtrees)
+end
+# def ordered_subtrees(t)
+#     num_nodes = len(t)
+#     ls = t._level_sequence
+#
+#     ordered_subtrees = []
+#     forests = []
+#     for i in range(2**(num_nodes)):
+#         node_set = bin(i)[2:].zfill(num_nodes)
+#         # Check that if a node is removed then all of its descendants are removed
+#         j = 0
+#         forest = []
+#         while j < len(t):
+#             if node_set[j] == '0': # This node is removed
+#                 subtree_size = 1
+#                 while j+subtree_size<len(ls):
+#                     if ls[j+subtree_size]>ls[j]:
+#                         subtree_size += 1
+#                     else:
+#                         break
+#                 # Check that subtree is all removed
+#                 if all([node == '0' for node in node_set[j:j+subtree_size]]):
+#                     forest.append(trees.RootedTree(ls[j:j+subtree_size]))
+#                     j += subtree_size
+#                 else:
+#                     break
+#             else:
+#                 j += 1
+#         if j == len(t):
+#             # This is a valid ordered subtree
+#             level_sequence = []
+#             for inode, keep in enumerate(node_set):
+#                 if keep == '1':
+#                     level_sequence.append(ls[inode])
+#             ordered_subtrees.append(trees.RootedTree(level_sequence))
+#             forests.append(forest)
+
+#     return ordered_subtrees, forests
 
 
 

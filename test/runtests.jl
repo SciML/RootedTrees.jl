@@ -440,4 +440,34 @@ end
 end
 
 
+# See Section 2.2 and Table 1 of
+# - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+#   Algebraic Structures of B-series
+#   Foundations of Computational Mathematics
+#   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+@testset "splittings" begin
+  t = rootedtree([1, 2, 3, 2, 2])
+  splittings = all_splittings(t)
+  forests_and_subtrees = sort!(collect(zip(splittings.forests, splittings.subtrees)))
+
+  reference_forests_and_subtrees = sort!([
+    (empty([rootedtree([1])]),                               rootedtree([1, 2, 3, 2, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+    ([rootedtree([1, 2])],                                   rootedtree([1, 2, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 2, 2])),
+    ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+    ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 3])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+    ([rootedtree([1]),    rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
+    ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
+    ([rootedtree([1, 2, 3, 2, 2])],                          rootedtree(Int[])),
+  ])
+
+  @test forests_and_subtrees == reference_forests_and_subtrees
+end
+
+
 end # @testset "RootedTrees"
