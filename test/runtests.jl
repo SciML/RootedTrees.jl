@@ -285,7 +285,7 @@ end
     reference_skeleton = rootedtree([1, 2, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -298,7 +298,7 @@ end
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -312,7 +312,7 @@ end
     reference_skeleton = rootedtree([1, 2, 3, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -325,7 +325,7 @@ end
     reference_skeleton = rootedtree([1, 2, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -339,7 +339,7 @@ end
     reference_skeleton = rootedtree([1, 2, 3, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -350,7 +350,7 @@ end
     reference_skeleton = rootedtree([1])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -363,7 +363,7 @@ end
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -377,7 +377,7 @@ end
     reference_skeleton = rootedtree([1, 2, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -390,7 +390,7 @@ end
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -403,7 +403,7 @@ end
     reference_skeleton = rootedtree([1, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
 
-    _forests = create_cache(partition_forest!, t, edge_set)
+    _forests = create_cache(partition_forest!, t)
     @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
   end
 
@@ -411,7 +411,7 @@ end
     for o in 1:8
       t = rootedtree(collect(1:o))
       edge_set = rand(Bool, order(t) - 1)
-      _forests = create_cache(partition_forest!, t, edge_set)
+      _forests = create_cache(partition_forest!, t)
       for t in RootedTreeIterator(o)
         edge_set = rand(Bool, order(t) - 1)
         @test partition_forest(t, edge_set) == partition_forest!(_forests, t, edge_set)
