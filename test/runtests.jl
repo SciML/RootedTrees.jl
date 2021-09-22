@@ -2,6 +2,9 @@ using Test
 using StaticArrays
 using RootedTrees
 
+using Plots: Plots, plot
+Plots.unicodeplots()
+
 @testset "RootedTrees" begin
 
 @testset "comparisons etc." begin
@@ -485,6 +488,15 @@ end
     for i in RootedTreeIterator(order)
       forests, subtrees = all_splittings(t)
       @test collect(zip(forests, subtrees)) == collect(SplittingIterator(t))
+    end
+  end
+end
+
+
+@testset "plots" begin
+  for order in 1:4
+    for t in RootedTreeIterator(order)
+      plot(t)
     end
   end
 end

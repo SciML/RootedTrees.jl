@@ -41,6 +41,10 @@ julia> butcher_representation(t)
 "[[[τ]τ²]τ⁵]"
 ```
 
+There are also some simple plot recipes for
+[Plots.jl](https://github.com/JuliaPlots/Plots.jl).
+Thus, you can visualize a rooted tree `t` using `plot(t)` when `using Plots`.
+
 ### Iteration over `RootedTree`s
 
 A `RootedTreeIterator(order::Integer)` can be used to iterate efficiently
