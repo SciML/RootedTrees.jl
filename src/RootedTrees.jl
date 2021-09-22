@@ -630,13 +630,7 @@ function all_splittings(t::RootedTree)
 
     if subtree_root_index == order(t) + 1
       # This is a valid ordered subtree
-      level_sequence = empty(ls)
-      for (inode, keep) in enumerate(node_set)
-        if keep
-          push!(level_sequence, ls[inode])
-        end
-      end
-
+      level_sequence = ls[node_set]
       subtree = rootedtree!(level_sequence)
       push!(subtrees, subtree)
       push!(forests, forest)
@@ -709,7 +703,8 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
-          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          level_sequence = ls[subtree_root_index:subtree_last_index]
+          push!(forest, rootedtree!(level_sequence))
           subtree_root_index = subtree_last_index + 1
         else
           break
@@ -721,13 +716,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
 
     if subtree_root_index == order(t) + 1
       # This is a valid ordered subtree
-      level_sequence = empty(ls)
-      for (inode, keep) in enumerate(node_set)
-        if keep
-          push!(level_sequence, ls[inode])
-        end
-      end
-
+      level_sequence = ls[node_set]
       subtree = rootedtree!(level_sequence)
       return ((forest, subtree), node_set_value + 1)
     else
