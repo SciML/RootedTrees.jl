@@ -475,6 +475,12 @@ end
 
   @test forests_and_subtrees == reference_forests_and_subtrees
 
+  # tested with the Python package BSeries
+  t = rootedtree([1, 2, 3, 4, 4, 2, 3, 3, 2, 3, 2, 3])
+  splittings = all_splittings(t)
+  @test length(splittings.forests) == length(splittings.subtrees) == 271
+
+  # consistency of all_splittings and the SplittingIterator
   for order in 1:8
     for i in RootedTreeIterator(order)
       forests, subtrees = all_splittings(t)
