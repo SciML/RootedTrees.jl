@@ -18,7 +18,7 @@ export count_trees
 
 export partition_forest, partition_skeleton, all_partitions, PartitionIterator
 
-export all_splittings
+export all_splittings, SplittingIterator
 
 
 
@@ -557,13 +557,7 @@ Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{T}, T}
 
 function Base.iterate(partitions::PartitionIterator)
   edge_set_value = 0
-  t = partitions.t
-  edge_set = partitions.edge_set
-
-  digits!(edge_set, edge_set_value, base=2)
-  forest = partition_forest(t, edge_set)
-  skeleton = partition_skeleton(t, edge_set)
-  ((forest, skeleton), edge_set_value + 1)
+  iterate(partitions, edge_set_value)
 end
 
 function Base.iterate(partitions::PartitionIterator, edge_set_value)
@@ -588,6 +582,8 @@ end
 Create all splitting forests and subtrees associated to ordered subtrees of a
 rooted tree `t`.
 
+Seee also [`SplittingIterator`](@ref).
+
 # References
 
 Section 2.2 of
@@ -608,7 +604,7 @@ function all_splittings(t::RootedTree)
 
     # Check that if a node is removed then all of its descendants are removed
     subtree_root_index = 1
-    forest = Vector{typeof(t)}()
+    forest = Vector{RootedTree{T, Vector{T}}}()
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
         subtree_last_index = subtree_root_index
@@ -648,6 +644,98 @@ function all_splittings(t::RootedTree)
   end
 
   return (; forests, subtrees)
+end
+
+
+"""
+    SplittingIterator(t::RootedTree)
+
+Iterator over all splitting forests and subtrees of the rooted tree `t`.
+This is basically an iterator version of [`all_splittings`](@ref).
+
+See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct SplittingIterator{T<:RootedTree}
+  t::T
+  node_set::Vector{Bool}
+  max_node_set_value::Int
+
+  function SplittingIterator(t::T) where {T<:RootedTree}
+    node_set = zeros(Bool, order(t))
+    new{T}(t, node_set, 2^order(t) - 1)
+  end
+end
+
+Base.IteratorSize(::Type{<:SplittingIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{SplittingIterator{T}}) where {T} = Tuple{Vector{T}, T}
+
+function Base.iterate(splittings::SplittingIterator)
+  node_set_value = 0
+  iterate(splittings, node_set_value)
+end
+
+function Base.iterate(splittings::SplittingIterator, node_set_value)
+  node_set_value > splittings.max_node_set_value && return nothing
+
+  node_set = splittings.node_set
+  t = splittings.t
+  ls = t.level_sequence
+  T = eltype(ls)
+
+  while node_set_value <= splittings.max_node_set_value
+    digits!(node_set, node_set_value, base=2)
+
+    # Check that if a node is removed then all of its descendants are removed
+    subtree_root_index = 1
+    forest = Vector{RootedTree{T, Vector{T}}}()
+    while subtree_root_index <= order(t)
+      if node_set[subtree_root_index] == false # This node is removed
+        subtree_last_index = subtree_root_index
+        while subtree_last_index < length(ls)
+          if ls[subtree_last_index + 1] > ls[subtree_root_index]
+            subtree_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Check that subtree is all removed
+        if !any(@view node_set[subtree_root_index:subtree_last_index])
+          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          subtree_root_index = subtree_last_index + 1
+        else
+          break
+        end
+      else
+        subtree_root_index += 1
+      end
+    end
+
+    if subtree_root_index == order(t) + 1
+      # This is a valid ordered subtree
+      level_sequence = empty(ls)
+      for (inode, keep) in enumerate(node_set)
+        if keep
+          push!(level_sequence, ls[inode])
+        end
+      end
+
+      subtree = rootedtree!(level_sequence)
+      return ((forest, subtree), node_set_value + 1)
+    else
+      node_set_value = node_set_value + 1
+    end
+  end
+
+  return nothing
 end
 
 

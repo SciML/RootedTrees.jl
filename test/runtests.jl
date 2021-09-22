@@ -437,6 +437,13 @@ end
   sort!(iterator_skeletons)
   @test iterator_forests == forests
   @test iterator_skeletons == skeletons
+
+  for order in 1:8
+    for i in RootedTreeIterator(order)
+      forests, skeletons = all_partitions(t)
+      @test collect(zip(forests, skeletons)) == collect(PartitionIterator(t))
+    end
+  end
 end
 
 
@@ -467,6 +474,13 @@ end
   ])
 
   @test forests_and_subtrees == reference_forests_and_subtrees
+
+  for order in 1:8
+    for i in RootedTreeIterator(order)
+      forests, subtrees = all_splittings(t)
+      @test collect(zip(forests, subtrees)) == collect(SplittingIterator(t))
+    end
+  end
 end
 
 
