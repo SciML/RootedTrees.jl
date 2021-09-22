@@ -437,6 +437,56 @@ end
   sort!(iterator_skeletons)
   @test iterator_forests == forests
   @test iterator_skeletons == skeletons
+
+  for order in 1:8
+    for i in RootedTreeIterator(order)
+      forests, skeletons = all_partitions(t)
+      @test collect(zip(forests, skeletons)) == collect(PartitionIterator(t))
+    end
+  end
+end
+
+
+# See Section 2.2 and Table 1 of
+# - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+#   Algebraic Structures of B-series
+#   Foundations of Computational Mathematics
+#   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+@testset "splittings" begin
+  t = rootedtree([1, 2, 3, 2, 2])
+  splittings = all_splittings(t)
+  forests_and_subtrees = sort!(collect(zip(splittings.forests, splittings.subtrees)))
+
+  reference_forests_and_subtrees = sort!([
+    (empty([rootedtree([1])]),                               rootedtree([1, 2, 3, 2, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+    ([rootedtree([1, 2])],                                   rootedtree([1, 2, 2])),
+    ([rootedtree([1])],                                      rootedtree([1, 2, 2, 2])),
+    ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+    ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 3])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+    ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+    ([rootedtree([1]),    rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
+    ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
+    ([rootedtree([1, 2, 3, 2, 2])],                          rootedtree(Int[])),
+  ])
+
+  @test forests_and_subtrees == reference_forests_and_subtrees
+
+  # tested with the Python package BSeries
+  t = rootedtree([1, 2, 3, 4, 4, 2, 3, 3, 2, 3, 2, 3])
+  splittings = all_splittings(t)
+  @test length(splittings.forests) == length(splittings.subtrees) == 271
+
+  # consistency of all_splittings and the SplittingIterator
+  for order in 1:8
+    for i in RootedTreeIterator(order)
+      forests, subtrees = all_splittings(t)
+      @test collect(zip(forests, subtrees)) == collect(SplittingIterator(t))
+    end
+  end
 end
 
 

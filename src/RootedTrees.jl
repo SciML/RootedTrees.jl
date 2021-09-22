@@ -18,6 +18,8 @@ export count_trees
 
 export partition_forest, partition_skeleton, all_partitions, PartitionIterator
 
+export all_splittings, SplittingIterator
+
 
 
 """
@@ -364,6 +366,7 @@ function subtrees(t::RootedTree{T}) where {T}
 end
 
 
+
 # partitions
 # TODO: partitions; add documentation in the README to make them public API
 """
@@ -373,7 +376,11 @@ Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
 
-See Section 2.3 of
+See also [`partition_skeleton`](@ref) and [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -387,7 +394,7 @@ function partition_forest(t::RootedTree, _edge_set)
   edge_set = copy(_edge_set)
   ls = copy(t.level_sequence)
   T = eltype(ls)
-  forest = RootedTree{T, Vector{T}}[]
+  forest = Vector{RootedTree{T, Vector{T}}}()
 
   while !all(edge_set)
     # Find next removed edge
@@ -439,7 +446,11 @@ Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtain
 by contracting each tree of the partition forest to a single vertex and re-establishing
 the edges removed to obtain the partition forest.
 
-See `partition_forest` and Section 2.3 of
+See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -486,10 +497,14 @@ end
     all_partitions(t::RootedTree)
 
 Create all partition forests and skeletons of a rooted tree `t`. This returns
-vectors of the return values of `partition_forest` and `partition_skeleton`
-when looping over all possible edge sets.
+vectors of the return values of [`partition_forest`](@ref) and
+[`partition_skeleton`](@ref) when looping over all possible edge sets.
 
-See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+See also [`PartitionIterator`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -514,8 +529,13 @@ end
     PartitionIterator(t::RootedTree)
 
 Iterator over all partition forests and skeletons of the rooted tree `t`.
+This is basically an iterator version of [`all_partitions`](@ref).
 
-See `partition_forest`, `partition_skeleton`, and Section 2.3 of
+See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+
+# References
+
+Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series
   Foundations of Computational Mathematics
@@ -537,13 +557,7 @@ Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{T}, T}
 
 function Base.iterate(partitions::PartitionIterator)
   edge_set_value = 0
-  t = partitions.t
-  edge_set = partitions.edge_set
-
-  digits!(edge_set, edge_set_value, base=2)
-  forest = partition_forest(t, edge_set)
-  skeleton = partition_skeleton(t, edge_set)
-  ((forest, skeleton), edge_set_value + 1)
+  iterate(partitions, edge_set_value)
 end
 
 function Base.iterate(partitions::PartitionIterator, edge_set_value)
@@ -556,6 +570,171 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   forest = partition_forest(t, edge_set)
   skeleton = partition_skeleton(t, edge_set)
   ((forest, skeleton), edge_set_value + 1)
+end
+
+
+
+# splittings
+# TODO: splittings; add documentation in the README to make them public API
+"""
+    all_splittings(t::RootedTree)
+
+Create all splitting forests and subtrees associated to ordered subtrees of a
+rooted tree `t`.
+
+Seee also [`SplittingIterator`](@ref).
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function all_splittings(t::RootedTree)
+  node_set = zeros(Bool, order(t))
+  ls = t.level_sequence
+  T = eltype(ls)
+  forests  = Vector{Vector{RootedTree{T, Vector{T}}}}()
+  subtrees = Vector{RootedTree{T, Vector{T}}}() # ordered subtrees
+
+  for node_set_value in 0:(2^order(t) - 1)
+    digits!(node_set, node_set_value, base=2)
+
+    # Check that if a node is removed then all of its descendants are removed
+    subtree_root_index = 1
+    forest = Vector{RootedTree{T, Vector{T}}}()
+    while subtree_root_index <= order(t)
+      if node_set[subtree_root_index] == false # This node is removed
+        subtree_last_index = subtree_root_index
+        while subtree_last_index < length(ls)
+          if ls[subtree_last_index + 1] > ls[subtree_root_index]
+            subtree_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Check that subtree is all removed
+        if !any(@view node_set[subtree_root_index:subtree_last_index])
+          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          subtree_root_index = subtree_last_index + 1
+        else
+          break
+        end
+      else
+        subtree_root_index += 1
+      end
+    end
+
+    if subtree_root_index == order(t) + 1
+      # This is a valid ordered subtree
+      level_sequence = ls[node_set]
+      subtree = rootedtree!(level_sequence)
+      push!(subtrees, subtree)
+      push!(forests, forest)
+    end
+  end
+
+  return (; forests, subtrees)
+end
+
+
+"""
+    SplittingIterator(t::RootedTree)
+
+Iterator over all splitting forests and subtrees of the rooted tree `t`.
+This is basically an iterator version of [`all_splittings`](@ref).
+
+See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct SplittingIterator{T<:RootedTree}
+  t::T
+  node_set::Vector{Bool}
+  max_node_set_value::Int
+
+  function SplittingIterator(t::T) where {T<:RootedTree}
+    node_set = zeros(Bool, order(t))
+    new{T}(t, node_set, 2^order(t) - 1)
+  end
+end
+
+Base.IteratorSize(::Type{<:SplittingIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{SplittingIterator{T}}) where {T} = Tuple{Vector{T}, T}
+
+function Base.iterate(splittings::SplittingIterator)
+  node_set_value = 0
+  iterate(splittings, node_set_value)
+end
+
+function Base.iterate(splittings::SplittingIterator, node_set_value)
+  node_set_value > splittings.max_node_set_value && return nothing
+
+  node_set = splittings.node_set
+  t = splittings.t
+  ls = t.level_sequence
+  T = eltype(ls)
+  forest = Vector{RootedTree{T, Vector{T}}}()
+
+  while node_set_value <= splittings.max_node_set_value
+    digits!(node_set, node_set_value, base=2)
+
+    # Check that if a node is removed then all of its descendants are removed
+    subtree_root_index = 1
+    empty!(forest)
+    while subtree_root_index <= order(t)
+      if node_set[subtree_root_index] == false # This node is removed
+        subtree_last_index = subtree_root_index
+        while subtree_last_index < length(ls)
+          if ls[subtree_last_index + 1] > ls[subtree_root_index]
+            subtree_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Check that subtree is all removed
+        if !any(@view node_set[subtree_root_index:subtree_last_index])
+          # If `iscanonical(t)`, the subtree starting at the root of `t`
+          # is also in canonical representation. Thus, we don't need to
+          # use the more expensive version
+          #   push!(forest, rootedtree!(level_sequence))
+          # but can use the cheaper version below.
+          level_sequence = ls[subtree_root_index:subtree_last_index]
+          push!(forest, RootedTree(level_sequence, iscanonical(t)))
+          subtree_root_index = subtree_last_index + 1
+        else
+          break
+        end
+      else
+        subtree_root_index += 1
+      end
+    end
+
+    if subtree_root_index == order(t) + 1
+      # This is a valid ordered subtree
+      # The `level_sequence` will not automatically be a canonical representation.
+      # TODO: splittings;
+      #       Decide whether canonical representations should be used. Disabling
+      #       them will increase the performance.
+      level_sequence = ls[node_set]
+      subtree = rootedtree!(level_sequence)
+      return ((forest, subtree), node_set_value + 1)
+    else
+      node_set_value = node_set_value + 1
+    end
+  end
+
+  return nothing
 end
 
 
