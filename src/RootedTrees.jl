@@ -722,6 +722,10 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
 
     if subtree_root_index == order(t) + 1
       # This is a valid ordered subtree
+      # The `level_sequence` will not automatically be a canonical representation.
+      # TODO: splittings;
+      #       Decide whether canonical representations should be used. Disabling
+      #       them will increase the performance.
       level_sequence = ls[node_set]
       subtree = rootedtree!(level_sequence)
       return ((forest, subtree), node_set_value + 1)
