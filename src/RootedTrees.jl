@@ -683,13 +683,14 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
   t = splittings.t
   ls = t.level_sequence
   T = eltype(ls)
+  forest = Vector{RootedTree{T, Vector{T}}}()
 
   while node_set_value <= splittings.max_node_set_value
     digits!(node_set, node_set_value, base=2)
 
     # Check that if a node is removed then all of its descendants are removed
     subtree_root_index = 1
-    forest = Vector{RootedTree{T, Vector{T}}}()
+    empty!(forest)
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
         subtree_last_index = subtree_root_index
