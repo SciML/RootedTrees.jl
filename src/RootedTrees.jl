@@ -703,8 +703,13 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
+          # If `iscanonical(t)`, the subtree starting at the root of `t`
+          # is also in canonical representation. Thus, we don't need to
+          # use the more expensive version
+          #   push!(forest, rootedtree!(level_sequence))
+          # but can use the cheaper version below.
           level_sequence = ls[subtree_root_index:subtree_last_index]
-          push!(forest, rootedtree!(level_sequence))
+          push!(forest, RootedTree(level_sequence, iscanonical(t)))
           subtree_root_index = subtree_last_index + 1
         else
           break
