@@ -29,8 +29,9 @@ export all_splittings, SplittingIterator
 
 Represents a rooted tree using its level sequence.
 
-Reference:
-- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+# References
+
+- Terry Beyer and Sandra Mitchell Hedetniemi.
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
@@ -50,8 +51,9 @@ end
 Construct a canonical `RootedTree` object from a `level_sequence`, i.e.,
 a vector of integers representing the levels of each node of the tree.
 
-Reference:
-- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+# References
+
+- Terry Beyer and Sandra Mitchell Hedetniemi.
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
@@ -64,8 +66,9 @@ rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree
 Construct a canonical `RootedTree` object from a `level_sequence` which may be
 modified in this process. See also `rootedtree`.
 
-Reference:
-- Beyer, Terry, and Sandra Mitchell Hedetniemi.
+# References
+
+- Terry Beyer and Sandra Mitchell Hedetniemi.
   "Constant time generation of rooted trees."
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
