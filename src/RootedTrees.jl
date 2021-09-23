@@ -38,12 +38,10 @@ Reference:
 mutable struct RootedTree{T<:Integer, V<:AbstractVector{T}}
   level_sequence::V
   iscanonical::Bool
-end
 
-function RootedTree(level_sequence::AbstractVector, iscanonical=false)
-  T = eltype(level_sequence)
-  V = typeof(level_sequence)
-  RootedTree{T,V}(level_sequence, iscanonical)
+  function RootedTree(level_sequence::V, iscanonical::Bool=false) where {T<:Integer, V<:AbstractVector{T}}
+    new{T, V}(level_sequence, iscanonical)
+  end
 end
 
 """
