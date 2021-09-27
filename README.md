@@ -3,6 +3,7 @@
 [![Build Status](https://github.com/SciML/RootedTrees.jl/workflows/CI/badge.svg)](https://github.com/SciML/RootedTrees.jl/actions?query=workflow%3ACI)
 [![Coverage Status](https://coveralls.io/repos/github/SciML/RootedTrees.jl/badge.svg?branch=main)](https://coveralls.io/github/SciML/RootedTrees.jl?branch=main)
 [![codecov](https://codecov.io/gh/SciML/RootedTrees.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/SciML/RootedTrees.jl)
+[![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 
 A collection of functionality around rooted trees to generate order conditions
 for Runge-Kutta methods in [Julia](https://julialang.org/).
