@@ -275,7 +275,7 @@ end
 
 # See Section 2.3 and Table 2 of
 # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-#   Algebraic Structures of B-series
+#   Algebraic Structures of B-series.
 #   Foundations of Computational Mathematics
 #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 @testset "partitions" begin
@@ -383,7 +383,7 @@ end
 
 # See Table 3 of
 # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-#   Algebraic Structures of B-series
+#   Algebraic Structures of B-series.
 #   Foundations of Computational Mathematics
 #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 @testset "all_partitions" begin
@@ -452,7 +452,7 @@ end
 
 # See Section 2.2 and Table 1 of
 # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-#   Algebraic Structures of B-series
+#   Algebraic Structures of B-series.
 #   Foundations of Computational Mathematics
 #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 @testset "splittings" begin

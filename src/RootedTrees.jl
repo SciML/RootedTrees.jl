@@ -449,7 +449,7 @@ See also [`partition_skeleton`](@ref) and [`PartitionIterator`](@ref).
 
 Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
@@ -519,7 +519,7 @@ See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
 
 Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
@@ -573,7 +573,7 @@ See also [`PartitionIterator`](@ref).
 
 Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
@@ -604,7 +604,7 @@ See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
 
 Section 2.3 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
@@ -655,7 +655,7 @@ Seee also [`SplittingIterator`](@ref).
 
 Section 2.2 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
@@ -720,7 +720,7 @@ See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
 
 Section 2.2 of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series
+  Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
