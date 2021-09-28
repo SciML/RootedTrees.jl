@@ -43,9 +43,14 @@ julia> butcher_representation(t)
 "[[[τ]τ²]τ⁵]"
 ```
 
-There are also some simple plot recipes for
-[Plots.jl](https://github.com/JuliaPlots/Plots.jl).
+There are also some simple plot recipes for [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 Thus, you can visualize a rooted tree `t` using `plot(t)` when `using Plots`.
+
+Additionally, there is an un-exported function `RootedTrees.latexify` that can
+generate LaTeX code for a rooted tree `t` based on the LaTeX package
+[forest](https://ctan.org/pkg/forest). The relevant code that needs to be included
+in the preamble can be obtained from the docstring of `RootedTrees.latexify`
+(type `?` and `RootedTrees.latexify` in the Julia REPL).
 
 ### Iteration over `RootedTree`s
 

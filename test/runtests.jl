@@ -73,6 +73,7 @@ end
   @test α(t1) == 1
   @test β(t1) == α(t1)*γ(t1)
   @test butcher_representation(t1) == "τ"
+  @test RootedTrees.latexify(t1) == "\\rootedtree[]"
 
   @inferred order(t1)
   @inferred σ(t1)
@@ -89,6 +90,7 @@ end
   @test β(t2) == α(t2)*γ(t2)
   @test t2 == t1 ∘ t1
   @test butcher_representation(t2) == "[τ]"
+  @test RootedTrees.latexify(t2) == "\\rootedtree[[]]"
 
   t3 = rootedtree([1, 2, 2])
   @test order(t3) == 3
@@ -98,6 +100,7 @@ end
   @test β(t3) == α(t3)*γ(t3)
   @test t3 == t2 ∘ t1
   @test butcher_representation(t3) == "[τ²]"
+  @test RootedTrees.latexify(t3) == "\\rootedtree[[][]]"
 
   t4 = rootedtree([1, 2, 3])
   @test order(t4) == 3
@@ -107,6 +110,7 @@ end
   @test β(t4) == α(t4)*γ(t4)
   @test t4 == t1 ∘ t2
   @test butcher_representation(t4) == "[[τ]]"
+  @test RootedTrees.latexify(t4) == "\\rootedtree[[[]]]"
 
   t5 = rootedtree([1, 2, 2, 2])
   @test order(t5) == 4

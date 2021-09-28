@@ -1007,14 +1007,31 @@ end
 """
     butcher_represetation(t::RootedTree)
 
-Returns the representation of `t::RootedTree` as introduced by Butcher.
+Returns the representation of `t::RootedTree` introduced by Butcher as a string.
+Thus, the rooted tree consisting whose only vertex is the root itself is
+represented as `τ`. The representation of other trees is defined recursively;
+if `t₁, t₂, ... tₙ` are the [`subtrees`](@ref) of the rooted tree `t`, it is
+represented as `t = [t₁ t₂ ... tₙ]`. If multiple subtrees are the same, their
+number of occurences is written as a power.
 
-Reference: Section 301 of
+# Examples
+
+```jldoctest
+julia> rootedtree([1, 2, 3, 2]) |> butcher_representation
+"[[τ]τ]"
+
+julia> rootedtree([1, 2, 3, 3, 2]) |> butcher_representation
+"[[τ²]τ]"
+```
+
+# References
+
+Section 300 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function butcher_representation(t::RootedTree)
+function butcher_representation(t::RootedTree, normalize::Bool=true)
   if order(t) == 1
     return "τ"
   end
@@ -1022,31 +1039,98 @@ function butcher_representation(t::RootedTree)
   subtr = Subtrees(t)
   result = ""
   for i in eachindex(subtr)
-    result = result * butcher_representation(subtr[i])
+    result = result * butcher_representation(subtr[i], normalize)
   end
   result = "[" * result * "]"
 
-  # normalize the result by grouping repeated occurrences of τ
-  # TODO: Decide whether powers should also be used for subtrees,
-  #       e.g., "[[τ]²]" instead of "[[τ][τ]]"
-  #       for rootedtree([1, 2, 3, 2, 3]).
-  #       Currently, powers are only used for τ.
-  for n in order(t):-1:2
-    n_str = string(n)
-    n_str = replace(n_str, "1" => "¹")
-    n_str = replace(n_str, "2" => "²")
-    n_str = replace(n_str, "3" => "³")
-    n_str = replace(n_str, "4" => "⁴")
-    n_str = replace(n_str, "5" => "⁵")
-    n_str = replace(n_str, "6" => "⁶")
-    n_str = replace(n_str, "7" => "⁷")
-    n_str = replace(n_str, "8" => "⁸")
-    n_str = replace(n_str, "9" => "⁹")
-    n_str = replace(n_str, "0" => "⁰")
-    result = replace(result, "τ"^n => "τ"*n_str)
+  if normalize
+    # normalize the result by grouping repeated occurrences of τ
+    # TODO: Decide whether powers should also be used for subtrees,
+    #       e.g., "[[τ]²]" instead of "[[τ][τ]]"
+    #       for rootedtree([1, 2, 3, 2, 3]).
+    #       Currently, powers are only used for τ.
+    for n in order(t):-1:2
+      n_str = string(n)
+      n_str = replace(n_str, "1" => "¹")
+      n_str = replace(n_str, "2" => "²")
+      n_str = replace(n_str, "3" => "³")
+      n_str = replace(n_str, "4" => "⁴")
+      n_str = replace(n_str, "5" => "⁵")
+      n_str = replace(n_str, "6" => "⁶")
+      n_str = replace(n_str, "7" => "⁷")
+      n_str = replace(n_str, "8" => "⁸")
+      n_str = replace(n_str, "9" => "⁹")
+      n_str = replace(n_str, "0" => "⁰")
+      result = replace(result, "τ"^n => "τ"*n_str)
+    end
   end
 
   return result
+end
+
+
+"""
+    latexify(t::RootedTree)
+
+Return a LaTeX representation of the rooted tree `t`. This makes use of the
+LaTeX package [forest](https://ctan.org/pkg/forest) and assumes that you use
+the following LaTeX code in the preamble.
+
+```
+% Butcher trees, cf. https://tex.stackexchange.com/questions/283343/butcher-trees-in-tikz
+\\usepackage{forest}
+\\forestset{
+  */.style={
+    delay+={append={[]},}
+  },
+  rooted tree/.style={
+    for tree={
+      grow'=90,
+      parent anchor=center,
+      child anchor=center,
+      s sep=2.5pt,
+      if level=0{
+        baseline
+      }{},
+      delay={
+        if content={*}{
+          content=,
+          append={[]}
+        }{}
+      }
+    },
+    before typesetting nodes={
+      for tree={
+        circle,
+        fill,
+        minimum width=3pt,
+        inner sep=0pt,
+        child anchor=center,
+      },
+    },
+    before computing xy={
+      for tree={
+        l=5pt,
+      }
+    }
+  }
+}
+\\DeclareDocumentCommand\\rootedtree{o}{\\Forest{rooted tree [#1]}}
+```
+
+# Examples
+
+```jldoctest
+julia> rootedtree([1, 2, 2]) |> RootedTrees.latexify |> println
+\rootedtree[[][]]
+
+julia> rootedtree([1, 2, 3, 3, 2]) |> RootedTrees.latexify |> println
+\rootedtree[[[][]][]]
+```
+"""
+function latexify(t::RootedTree)
+  list_representation = butcher_representation(t, false)
+  "\\rootedtree" * replace(list_representation, "τ" => "[]")
 end
 
 
