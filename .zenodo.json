@@ -1,0 +1,14 @@
+{
+  "description": "A collection of functionality around rooted trees to generate order conditions for Runge-Kutta methods in Julia for differential equations and scientific machine learning (SciML)",
+  "license": "MIT",
+  "title": "RootedTrees.jl",
+  "upload_type": "software",
+  "creators": [
+      {
+          "affiliation": "Applied Mathematics Münster, University of Münster, Germany",
+          "name": "Ranocha, Hendrik",
+          "orcid": "0000-0002-3456-2277"
+      }
+  ],
+  "access_right": "open"
+}

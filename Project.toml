@@ -1,6 +1,6 @@
 name = "RootedTrees"
 uuid = "47965b36-3f3e-11e9-0dcf-4570dfd42a8c"
-authors = ["Hendrik Ranocha <mail@ranocha.de>"]
+authors = ["Hendrik Ranocha <mail@ranocha.de> and contributors"]
 version = "2.2.1-pre"
 
 [deps]
