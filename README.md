@@ -12,8 +12,8 @@ for Runge-Kutta methods in [Julia](https://julialang.org/).
 
 ## API Documentation
 
-Please note that this project is work in progress. However, we don't expect
-many breaking changes in the near future.
+The API of RootedTrees.jl is documented in the following. Additional information
+on each function is available in their docstrings.
 
 ### Construction
 
