@@ -25,7 +25,7 @@ export all_splittings, SplittingIterator
 
 
 """
-    RootedTree
+    RootedTree(level_sequence, is_canonical::Bool=false)
 
 Represents a rooted tree using its level sequence.
 
@@ -64,7 +64,7 @@ rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree
     rootedtree!(level_sequence)
 
 Construct a canonical `RootedTree` object from a `level_sequence` which may be
-modified in this process. See also `rootedtree`.
+modified in this process. See also [`rootedtree`](@ref).
 
 # References
 
@@ -261,56 +261,50 @@ end
 
 
 # generation and canonical representation
+
+# A very simple implementation of `canonical_representation!` could read as
+# follows.
+#   function canonical_representation!(t::RootedTree)
+#     subtr = subtrees(t)
+#     for i in eachindex(subtr)
+#       canonical_representation!(subtr[i])
+#     end
+#     sort!(subtr, rev=true)
+#
+#     i = 2
+#     for τ in subtr
+#       t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
+#       i += order(τ)
+#     end
+#
+#     RootedTree(t.level_sequence, true)
+#   end
+# However, this would create a lot of intermediate allocations, which make it
+# rather slow. Since most trees in use are relatively small, we can use a
+# non-allocating sorting algorithm instead - although bubble sort is slower in
+# generalwhen comparing the complexity with quicksort etc., it will be faster
+# here since we can avoid allocations.
 """
     canonical_representation!(t::RootedTree)
 
 Change the representation of the rooted tree `t` to the canonical one, i.e., the
 one with lexicographically biggest level sequence.
+
+See also [`canonical_representation`](@ref).
 """
-function canonical_representation!(t::RootedTree)
-  subtr = subtrees(t)
-  for i in eachindex(subtr)
-    canonical_representation!(subtr[i])
-  end
-  sort!(subtr, rev=true)
-
-  i = 2
-  for τ in subtr
-    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
-    i += order(τ)
-  end
-
-  # TODO: Mutation
-  # t.iscanonical = true
-  # t
-  RootedTree(t.level_sequence, true)
-end
-
-function new_canonical_representation!(t::RootedTree, buffer=similar(t.level_sequence))
+function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequence))
   # First, sort all subtrees recursively. Here, we use `view`s to avoid memory
   # allocations.
-  # TODO: Assumes 1-based indexing
+  # TODO: Assume 1-based indexing in the following
   subtree_root_index = 2
   number_of_subtrees = 0
 
-  # T = eltype(t.level_sequence)
-  # VT = typeof(view(t.level_sequence, 1:length(t.level_sequence)))
-  # subtrees = Vector{RootedTree{T, VT}}()
   while subtree_root_index <= order(t)
-    subtree_last_index = subtree_root_index
-    subtree_root_level = t.level_sequence[subtree_root_index]
-    while subtree_last_index < order(t)
-      if t.level_sequence[subtree_last_index + 1] > subtree_root_level
-        subtree_last_index += 1
-      else
-        break
-      end
-    end
+    subtree_last_index = _subtree_last_index(subtree_root_index, t.level_sequence)
 
     # We found a complete subtree
     subtree = RootedTree(view(t.level_sequence, subtree_root_index:subtree_last_index))
-    new_canonical_representation!(subtree, view(buffer, subtree_root_index:subtree_last_index))
-    # push!(subtrees, subtree)
+    canonical_representation!(subtree, view(buffer, subtree_root_index:subtree_last_index))
 
     subtree_root_index = subtree_last_index + 1
     number_of_subtrees += 1
@@ -319,33 +313,6 @@ function new_canonical_representation!(t::RootedTree, buffer=similar(t.level_seq
   # Next, we need to sort the subtrees of `t` (in lexicographically decreasing
   # order of the level sequences).
   if number_of_subtrees > 1
-    # sort!(subtrees, rev=true, alg=MergeSort)
-    # sort!(subtrees, rev=true, alg=QuickSort)
-    # sort!(subtrees, rev=true, alg=InsertionSort)
-
-
-    # sortperm!(view(buffer, 1:number_of_subtrees), subtrees, rev=true, alg=MergeSort)
-
-
-    # sort_indices = sortperm(subtrees, rev=true, alg=MergeSort)
-    # sort_indices = sortperm(subtrees, rev=true, alg=QuickSort)
-    # sort_indices = sortperm(subtrees, rev=true, alg=InsertionSort)
-
-    # if !issorted(sort_indices)
-    #   ls = similar(t.level_sequence)
-    #   # TODO: Assumes 1-based indexing
-    #   ls[1] = t.level_sequence[1]
-    #   subtree_root_index = 2
-    #   for index in sort_indices
-    #     subtree = subtrees[index]
-    #     subtree_last_index = subtree_root_index + order(subtree) - 1
-    #     ls[subtree_root_index:subtree_last_index] = subtree.level_sequence
-    #     subtree_root_index = subtree_last_index + 1
-    #   end
-    #   t.level_sequence .= ls
-    # end
-
-
     # Simple bubble sort that can act in-place, avoiding allocations
     swapped = true
     while swapped
@@ -354,40 +321,25 @@ function new_canonical_representation!(t::RootedTree, buffer=similar(t.level_seq
       # Search the first complete subtree
       subtree1_root_index = 2
       while subtree1_root_index <= order(t)
-        subtree1_last_index = subtree1_root_index
-        subtree1_root_level = t.level_sequence[subtree1_root_index]
-        while subtree1_last_index < order(t)
-          if t.level_sequence[subtree1_last_index + 1] > subtree1_root_level
-            subtree1_last_index += 1
-          else
-            break
-          end
-        end
+        subtree1_last_index = _subtree_last_index(subtree1_root_index, t.level_sequence)
 
         # Search the next complete subtree
         subtree1_last_index == order(t) && break
 
         subtree2_root_index = subtree1_last_index + 1
-        subtree2_last_index = subtree2_root_index
-        subtree2_root_level = t.level_sequence[subtree2_root_index]
-        while subtree2_last_index < order(t)
-          if t.level_sequence[subtree2_last_index + 1] > subtree2_root_level
-            subtree2_last_index += 1
-          else
-            break
-          end
-        end
+        subtree2_last_index = _subtree_last_index(subtree2_root_index, t.level_sequence)
 
         # Swap the subtrees if they are not sorted correctly
         subtree1 = RootedTree(view(t.level_sequence, subtree1_root_index:subtree1_last_index))
         subtree2 = RootedTree(view(t.level_sequence, subtree2_root_index:subtree2_last_index))
-        # @info "bubble sort" t subtree1 subtree2
         if isless(subtree1, subtree2)
-          swapped = true
           copyto!(buffer, 1, t.level_sequence, subtree1_root_index, order(subtree1) + order(subtree2))
           copyto!(t.level_sequence, subtree1_root_index, buffer, order(subtree1) + 1, order(subtree2))
           copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer, 1, order(subtree1))
-          # @info "swapped" t
+          # `subtree1_root_index` will be updated below using `subtree1_last_index`.
+          # Thus, we need to adapt this variable here.
+          subtree1_last_index = subtree1_root_index + order(subtree2)
+          swapped = true
         end
 
         # Move on to the next pair of subtrees
@@ -397,17 +349,30 @@ function new_canonical_representation!(t::RootedTree, buffer=similar(t.level_seq
     end
   end
 
-  # TODO: Mutation
-  # t.iscanonical = true
-  # t
   RootedTree(t.level_sequence, true)
 end
+
+@inline function _subtree_last_index(subtree_root_index, level_sequence)
+  subtree_last_index = subtree_root_index
+  subtree_root_level = level_sequence[subtree_root_index]
+  while subtree_last_index < length(level_sequence)
+    if level_sequence[subtree_last_index + 1] > subtree_root_level
+      subtree_last_index += 1
+    else
+      break
+    end
+  end
+  return subtree_last_index
+end
+
 
 """
     canonical_representation(t::RootedTree)
 
 Returns a new tree using the canonical representation of the rooted tree `t`,
 i.e., the one with lexicographically biggest level sequence.
+
+See also [`canonical_representation!`](@ref).
 """
 function canonical_representation(t::RootedTree)
   canonical_representation!(copy(t))
@@ -804,7 +769,8 @@ function all_splittings(t::RootedTree)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
-          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          new_tree = rootedtree(@view ls[subtree_root_index:subtree_last_index])
+          push!(forest, new_tree)
           subtree_root_index = subtree_last_index + 1
         else
           break
@@ -930,7 +896,7 @@ end
 """
     order(t::RootedTree)
 
-The `order` of a rooted tree, i.e., the length of its level sequence.
+The `order` of a rooted tree `t`, i.e., the length of its level sequence.
 """
 order(t::RootedTree) = length(t.level_sequence)
 
