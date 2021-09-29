@@ -36,7 +36,7 @@ Represents a rooted tree using its level sequence.
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
-mutable struct RootedTree{T<:Integer, V<:AbstractVector{T}}
+struct RootedTree{T<:Integer, V<:AbstractVector{T}}
   level_sequence::V
   iscanonical::Bool
 
@@ -279,9 +279,128 @@ function canonical_representation!(t::RootedTree)
     t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
     i += order(τ)
   end
-  t.iscanonical = true
 
-  t
+  # TODO: Mutation
+  # t.iscanonical = true
+  # t
+  RootedTree(t.level_sequence, true)
+end
+
+function new_canonical_representation!(t::RootedTree, buffer=similar(t.level_sequence))
+  # First, sort all subtrees recursively. Here, we use `view`s to avoid memory
+  # allocations.
+  # TODO: Assumes 1-based indexing
+  subtree_root_index = 2
+  number_of_subtrees = 0
+
+  # T = eltype(t.level_sequence)
+  # VT = typeof(view(t.level_sequence, 1:length(t.level_sequence)))
+  # subtrees = Vector{RootedTree{T, VT}}()
+  while subtree_root_index <= order(t)
+    subtree_last_index = subtree_root_index
+    subtree_root_level = t.level_sequence[subtree_root_index]
+    while subtree_last_index < order(t)
+      if t.level_sequence[subtree_last_index + 1] > subtree_root_level
+        subtree_last_index += 1
+      else
+        break
+      end
+    end
+
+    # We found a complete subtree
+    subtree = RootedTree(view(t.level_sequence, subtree_root_index:subtree_last_index))
+    new_canonical_representation!(subtree, view(buffer, subtree_root_index:subtree_last_index))
+    # push!(subtrees, subtree)
+
+    subtree_root_index = subtree_last_index + 1
+    number_of_subtrees += 1
+  end
+
+  # Next, we need to sort the subtrees of `t` (in lexicographically decreasing
+  # order of the level sequences).
+  if number_of_subtrees > 1
+    # sort!(subtrees, rev=true, alg=MergeSort)
+    # sort!(subtrees, rev=true, alg=QuickSort)
+    # sort!(subtrees, rev=true, alg=InsertionSort)
+
+
+    # sortperm!(view(buffer, 1:number_of_subtrees), subtrees, rev=true, alg=MergeSort)
+
+
+    # sort_indices = sortperm(subtrees, rev=true, alg=MergeSort)
+    # sort_indices = sortperm(subtrees, rev=true, alg=QuickSort)
+    # sort_indices = sortperm(subtrees, rev=true, alg=InsertionSort)
+
+    # if !issorted(sort_indices)
+    #   ls = similar(t.level_sequence)
+    #   # TODO: Assumes 1-based indexing
+    #   ls[1] = t.level_sequence[1]
+    #   subtree_root_index = 2
+    #   for index in sort_indices
+    #     subtree = subtrees[index]
+    #     subtree_last_index = subtree_root_index + order(subtree) - 1
+    #     ls[subtree_root_index:subtree_last_index] = subtree.level_sequence
+    #     subtree_root_index = subtree_last_index + 1
+    #   end
+    #   t.level_sequence .= ls
+    # end
+
+
+    # Simple bubble sort that can act in-place, avoiding allocations
+    swapped = true
+    while swapped
+      swapped = false
+
+      # Search the first complete subtree
+      subtree1_root_index = 2
+      while subtree1_root_index <= order(t)
+        subtree1_last_index = subtree1_root_index
+        subtree1_root_level = t.level_sequence[subtree1_root_index]
+        while subtree1_last_index < order(t)
+          if t.level_sequence[subtree1_last_index + 1] > subtree1_root_level
+            subtree1_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Search the next complete subtree
+        subtree1_last_index == order(t) && break
+
+        subtree2_root_index = subtree1_last_index + 1
+        subtree2_last_index = subtree2_root_index
+        subtree2_root_level = t.level_sequence[subtree2_root_index]
+        while subtree2_last_index < order(t)
+          if t.level_sequence[subtree2_last_index + 1] > subtree2_root_level
+            subtree2_last_index += 1
+          else
+            break
+          end
+        end
+
+        # Swap the subtrees if they are not sorted correctly
+        subtree1 = RootedTree(view(t.level_sequence, subtree1_root_index:subtree1_last_index))
+        subtree2 = RootedTree(view(t.level_sequence, subtree2_root_index:subtree2_last_index))
+        # @info "bubble sort" t subtree1 subtree2
+        if isless(subtree1, subtree2)
+          swapped = true
+          copyto!(buffer, 1, t.level_sequence, subtree1_root_index, order(subtree1) + order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index, buffer, order(subtree1) + 1, order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer, 1, order(subtree1))
+          # @info "swapped" t
+        end
+
+        # Move on to the next pair of subtrees
+        subtree2_last_index == order(t) && break
+        subtree1_root_index = subtree1_last_index + 1
+      end
+    end
+  end
+
+  # TODO: Mutation
+  # t.iscanonical = true
+  # t
+  RootedTree(t.level_sequence, true)
 end
 
 """
