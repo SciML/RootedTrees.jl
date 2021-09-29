@@ -617,13 +617,19 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-function partition_skeleton(t::RootedTree, _edge_set)
+function partition_skeleton(t::RootedTree, edge_set)
   @boundscheck begin
     @assert length(t.level_sequence) == length(_edge_set) + 1
   end
 
-  edge_set = copy(_edge_set)
-  ls = copy(t.level_sequence)
+  edge_set_copy = copy(edge_set)
+  skeleton = RootedTree(copy(t.level_sequence), true)
+  return partition_skeleton!(skeleton, edge_set_copy)
+end
+
+# internal in-place version of partition_skeleton modifying the inputs
+function partition_skeleton!(skeleton::RootedTree, edge_set)
+  ls = skeleton.level_sequence
 
   while any(edge_set)
     # Find next edge to contract
@@ -702,19 +708,23 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-struct PartitionIterator{T<:RootedTree}
-  t::T
+struct PartitionIterator{T, Tree<:RootedTree{T}}
+  t::Tree
+  skeleton::RootedTree{T, Vector{T}}
   edge_set::Vector{Bool}
+  edge_set_tmp::Vector{Bool}
 
-  function PartitionIterator(t::T) where {T<:RootedTree}
+  function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
+    skeleton = RootedTree(zeros(T, order(t)), true)
     edge_set = zeros(Bool, order(t) - 1)
-    new{T}(t, edge_set)
+    edge_set_tmp = similar(edge_set)
+    new{T, Tree}(t, skeleton, edge_set, edge_set_tmp)
   end
 end
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
-Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{T}, T}
+Base.eltype(::Type{PartitionIterator{T}}) where {T} = Tuple{Vector{RootedTree{T, Vector{T}}}, RootedTree{T, Vector{T}}}
 
 function Base.iterate(partitions::PartitionIterator)
   edge_set_value = 0
@@ -728,8 +738,22 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   edge_set = partitions.edge_set
 
   digits!(edge_set, edge_set_value, base=2)
+
+  # Compute the partition forest.
   forest = partition_forest(t, edge_set)
-  skeleton = partition_skeleton(t, edge_set)
+
+  # Compute the partition skeleton.
+  # The following is a more efficient version of
+  #   skeleton = partition_skeleton(t, edge_set)
+  # avoiding some allocations.
+  skeleton = partitions.skeleton
+  edge_set_tmp = partitions.edge_set_tmp
+  resize!(edge_set_tmp, length(edge_set))
+  copy!(edge_set_tmp, edge_set)
+  resize!(skeleton.level_sequence, order(t))
+  copy!(skeleton.level_sequence, t.level_sequence)
+  partition_skeleton!(skeleton, edge_set_tmp)
+
   ((forest, skeleton), edge_set_value + 1)
 end
 
