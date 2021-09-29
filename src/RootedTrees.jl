@@ -353,6 +353,8 @@ function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequenc
 end
 
 @inline function _subtree_last_index(subtree_root_index, level_sequence)
+  # The subtree goes up to the next node that has the same (or lower)
+  # rank as its root.
   subtree_last_index = subtree_root_index
   subtree_root_level = level_sequence[subtree_root_index]
   while subtree_last_index < length(level_sequence)
@@ -554,14 +556,7 @@ function partition_forest(t::RootedTree, _edge_set)
     # Detach the corresponding subtree and add its partition forest.
     # The subtree goes up to the next node that has the same (or lower)
     # rank as its root.
-    subtree_last_index = subtree_root_index
-    while subtree_last_index < length(ls)
-      if ls[subtree_last_index + 1] > ls[subtree_root_index]
-        subtree_last_index += 1
-      else
-        break
-      end
-    end
+    subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
     # Extract the subtree and the edge set on it. Note that the corresponding
     # edge set contains one element less than the subtree itself.
@@ -758,14 +753,8 @@ function all_splittings(t::RootedTree)
     forest = Vector{RootedTree{T, Vector{T}}}()
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
-        subtree_last_index = subtree_root_index
-        while subtree_last_index < length(ls)
-          if ls[subtree_last_index + 1] > ls[subtree_root_index]
-            subtree_last_index += 1
-          else
-            break
-          end
-        end
+        # Find complete subtree
+        subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
@@ -781,7 +770,8 @@ function all_splittings(t::RootedTree)
     end
 
     if subtree_root_index == order(t) + 1
-      # This is a valid ordered subtree
+      # This is a valid ordered subtree.
+      # The `level_sequence` will not automatically be a canonical representation.
       level_sequence = ls[node_set]
       subtree = rootedtree!(level_sequence)
       push!(subtrees, subtree)
@@ -845,14 +835,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
     empty!(forest)
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
-        subtree_last_index = subtree_root_index
-        while subtree_last_index < length(ls)
-          if ls[subtree_last_index + 1] > ls[subtree_root_index]
-            subtree_last_index += 1
-          else
-            break
-          end
-        end
+        subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
@@ -873,7 +856,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
     end
 
     if subtree_root_index == order(t) + 1
-      # This is a valid ordered subtree
+      # This is a valid ordered subtree.
       # The `level_sequence` will not automatically be a canonical representation.
       # TODO: splittings;
       #       Decide whether canonical representations should be used. Disabling
