@@ -338,7 +338,7 @@ function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequenc
           copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer, 1, order(subtree1))
           # `subtree1_root_index` will be updated below using `subtree1_last_index`.
           # Thus, we need to adapt this variable here.
-          subtree1_last_index = subtree1_root_index + order(subtree2)
+          subtree1_last_index = subtree1_root_index + order(subtree2) - 1
           swapped = true
         end
 

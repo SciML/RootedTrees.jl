@@ -62,8 +62,15 @@ Plots.unicodeplots()
     println(devnull, t4)
   end
 
+  # more tests of the anonical representation
   t = rootedtree([1, 2, 3, 2, 3, 3, 2])
   @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
+
+  t = rootedtree([1, 2, 3, 2, 3, 4, 2, 3])
+  @test t.level_sequence == [1, 2, 3, 4, 2, 3, 2, 3]
+
+  t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3])
+  @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2, 3]
 end
 
 
