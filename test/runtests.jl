@@ -450,21 +450,23 @@ end
   @test forests == reference_forests
   @test skeletons == reference_skeletons
 
-  partitions = collect(PartitionIterator(t))
-  iterator_forests = map(first, partitions)
-  iterator_skeletons = map(last, partitions)
-  for forest in iterator_forests
-    sort!(forest)
-  end
-  sort!(iterator_forests)
-  sort!(iterator_skeletons)
-  @test iterator_forests == forests
-  @test iterator_skeletons == skeletons
+  @testset "PartitionIterator" begin
+    partitions = collect(PartitionIterator(t))
+    iterator_forests = map(first, partitions)
+    iterator_skeletons = map(last, partitions)
+    for forest in iterator_forests
+      sort!(forest)
+    end
+    sort!(iterator_forests)
+    sort!(iterator_skeletons)
+    @test iterator_forests == forests
+    @test iterator_skeletons == skeletons
 
-  for order in 1:8
-    for i in RootedTreeIterator(order)
-      forests, skeletons = all_partitions(t)
-      @test collect(zip(forests, skeletons)) == collect(PartitionIterator(t))
+    for order in 1:8
+      for t in RootedTreeIterator(order)
+        forests, skeletons = all_partitions(t)
+        @test collect(zip(forests, skeletons)) == collect(PartitionIterator(t))
+      end
     end
   end
 end
