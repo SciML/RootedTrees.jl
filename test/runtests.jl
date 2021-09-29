@@ -61,6 +61,9 @@ Plots.unicodeplots()
     println(devnull, t3)
     println(devnull, t4)
   end
+
+  t = rootedtree([1, 2, 3, 2, 3, 3, 2])
+  @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
 end
 
 
@@ -74,6 +77,7 @@ end
   @test β(t1) == α(t1)*γ(t1)
   @test butcher_representation(t1) == "τ"
   @test RootedTrees.latexify(t1) == "\\rootedtree[]"
+  @test isempty(RootedTrees.subtrees(t1))
 
   @inferred order(t1)
   @inferred σ(t1)
@@ -91,6 +95,7 @@ end
   @test t2 == t1 ∘ t1
   @test butcher_representation(t2) == "[τ]"
   @test RootedTrees.latexify(t2) == "\\rootedtree[[]]"
+  @test RootedTrees.subtrees(t2) == [rootedtree([2])]
 
   t3 = rootedtree([1, 2, 2])
   @test order(t3) == 3
@@ -101,6 +106,7 @@ end
   @test t3 == t2 ∘ t1
   @test butcher_representation(t3) == "[τ²]"
   @test RootedTrees.latexify(t3) == "\\rootedtree[[][]]"
+  @test RootedTrees.subtrees(t3) == [rootedtree([2]), rootedtree([2])]
 
   t4 = rootedtree([1, 2, 3])
   @test order(t4) == 3
@@ -111,6 +117,7 @@ end
   @test t4 == t1 ∘ t2
   @test butcher_representation(t4) == "[[τ]]"
   @test RootedTrees.latexify(t4) == "\\rootedtree[[[]]]"
+  @test RootedTrees.subtrees(t4) == [rootedtree([2, 3])]
 
   t5 = rootedtree([1, 2, 2, 2])
   @test order(t5) == 4
@@ -120,6 +127,7 @@ end
   @test β(t5) == α(t5)*γ(t5)
   @test t5 == t3 ∘ t1
   @test butcher_representation(t5) == "[τ³]"
+  @test RootedTrees.subtrees(t5) == [rootedtree([2]), rootedtree([2]), rootedtree([2])]
 
   t6 = rootedtree([1, 2, 2, 3])
   @inferred RootedTrees.subtrees(t6)
@@ -130,6 +138,7 @@ end
   @test β(t6) == α(t6)*γ(t6)
   @test t6 == t2 ∘ t2 == t4 ∘ t1
   @test butcher_representation(t6) == "[[τ]τ]"
+  @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
 
   t7 = rootedtree([1, 2, 3, 3])
   @test order(t7) == 4

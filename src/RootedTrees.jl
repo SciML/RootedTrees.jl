@@ -25,7 +25,7 @@ export all_splittings, SplittingIterator
 
 
 """
-    RootedTree
+    RootedTree(level_sequence, is_canonical::Bool=false)
 
 Represents a rooted tree using its level sequence.
 
@@ -36,7 +36,7 @@ Represents a rooted tree using its level sequence.
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
-mutable struct RootedTree{T<:Integer, V<:AbstractVector{T}}
+struct RootedTree{T<:Integer, V<:AbstractVector{T}}
   level_sequence::V
   iscanonical::Bool
 
@@ -64,7 +64,7 @@ rootedtree(level_sequence::AbstractVector) = canonical_representation(RootedTree
     rootedtree!(level_sequence)
 
 Construct a canonical `RootedTree` object from a `level_sequence` which may be
-modified in this process. See also `rootedtree`.
+modified in this process. See also [`rootedtree`](@ref).
 
 # References
 
@@ -261,34 +261,120 @@ end
 
 
 # generation and canonical representation
+
+# A very simple implementation of `canonical_representation!` could read as
+# follows.
+#   function canonical_representation!(t::RootedTree)
+#     subtr = subtrees(t)
+#     for i in eachindex(subtr)
+#       canonical_representation!(subtr[i])
+#     end
+#     sort!(subtr, rev=true)
+#
+#     i = 2
+#     for τ in subtr
+#       t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
+#       i += order(τ)
+#     end
+#
+#     RootedTree(t.level_sequence, true)
+#   end
+# However, this would create a lot of intermediate allocations, which make it
+# rather slow. Since most trees in use are relatively small, we can use a
+# non-allocating sorting algorithm instead - although bubble sort is slower in
+# generalwhen comparing the complexity with quicksort etc., it will be faster
+# here since we can avoid allocations.
 """
     canonical_representation!(t::RootedTree)
 
 Change the representation of the rooted tree `t` to the canonical one, i.e., the
 one with lexicographically biggest level sequence.
+
+See also [`canonical_representation`](@ref).
 """
-function canonical_representation!(t::RootedTree)
-  subtr = subtrees(t)
-  for i in eachindex(subtr)
-    canonical_representation!(subtr[i])
-  end
-  sort!(subtr, rev=true)
+function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequence))
+  # First, sort all subtrees recursively. Here, we use `view`s to avoid memory
+  # allocations.
+  # TODO: Assume 1-based indexing in the following
+  subtree_root_index = 2
+  number_of_subtrees = 0
 
-  i = 2
-  for τ in subtr
-    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
-    i += order(τ)
-  end
-  t.iscanonical = true
+  while subtree_root_index <= order(t)
+    subtree_last_index = _subtree_last_index(subtree_root_index, t.level_sequence)
 
-  t
+    # We found a complete subtree
+    subtree = RootedTree(view(t.level_sequence, subtree_root_index:subtree_last_index))
+    canonical_representation!(subtree, view(buffer, subtree_root_index:subtree_last_index))
+
+    subtree_root_index = subtree_last_index + 1
+    number_of_subtrees += 1
+  end
+
+  # Next, we need to sort the subtrees of `t` (in lexicographically decreasing
+  # order of the level sequences).
+  if number_of_subtrees > 1
+    # Simple bubble sort that can act in-place, avoiding allocations
+    swapped = true
+    while swapped
+      swapped = false
+
+      # Search the first complete subtree
+      subtree1_root_index = 2
+      while subtree1_root_index <= order(t)
+        subtree1_last_index = _subtree_last_index(subtree1_root_index, t.level_sequence)
+
+        # Search the next complete subtree
+        subtree1_last_index == order(t) && break
+
+        subtree2_root_index = subtree1_last_index + 1
+        subtree2_last_index = _subtree_last_index(subtree2_root_index, t.level_sequence)
+
+        # Swap the subtrees if they are not sorted correctly
+        subtree1 = RootedTree(view(t.level_sequence, subtree1_root_index:subtree1_last_index))
+        subtree2 = RootedTree(view(t.level_sequence, subtree2_root_index:subtree2_last_index))
+        if isless(subtree1, subtree2)
+          copyto!(buffer, 1, t.level_sequence, subtree1_root_index, order(subtree1) + order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index, buffer, order(subtree1) + 1, order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer, 1, order(subtree1))
+          # `subtree1_root_index` will be updated below using `subtree1_last_index`.
+          # Thus, we need to adapt this variable here.
+          subtree1_last_index = subtree1_root_index + order(subtree2)
+          swapped = true
+        end
+
+        # Move on to the next pair of subtrees
+        subtree2_last_index == order(t) && break
+        subtree1_root_index = subtree1_last_index + 1
+      end
+    end
+  end
+
+  RootedTree(t.level_sequence, true)
 end
+
+@inline function _subtree_last_index(subtree_root_index, level_sequence)
+  # The subtree goes up to the next node that has the same (or lower)
+  # rank as its root.
+  subtree_last_index = subtree_root_index
+  subtree_root_level = level_sequence[subtree_root_index]
+  while subtree_last_index < length(level_sequence)
+    if level_sequence[subtree_last_index + 1] > subtree_root_level
+      subtree_last_index += 1
+    else
+      break
+    end
+  end
+  return subtree_last_index
+end
+
 
 """
     canonical_representation(t::RootedTree)
 
 Returns a new tree using the canonical representation of the rooted tree `t`,
 i.e., the one with lexicographically biggest level sequence.
+
+See also [`canonical_representation!`](@ref).
 """
 function canonical_representation(t::RootedTree)
   canonical_representation!(copy(t))
@@ -470,14 +556,7 @@ function partition_forest(t::RootedTree, _edge_set)
     # Detach the corresponding subtree and add its partition forest.
     # The subtree goes up to the next node that has the same (or lower)
     # rank as its root.
-    subtree_last_index = subtree_root_index
-    while subtree_last_index < length(ls)
-      if ls[subtree_last_index + 1] > ls[subtree_root_index]
-        subtree_last_index += 1
-      else
-        break
-      end
-    end
+    subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
     # Extract the subtree and the edge set on it. Note that the corresponding
     # edge set contains one element less than the subtree itself.
@@ -674,18 +753,13 @@ function all_splittings(t::RootedTree)
     forest = Vector{RootedTree{T, Vector{T}}}()
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
-        subtree_last_index = subtree_root_index
-        while subtree_last_index < length(ls)
-          if ls[subtree_last_index + 1] > ls[subtree_root_index]
-            subtree_last_index += 1
-          else
-            break
-          end
-        end
+        # Find complete subtree
+        subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
-          push!(forest, rootedtree(@view ls[subtree_root_index:subtree_last_index]))
+          new_tree = rootedtree(@view ls[subtree_root_index:subtree_last_index])
+          push!(forest, new_tree)
           subtree_root_index = subtree_last_index + 1
         else
           break
@@ -696,7 +770,8 @@ function all_splittings(t::RootedTree)
     end
 
     if subtree_root_index == order(t) + 1
-      # This is a valid ordered subtree
+      # This is a valid ordered subtree.
+      # The `level_sequence` will not automatically be a canonical representation.
       level_sequence = ls[node_set]
       subtree = rootedtree!(level_sequence)
       push!(subtrees, subtree)
@@ -760,14 +835,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
     empty!(forest)
     while subtree_root_index <= order(t)
       if node_set[subtree_root_index] == false # This node is removed
-        subtree_last_index = subtree_root_index
-        while subtree_last_index < length(ls)
-          if ls[subtree_last_index + 1] > ls[subtree_root_index]
-            subtree_last_index += 1
-          else
-            break
-          end
-        end
+        subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
         # Check that subtree is all removed
         if !any(@view node_set[subtree_root_index:subtree_last_index])
@@ -788,7 +856,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
     end
 
     if subtree_root_index == order(t) + 1
-      # This is a valid ordered subtree
+      # This is a valid ordered subtree.
       # The `level_sequence` will not automatically be a canonical representation.
       # TODO: splittings;
       #       Decide whether canonical representations should be used. Disabling
@@ -811,7 +879,7 @@ end
 """
     order(t::RootedTree)
 
-The `order` of a rooted tree, i.e., the length of its level sequence.
+The `order` of a rooted tree `t`, i.e., the length of its level sequence.
 """
 order(t::RootedTree) = length(t.level_sequence)
 
