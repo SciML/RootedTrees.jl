@@ -539,15 +539,25 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-function partition_forest(t::RootedTree, _edge_set)
+function partition_forest(t::RootedTree, edge_set)
   @boundscheck begin
-    @assert length(t.level_sequence) == length(_edge_set) + 1
+    @assert length(t.level_sequence) == length(edge_set) + 1
   end
 
-  edge_set = copy(_edge_set)
-  ls = copy(t.level_sequence)
-  T = eltype(ls)
+  level_sequence = copy(t.level_sequence)
+  edge_set_copy = copy(edge_set)
+  T = eltype(level_sequence)
   forest = Vector{RootedTree{T, Vector{T}}}()
+  partition_forest!(forest, level_sequence, edge_set_copy, 1, length(level_sequence))
+  return forest
+end
+
+# internal implementation of `partition_forest` avoiding allocations in the
+# recursion
+function partition_forest!(forest, level_sequence, _edge_set,
+                           tree_root_index, tree_last_index)
+  edge_set = view(_edge_set, tree_root_index:tree_last_index-1)
+  ls = view(level_sequence, tree_root_index:tree_last_index)
 
   while !all(edge_set)
     # Find next removed edge
@@ -558,29 +568,34 @@ function partition_forest(t::RootedTree, _edge_set)
     # rank as its root.
     subtree_last_index = _subtree_last_index(subtree_root_index, ls)
 
-    # Extract the subtree and the edge set on it. Note that the corresponding
-    # edge set contains one element less than the subtree itself.
+    # Extract the subtree and the edge set on it.
     # There is no need to use a canonical representation of the temporary
-    # subtree. Thus, we do not use `rootedtree` but the (unsafe) constructor.
-    # Since we `copy` the level sequence in the recursive call, we can also
-    # use a `view` to reduce memory allocations.
-    subtree = RootedTree(@view ls[subtree_root_index:subtree_last_index])
-    subtree_edge_set = @view edge_set[subtree_root_index:subtree_last_index-1]
+    # subtree. Thus, we do not use `rootedtree` but the indices directly
+    # (or could even use the (unsafe) constructor).
+    subtree_root_index = tree_root_index + subtree_root_index - 1
+    subtree_last_index = tree_root_index + subtree_last_index - 1
 
-    # Form the partition forest recursively
-    append!(forest, partition_forest(subtree, subtree_edge_set))
+    # Form the partition forest recursively and update the indices according
+    # to the stuff removed in the recursion
+    new_subtree_last_index = partition_forest!(forest, level_sequence, _edge_set,
+                                               subtree_root_index, subtree_last_index)
+    tree_last_index = tree_last_index + (new_subtree_last_index - subtree_last_index)
+    subtree_last_index = new_subtree_last_index
 
     # Remove the subtree from the base tree
-    deleteat!(ls, subtree_root_index:subtree_last_index)
-    deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
+    tree_last_index = tree_last_index - (subtree_last_index - subtree_root_index) - 1
+    deleteat!(level_sequence, subtree_root_index:subtree_last_index)
+    deleteat!(_edge_set, subtree_root_index-1:subtree_last_index-1)
+    edge_set = view(_edge_set, tree_root_index:tree_last_index-1)
+    ls = view(level_sequence, tree_root_index:tree_last_index)
   end
 
   # The level sequence `ls` will not automatically be a canonical representation.
   # TODO: partitions;
   #       Decide whether canonical representations should be used. Disabling
   #       them will increase the performance.
-  push!(forest, rootedtree!(ls))
-  return forest
+  push!(forest, rootedtree(ls))
+  return tree_last_index
 end
 
 
