@@ -563,57 +563,58 @@ function partition_forest(t::RootedTree, edge_set)
 
   level_sequence = copy(t.level_sequence)
   edge_set_copy = copy(edge_set)
-  T = eltype(level_sequence)
-  forest = Vector{RootedTree{T, Vector{T}}}()
-  partition_forest!(forest, level_sequence, edge_set_copy, 1, length(level_sequence))
+  forest = Vector{RootedTree{eltype(level_sequence), typeof(level_sequence)}}()
+  partition_forest!(forest, level_sequence, edge_set_copy)
   return forest
 end
 
-# internal implementation of `partition_forest` avoiding allocations in the
-# recursion
-function partition_forest!(forest, level_sequence, _edge_set,
-                           tree_root_index, tree_last_index)
-  edge_set = view(_edge_set, tree_root_index:tree_last_index-1)
-  ls = view(level_sequence, tree_root_index:tree_last_index)
+# Internal implementation that `push!`es to `forest` and modifies the vectors
+# `level_sequence` and `edge_set`.
+function partition_forest!(forest, level_sequence, edge_set)
+  # Iterate over all edges that shall be removed.
+  edge_to_remove = findlast(==(false), edge_set)
+  while edge_to_remove !== nothing
+    # Remember the convention node = edge + 1
+    subtree_root_index = edge_to_remove + 1
+    subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
+    subtree = rootedtree!(level_sequence[subtree_root_index:subtree_last_index])
 
-  while !all(edge_set)
-    # Find next removed edge
-    subtree_root_index = findfirst(==(false), edge_set) + 1
-
-    # Detach the corresponding subtree and add its partition forest.
-    # The subtree goes up to the next node that has the same (or lower)
-    # rank as its root.
-    subtree_last_index = _subtree_last_index(subtree_root_index, ls)
-
-    # Extract the subtree and the edge set on it.
-    # There is no need to use a canonical representation of the temporary
-    # subtree. Thus, we do not use `rootedtree` but the indices directly
-    # (or could even use the (unsafe) constructor).
-    subtree_root_index = tree_root_index + subtree_root_index - 1
-    subtree_last_index = tree_root_index + subtree_last_index - 1
-
-    # Form the partition forest recursively and update the indices according
-    # to the stuff removed in the recursion
-    new_subtree_last_index = partition_forest!(forest, level_sequence, _edge_set,
-                                               subtree_root_index, subtree_last_index)
-    tree_last_index = tree_last_index + (new_subtree_last_index - subtree_last_index)
-    subtree_last_index = new_subtree_last_index
-
-    # Remove the subtree from the base tree
-    tree_last_index = tree_last_index - (subtree_last_index - subtree_root_index) - 1
+    # Since we search from the end, there is no additional edge that needs to
+    # be removed in the current subtree. Thus, we can `push!` it to the `forest`
+    # and remove it from the active `level_sequence` and `edge_set`.
+    push!(forest, subtree)
     deleteat!(level_sequence, subtree_root_index:subtree_last_index)
-    deleteat!(_edge_set, subtree_root_index-1:subtree_last_index-1)
-    edge_set = view(_edge_set, tree_root_index:tree_last_index-1)
-    ls = view(level_sequence, tree_root_index:tree_last_index)
+    deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
+    edge_to_remove = findlast(==(false), edge_set)
   end
-
-  # The level sequence `ls` will not automatically be a canonical representation.
-  # TODO: partitions;
-  #       Decide whether canonical representations should be used. Disabling
-  #       them will increase the performance.
-  push!(forest, rootedtree(ls))
-  return tree_last_index
+  push!(forest, rootedtree(level_sequence))
 end
+
+
+# struct PartitionForestIterator{T, V, Tree<:RootedTree{T, V}}
+#   t::Tree
+#   level_sequence::V
+#   edge_set::Vector{Bool}
+# end
+
+# Base.IteratorSize(::Type{<:PartitionForestIterator}) = Base.SizeUnknown()
+# Base.eltype(::Type{PartitionForestIterator{T, V, Tree}}) where {T, V, Tree} = Tree
+
+# function Base.iterate(forest::PartitionForestIterator)
+#   tree_root_index = firstindex(forest.level_sequence)
+#   tree_last_index = lastindex(forest.level_sequence)
+#   iterate(forest, (tree_root_index, tree_last_index))
+# end
+
+# function Base.iterate(forest::PartitionForestIterator, indices)
+#   tree_root_index, tree_last_index = indices
+#   edge_set = view(forest.edge_set, tree_root_index:tree_last_index-1)
+#   ls = view(forest.level_sequence, tree_root_index:tree_last_index)
+
+#   if all(edge_set)
+
+#   end
+# end
 
 
 # TODO: partitions; add documentation in the README to make them public API
@@ -774,7 +775,7 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   copy!(edge_set_tmp, edge_set)
   resize!(skeleton.level_sequence, order(t))
   copy!(skeleton.level_sequence, t.level_sequence)
-  partition_forest!(forest, skeleton.level_sequence, edge_set_tmp, 1, order(t))
+  partition_forest!(forest, skeleton.level_sequence, edge_set_tmp)
 
   # Compute the partition skeleton.
   # The following is a more efficient version of
