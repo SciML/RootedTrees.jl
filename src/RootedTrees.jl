@@ -261,6 +261,17 @@ end
 
 
 # generation and canonical representation
+"""
+    canonical_representation(t::RootedTree)
+
+Returns a new tree using the canonical representation of the rooted tree `t`,
+i.e., the one with lexicographically biggest level sequence.
+
+See also [`canonical_representation!`](@ref).
+"""
+function canonical_representation(t::RootedTree)
+  canonical_representation!(copy(t))
+end
 
 # A very simple implementation of `canonical_representation!` could read as
 # follows.
@@ -367,17 +378,23 @@ end
   return subtree_last_index
 end
 
+# Allocate global buffer for `canonical_representation!` for each thread
+const CANONICAL_REPRESENTATION_BUFFER_LENGTH = 64
+const CANONICAL_REPRESENTATION_BUFFER = Vector{Vector{Int}}()
 
-"""
-    canonical_representation(t::RootedTree)
+function canonical_representation!(t::RootedTree{Int, Vector{Int}})
+  if order(t) <= CANONICAL_REPRESENTATION_BUFFER_LENGTH
+    buffer = CANONICAL_REPRESENTATION_BUFFER[Threads.threadid()]
+  else
+    buffer = similar(t.level_sequence)
+  end
+  canonical_representation!(t, buffer)
+end
 
-Returns a new tree using the canonical representation of the rooted tree `t`,
-i.e., the one with lexicographically biggest level sequence.
 
-See also [`canonical_representation!`](@ref).
-"""
-function canonical_representation(t::RootedTree)
-  canonical_representation!(copy(t))
+function __init__()
+  Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
+    Vector{Int}(undef, CANONICAL_REPRESENTATION_BUFFER_LENGTH))
 end
 
 
