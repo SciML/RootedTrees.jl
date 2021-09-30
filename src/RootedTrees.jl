@@ -388,11 +388,11 @@ end
 end
 
 # Allocate global buffer for `canonical_representation!` for each thread
-const CANONICAL_REPRESENTATION_BUFFER_LENGTH = 64
+const BUFFER_LENGTH = 64
 const CANONICAL_REPRESENTATION_BUFFER = Vector{Vector{Int}}()
 
 function canonical_representation!(t::RootedTree{Int, Vector{Int}})
-  if order(t) <= CANONICAL_REPRESENTATION_BUFFER_LENGTH
+  if order(t) <= BUFFER_LENGTH
     buffer = CANONICAL_REPRESENTATION_BUFFER[Threads.threadid()]
   else
     buffer = similar(t.level_sequence)
@@ -402,8 +402,23 @@ end
 
 
 function __init__()
+  # canonical_representation!
   Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
-    Vector{Int}(undef, CANONICAL_REPRESENTATION_BUFFER_LENGTH))
+                           Vector{Int}(undef, BUFFER_LENGTH))
+
+  # PartitionIterator
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+
+  return nothing
 end
 
 
@@ -832,18 +847,57 @@ struct PartitionIterator{T, Tree<:RootedTree{T}}
   skeleton::RootedTree{T, Vector{T}}
   edge_set::Vector{Bool}
   edge_set_tmp::Vector{Bool}
-
-  function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
-    skeleton = RootedTree(Vector{T}(undef, order(t)), true)
-    edge_set = zeros(Bool, order(t) - 1)
-    edge_set_tmp = similar(edge_set)
-
-    t_forest = RootedTree(Vector{T}(undef, order(t)), true)
-    level_sequence = similar(t_forest.level_sequence)
-    forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
-    new{T, Tree}(t, forest, skeleton, edge_set, edge_set_tmp)
-  end
 end
+
+function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
+  skeleton = RootedTree(Vector{T}(undef, order(t)), true)
+  edge_set = Vector{Bool}(undef, order(t) - 1)
+  edge_set_tmp = similar(edge_set)
+
+  t_forest = RootedTree(Vector{T}(undef, order(t)), true)
+  level_sequence = similar(t_forest.level_sequence)
+  forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
+  PartitionIterator{T, Tree}(t, forest, skeleton, edge_set, edge_set_tmp)
+end
+
+# Allocate global buffer for `PartitionIterator` for each thread
+const PARTITION_ITERATOR_BUFFER_FOREST_T = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_SKELETON = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_EDGE_SET = Vector{Vector{Bool}}()
+const PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP = Vector{Vector{Bool}}()
+
+function PartitionIterator(t::RootedTree{Int, Vector{Int}})
+  order_t = order(t)
+
+  if order_t <= BUFFER_LENGTH
+    id = Threads.threadid()
+
+    buffer_forest_t = PARTITION_ITERATOR_BUFFER_FOREST_T[id]
+    resize!(buffer_forest_t, order_t)
+    level_sequence  = PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE[id]
+    resize!(level_sequence, order_t)
+    buffer_skeleton = PARTITION_ITERATOR_BUFFER_SKELETON[id]
+    resize!(buffer_skeleton, order_t)
+    edge_set        = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
+    resize!(edge_set, order_t - 1)
+    edge_set_tmp    = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
+    resize!(edge_set_tmp, order_t - 1)
+  else
+    buffer_forest_t = Vector{Int}(undef, order_t)
+    level_sequence  = similar(buffer_forest_t)
+    buffer_skeleton = similar(buffer_forest_t)
+    edge_set        = Vector{Bool}(undef, order_t - 1)
+    edge_set_tmp    = similar(edge_set)
+  end
+
+  skeleton = RootedTree(buffer_skeleton, true)
+  t_forest = RootedTree(buffer_forest_t, true)
+  forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
+  PartitionIterator{Int, RootedTree{Int, Vector{Int}}}(
+    t, forest, skeleton, edge_set, edge_set_tmp)
+end
+
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
