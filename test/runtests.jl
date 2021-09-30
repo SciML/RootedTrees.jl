@@ -309,6 +309,8 @@ end
                         rootedtree([4]),
                         rootedtree([3])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -319,6 +321,8 @@ end
                         rootedtree([2, 3, 4]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -330,6 +334,8 @@ end
                         rootedtree([2, 3]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 3, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -340,6 +346,8 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -351,6 +359,8 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 3, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -359,6 +369,8 @@ end
     edge_set = [true, true, true, true]
     reference_forest = [rootedtree([1, 2, 3, 2, 2])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -369,6 +381,8 @@ end
                         rootedtree([2]),
                         rootedtree([1, 2, 3])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -380,6 +394,8 @@ end
                         rootedtree([2]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -390,6 +406,8 @@ end
                         rootedtree([2, 3, 3]),
                         rootedtree([1])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2, 3])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
@@ -400,6 +418,8 @@ end
     reference_forest = [rootedtree([1, 2, 3, 2]),
                         rootedtree([3])]
     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+    @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
     reference_skeleton = rootedtree([1, 2])
     @test reference_skeleton == partition_skeleton(t, edge_set)
   end
