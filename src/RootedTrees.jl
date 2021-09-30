@@ -18,7 +18,9 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
-export partition_forest, partition_skeleton, all_partitions, PartitionIterator
+export partition_forest, PartitionForestIterator,
+       partition_skeleton,
+       all_partitions, PartitionIterator
 
 export all_splittings, SplittingIterator
 
@@ -546,7 +548,8 @@ Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
 
-See also [`partition_skeleton`](@ref) and [`PartitionIterator`](@ref).
+See also [`partition_skeleton`](@ref), [`PartitionIterator`](@ref), and
+[`PartitionForestIterator`](@ref).
 
 # References
 
@@ -591,30 +594,110 @@ function partition_forest!(forest, level_sequence, edge_set)
 end
 
 
-# struct PartitionForestIterator{T, V, Tree<:RootedTree{T, V}}
-#   t::Tree
-#   level_sequence::V
-#   edge_set::Vector{Bool}
-# end
+"""
+    PartitionForestIterator(t::RootedTree, edge_set)
 
-# Base.IteratorSize(::Type{<:PartitionForestIterator}) = Base.SizeUnknown()
-# Base.eltype(::Type{PartitionForestIterator{T, V, Tree}}) where {T, V, Tree} = Tree
+Lazy iterator representation of the [`partition_forest`](@ref) of the rooted
+tree `t`.
+Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
+if you want to store or modify them during the iteration since they may be
+views to internal caches.
 
-# function Base.iterate(forest::PartitionForestIterator)
-#   tree_root_index = firstindex(forest.level_sequence)
-#   tree_last_index = lastindex(forest.level_sequence)
-#   iterate(forest, (tree_root_index, tree_last_index))
-# end
+See also [`partition_forest`](@ref), [`partition_skeleton`](@ref), and
+[`PartitionIterator`](@ref).
 
-# function Base.iterate(forest::PartitionForestIterator, indices)
-#   tree_root_index, tree_last_index = indices
-#   edge_set = view(forest.edge_set, tree_root_index:tree_last_index-1)
-#   ls = view(forest.level_sequence, tree_root_index:tree_last_index)
+# References
 
-#   if all(edge_set)
+Section 2.3 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series.
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct PartitionForestIterator{T, V, Tree<:RootedTree{T, V}}
+  t::Tree
+  level_sequence::V
+  edge_set::Vector{Bool}
+end
 
-#   end
-# end
+function PartitionForestIterator(t::RootedTree, edge_set)
+  level_sequence = copy(t.level_sequence)
+  t_iterate = RootedTree(copy(level_sequence), true)
+  PartitionForestIterator(t_iterate, level_sequence, copy(edge_set))
+end
+
+Base.IteratorSize(::Type{<:PartitionForestIterator}) = Base.HasLength()
+Base.length(forest::PartitionForestIterator) = count(==(false), forest.edge_set) + 1
+Base.eltype(::Type{PartitionForestIterator{T, V, Tree}}) where {T, V, Tree} = Tree
+
+function Base.iterate(forest::PartitionForestIterator)
+  edge_to_remove = findlast(==(false), forest.edge_set)
+  # If `edge_to_remove` can only be inferred as `Union{Nothing, Int}`, the
+  # return value of `iterate` can only be inferred as a double union, which
+  # is too much for the compiler right now and introduces type instabilities.
+  # Thus, we set `edge_to_remove` to a sensible value indicating that there
+  # is no edge to remove.
+  if edge_to_remove === nothing
+    edge_to_remove = typemin(Int)
+  end
+  finished = false
+  iterate(forest, (edge_to_remove, finished))
+end
+
+function Base.iterate(forest::PartitionForestIterator, state)
+  t = forest.t
+  edge_set = forest.edge_set
+  level_sequence = forest.level_sequence
+  edge_to_remove, finished = state
+
+  # We have already returned the final tree.
+  if finished
+    return nothing
+  end
+
+  # There are no further edges to remove and we can return the final tree.
+  if edge_to_remove == typemin(Int)
+    resize!(t.level_sequence, length(level_sequence))
+    copy!(t.level_sequence, level_sequence)
+    canonical_representation!(t)
+    finished = true
+    return (t, (edge_to_remove, finished))
+  end
+
+  # On to the next subtree
+  # Remember the convention node = edge + 1
+  subtree_root_index = edge_to_remove + 1
+  subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
+  subtree_length = subtree_last_index - subtree_root_index + 1
+
+  # Since we search from the end, there is no additional edge that needs to
+  # be removed in the current subtree. Thus, we can return it as the next
+  # iterate of the partition forest
+  resize!(t.level_sequence, subtree_length)
+  copyto!(t.level_sequence, 1, level_sequence, subtree_root_index, subtree_length)
+  canonical_representation!(t)
+
+  # Now, we can remove the next subtree iterate from the active `level_sequence`
+  # and `edge_set`.
+  deleteat!(level_sequence, subtree_root_index:subtree_last_index)
+  deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
+  edge_to_remove = findlast(==(false), edge_set)
+  if edge_to_remove === nothing
+    edge_to_remove = typemin(Int)
+  end
+  finished = false
+  return (t, (edge_to_remove, finished))
+end
+
+# necessary for simple and convenient use since the iterates may be modified
+function Base.collect(forest::PartitionForestIterator)
+  iterates = Vector{eltype(forest)}()
+  sizehint!(iterates, length(forest))
+  for t in forest
+    push!(iterates, copy(t))
+  end
+  return iterates
+end
 
 
 # TODO: partitions; add documentation in the README to make them public API
@@ -714,12 +797,14 @@ end
     PartitionIterator(t::RootedTree)
 
 Iterator over all partition forests and skeletons of the rooted tree `t`.
-This is basically an iterator version of [`all_partitions`](@ref).
+This is basically a pure iterator version of [`all_partitions`](@ref).
+In particular, the partition forest may only be realized as an iterator.
 Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
 if you want to store or modify them during the iteration since they may be
 views to internal caches.
 
-See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+See also [`partition_forest`](@ref), [`partition_skeleton`](@ref),
+and [`PartitionForestIterator`](@ref).
 
 # References
 
@@ -731,16 +816,19 @@ Section 2.3 of
 """
 struct PartitionIterator{T, Tree<:RootedTree{T}}
   t::Tree
-  forest::Vector{RootedTree{T, Vector{T}}}
+  forest::PartitionForestIterator{T, Vector{T}, RootedTree{T, Vector{T}}}
   skeleton::RootedTree{T, Vector{T}}
   edge_set::Vector{Bool}
   edge_set_tmp::Vector{Bool}
 
   function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
-    forest = Vector{RootedTree{T, Vector{T}}}()
-    skeleton = RootedTree(zeros(T, order(t)), true)
+    skeleton = RootedTree(Vector{T}(undef, order(t)), true)
     edge_set = zeros(Bool, order(t) - 1)
     edge_set_tmp = similar(edge_set)
+
+    t_forest = RootedTree(Vector{T}(undef, order(t)), true)
+    level_sequence = similar(t_forest.level_sequence)
+    forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
     new{T, Tree}(t, forest, skeleton, edge_set, edge_set_tmp)
   end
 end
@@ -757,25 +845,13 @@ end
 function Base.iterate(partitions::PartitionIterator, edge_set_value)
   edge_set_value >= length(partitions) && return nothing
 
-  t = partitions.t
-  edge_set = partitions.edge_set
-
-  digits!(edge_set, edge_set_value, base=2)
-
-  # Compute the partition forest.
-  # The following is a more efficient version of
-  #   forest = partition_forest(t, edge_set)
-  # avoiding some allocations.
-  forest = partitions.forest
-  skeleton = partitions.skeleton
+  t            = partitions.t
+  forest       = partitions.forest
+  skeleton     = partitions.skeleton
+  edge_set     = partitions.edge_set
   edge_set_tmp = partitions.edge_set_tmp
 
-  empty!(forest)
-  resize!(edge_set_tmp, length(edge_set))
-  copy!(edge_set_tmp, edge_set)
-  resize!(skeleton.level_sequence, order(t))
-  copy!(skeleton.level_sequence, t.level_sequence)
-  partition_forest!(forest, skeleton.level_sequence, edge_set_tmp)
+  digits!(edge_set, edge_set_value, base=2)
 
   # Compute the partition skeleton.
   # The following is a more efficient version of
@@ -787,14 +863,25 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   copy!(skeleton.level_sequence, t.level_sequence)
   partition_skeleton!(skeleton, edge_set_tmp)
 
+  # Compute the partition forest.
+  # The following is a more efficient version of
+  #   forest = partition_forest(t, edge_set)
+  # avoiding some allocations and using a lazy iterator.
+  resize!(edge_set_tmp, length(edge_set))
+  copy!(edge_set_tmp, edge_set)
+  resize!(forest.level_sequence, order(t))
+  copy!(forest.level_sequence, t.level_sequence)
+
+
   ((forest, skeleton), edge_set_value + 1)
 end
 
 # necessary for simple and convenient use since the iterates may be modified
 function Base.collect(partitions::PartitionIterator)
   iterates = Vector{eltype(partitions)}()
+  sizehint!(iterates, length(partitions))
   for (forest, skeleton) in partitions
-    push!(iterates, (copy(forest), copy(skeleton)))
+    push!(iterates, (collect(forest), copy(skeleton)))
   end
   return iterates
 end
