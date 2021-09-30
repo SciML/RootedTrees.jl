@@ -62,7 +62,7 @@ Plots.unicodeplots()
     println(devnull, t4)
   end
 
-  # more tests of the anonical representation
+  # more tests of the canonical representation
   t = rootedtree([1, 2, 3, 2, 3, 3, 2])
   @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
 
@@ -71,6 +71,10 @@ Plots.unicodeplots()
 
   t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3])
   @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2, 3]
+
+  level_sequence = zeros(Int, RootedTrees.CANONICAL_REPRESENTATION_BUFFER_LENGTH + 1)
+  level_sequence[1] -= 1
+  @inferred rootedtree(level_sequence)
 end
 
 
