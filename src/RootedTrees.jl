@@ -519,37 +519,6 @@ end
 end
 
 
-struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
-  level_sequence::Vector{T}
-  indices::Vector{T}
-  iscanonical::Bool
-
-  function Subtrees(t::RootedTree{T}) where {T}
-    level_sequence = t.level_sequence
-    indices = Vector{T}()
-
-    start = 2
-    i = 3
-    while i <= length(level_sequence)
-      if level_sequence[i] <= level_sequence[start]
-        push!(indices, start)
-        start = i
-      end
-      i += 1
-    end
-    push!(indices, start)
-
-    # in order to get the stopping index for the last subtree
-    push!(indices, length(level_sequence)+1)
-
-    new{T}(level_sequence, indices, iscanonical(t))
-  end
-end
-
-Base.size(s::Subtrees) = (length(s.indices)-1, )
-Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices[i]:s.indices[i+1]-1), s.iscanonical)
-
-
 """
     subtrees(t::RootedTree)
 
@@ -1106,27 +1075,42 @@ Reference: Section 301 of
   John Wiley & Sons, 2008.
 """
 function symmetry(t::RootedTree)
-  if order(t) == 1 || order(t) == 2
+  if order(t) <= 2
     return 1
   end
 
+  # Rely on the canonical ordering to guarantee that identical subtrees are
+  # next to each other.
   if !iscanonical(t)
-    t = canonical_representation(t)
+    return symmetry(canonical_representation(t))
   end
 
-  subtr = Subtrees(t)
-  sym = 1
-  num = 1
+  # Iterate over all subtrees. Since we know that the `order(t)` is at least 3,
+  # there must be at least one subtree.
+  subtrees = SubtreeIterator(t)
 
-  @inbounds for i in 2:length(subtr)
-    if subtr[i] == subtr[i-1]
-      num += 1
+  # Unroll the `for` loop manually to be able to compare the next iterate with
+  # the previous one.
+  previous_subtree, state = iterate(subtrees)
+
+  result = 1
+  num_same_subtrees = 1
+  iter = iterate(subtrees, state)
+  while iter !== nothing
+    subtree, state = iter
+    if subtree == previous_subtree
+      num_same_subtrees += 1
     else
-      sym *= factorial(num) * symmetry(subtr[i-1])^num
-      num = 1
+      result *= factorial(num_same_subtrees) * symmetry(previous_subtree)^num_same_subtrees
+      num_same_subtrees = 1
     end
+
+    previous_subtree = subtree
+    iter = iterate(subtrees, state)
   end
-  sym *= factorial(num) * symmetry(subtr[end])^num
+
+  result *= factorial(num_same_subtrees) * symmetry(previous_subtree)^num_same_subtrees
+  return result
 end
 
 const σ = symmetry
