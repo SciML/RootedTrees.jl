@@ -1145,18 +1145,11 @@ Reference: Section 301 of
   John Wiley & Sons, 2008.
 """
 function density(t::RootedTree)
-  if order(t) == 1
-    return 1
-  elseif order(t) == 2
-    return 2
+  result = order(t)
+  for subtree in SubtreeIterator(t)
+    result *= density(subtree)
   end
-
-  subtr = Subtrees(t)
-  den = order(t)
-  for τ in subtr
-    den *= density(τ)
-  end
-  den
+  result
 end
 
 const γ = density
