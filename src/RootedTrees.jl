@@ -588,6 +588,7 @@ function partition_forest!(forest, level_sequence, edge_set)
     push!(forest, subtree)
     deleteat!(level_sequence, subtree_root_index:subtree_last_index)
     deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
+
     edge_to_remove = findlast(==(false), edge_set)
   end
   push!(forest, rootedtree(level_sequence))
@@ -725,38 +726,41 @@ function partition_skeleton(t::RootedTree, edge_set)
 
   edge_set_copy = copy(edge_set)
   skeleton = RootedTree(copy(t.level_sequence), true)
-  return partition_skeleton!(skeleton, edge_set_copy)
+  return partition_skeleton!(skeleton.level_sequence, edge_set_copy)
 end
 
 # internal in-place version of partition_skeleton modifying the inputs
-function partition_skeleton!(skeleton::RootedTree, edge_set)
-  ls = skeleton.level_sequence
-
-  while any(edge_set)
-    # Find next edge to contract
-    subtree_root_index = findfirst(==(true), edge_set) + 1
-
+function partition_skeleton!(level_sequence, edge_set)
+  # Iterate over all edges that shall be kept/contracted.
+  # We start the iteration at the end since this will result in less memory
+  # moves because we have already reduced the size of the vectors when reaching
+  # the beginning.
+  edge_to_contract = findlast(edge_set)
+  while edge_to_contract !== nothing
     # Contract the corresponding edge by removing the subtree root and promoting
-    # the rest of the subtree
+    # the rest of the subtree.
+    # Remember the convention node = edge + 1
+    subtree_root_index = edge_to_contract + 1
     subtree_last_index = subtree_root_index + 1
-    while subtree_last_index <= length(ls)
-      if ls[subtree_last_index] > ls[subtree_root_index]
-        ls[subtree_last_index] -= 1
+    while subtree_last_index <= length(level_sequence)
+      if level_sequence[subtree_last_index] > level_sequence[subtree_root_index]
+        level_sequence[subtree_last_index] -= 1
         subtree_last_index += 1
       else
         break
       end
     end
+
     # Remove the root node
-    deleteat!(ls, subtree_root_index)
-    deleteat!(edge_set, subtree_root_index-1)
+    deleteat!(level_sequence, subtree_root_index)
+    deleteat!(edge_set, edge_to_contract)
+
+    edge_to_contract = findlast(edge_set)
   end
 
-  # The level sequence `ls` will not automatically be a canonical representation.
-  # TODO: partitions;
-  #       Decide whether canonical representations should be used. Disabling
-  #       them will increase the performance.
-  return rootedtree!(ls)
+  # The level sequence `level_sequence` will not automatically be a canonical
+  # representation.
+  return rootedtree!(level_sequence)
 end
 
 
@@ -861,7 +865,7 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   copy!(edge_set_tmp, edge_set)
   resize!(skeleton.level_sequence, order(t))
   copy!(skeleton.level_sequence, t.level_sequence)
-  partition_skeleton!(skeleton, edge_set_tmp)
+  partition_skeleton!(skeleton.level_sequence, edge_set_tmp)
 
   # Compute the partition forest.
   # The following is a more efficient version of
