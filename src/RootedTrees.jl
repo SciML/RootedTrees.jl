@@ -789,13 +789,26 @@ function all_partitions(t::RootedTree)
   skeletons = [partition_skeleton(t, edge_set)]
 
   for edge_set_value in 1:(2^length(edge_set) - 1)
-    digits!(edge_set, edge_set_value, base=2)
+    binary_digits!(edge_set, edge_set_value)
     push!(forests,   partition_forest(t, edge_set))
     push!(skeletons, partition_skeleton(t, edge_set))
   end
 
   return (; forests, skeletons)
 end
+
+# A helper function to comute the binary representation of an integer `n` as
+# a vector of `Bool`s. This is a more efficient version of
+#   binary_digits!(digits, n) = digits!(digits, n, base=2)
+function binary_digits!(digits::Vector{Bool}, n::Int)
+  bit = 1
+  for i in eachindex(digits)
+    digits[i] = n & bit > 0
+    bit = bit << 1
+  end
+  digits
+end
+
 
 
 """
@@ -856,7 +869,7 @@ function Base.iterate(partitions::PartitionIterator, edge_set_value)
   edge_set     = partitions.edge_set
   edge_set_tmp = partitions.edge_set_tmp
 
-  digits!(edge_set, edge_set_value, base=2)
+  binary_digits!(edge_set, edge_set_value)
 
   # Compute the partition skeleton.
   # The following is a more efficient version of
@@ -919,7 +932,7 @@ function all_splittings(t::RootedTree)
   subtrees = Vector{RootedTree{T, Vector{T}}}() # ordered subtrees
 
   for node_set_value in 0:(2^order(t) - 1)
-    digits!(node_set, node_set_value, base=2)
+    binary_digits!(node_set, node_set_value)
 
     # Check that if a node is removed then all of its descendants are removed
     subtree_root_index = 1
@@ -1001,7 +1014,7 @@ function Base.iterate(splittings::SplittingIterator, node_set_value)
   forest = Vector{RootedTree{T, Vector{T}}}()
 
   while node_set_value <= splittings.max_node_set_value
-    digits!(node_set, node_set_value, base=2)
+    binary_digits!(node_set, node_set_value)
 
     # Check that if a node is removed then all of its descendants are removed
     subtree_root_index = 1
