@@ -439,12 +439,12 @@ end
 Base.IteratorSize(::Type{<:RootedTreeIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{RootedTreeIterator{T}}) where T = RootedTree{T,Vector{T}}
 
-function Base.iterate(iter::RootedTreeIterator{T}) where {T}
+@inline function Base.iterate(iter::RootedTreeIterator{T}) where {T}
   iter.t.level_sequence[:] = one(T):iter.order
   (iter.t, false)
 end
 
-function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
+@inline function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
   state && return nothing
 
   two = iter.t.level_sequence[1] + one(T)
@@ -638,11 +638,11 @@ Base.IteratorSize(::Type{<:PartitionForestIterator}) = Base.HasLength()
 Base.length(forest::PartitionForestIterator) = count(==(false), forest.edge_set) + 1
 Base.eltype(::Type{PartitionForestIterator{T, V, Tree}}) where {T, V, Tree} = Tree
 
-function Base.iterate(forest::PartitionForestIterator)
+@inline function Base.iterate(forest::PartitionForestIterator)
   iterate(forest, lastindex(forest.edge_set))
 end
 
-function Base.iterate(forest::PartitionForestIterator, search_start)
+@inline function Base.iterate(forest::PartitionForestIterator, search_start)
   t = forest.t
   edge_set = forest.edge_set
   level_sequence = forest.level_sequence
@@ -848,12 +848,12 @@ Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
 Base.eltype(::Type{PartitionIterator{T, Tree}}) where {T, Tree} = Tuple{Vector{RootedTree{T, Vector{T}}}, RootedTree{T, Vector{T}}}
 
-function Base.iterate(partitions::PartitionIterator)
+@inline function Base.iterate(partitions::PartitionIterator)
   edge_set_value = 0
   iterate(partitions, edge_set_value)
 end
 
-function Base.iterate(partitions::PartitionIterator, edge_set_value)
+@inline function Base.iterate(partitions::PartitionIterator, edge_set_value)
   edge_set_value >= length(partitions) && return nothing
 
   t            = partitions.t
@@ -992,12 +992,12 @@ end
 Base.IteratorSize(::Type{<:SplittingIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{SplittingIterator{T}}) where {T} = Tuple{Vector{T}, T}
 
-function Base.iterate(splittings::SplittingIterator)
+@inline function Base.iterate(splittings::SplittingIterator)
   node_set_value = 0
   iterate(splittings, node_set_value)
 end
 
-function Base.iterate(splittings::SplittingIterator, node_set_value)
+@inline function Base.iterate(splittings::SplittingIterator, node_set_value)
   node_set_value > splittings.max_node_set_value && return nothing
 
   node_set = splittings.node_set
