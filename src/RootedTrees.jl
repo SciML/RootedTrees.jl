@@ -682,7 +682,8 @@ function Base.iterate(forest::PartitionForestIterator, state)
   # and `edge_set`.
   deleteat!(level_sequence, subtree_root_index:subtree_last_index)
   deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
-  edge_to_remove = findlast(==(false), edge_set)
+
+  edge_to_remove = findprev(==(false), edge_set, edge_to_remove - 1)
   if edge_to_remove === nothing
     edge_to_remove = typemin(Int)
   end
@@ -755,7 +756,7 @@ function partition_skeleton!(level_sequence, edge_set)
     deleteat!(level_sequence, subtree_root_index)
     deleteat!(edge_set, edge_to_contract)
 
-    edge_to_contract = findlast(edge_set)
+    edge_to_contract = findprev(edge_set, edge_to_contract - 1)
   end
 
   # The level sequence `level_sequence` will not automatically be a canonical
