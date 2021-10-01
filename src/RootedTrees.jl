@@ -1306,10 +1306,9 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
     return "τ"
   end
 
-  subtr = Subtrees(t)
   result = ""
-  for i in eachindex(subtr)
-    result = result * butcher_representation(subtr[i], normalize)
+  for subtree in SubtreeIterator(t)
+    result = result * butcher_representation(subtree, normalize)
   end
   result = "[" * result * "]"
 
