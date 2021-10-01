@@ -489,6 +489,36 @@ end
 
 
 # subtrees
+struct SubtreeIterator{Tree<:RootedTree}
+  t::Tree
+end
+
+# optional: define some interface methods such as
+# Base.IteratorSize(::Type{<:SubtreeIterator}) = Base.SizeUnknown()
+# Base.eltype(::Type{SubtreeIterator})
+
+@inline function Base.iterate(subtrees::SubtreeIterator)
+  subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
+  iterate(subtrees, subtree_root_index)
+end
+
+@inline function Base.iterate(subtrees::SubtreeIterator, subtree_root_index)
+  level_sequence = subtrees.t.level_sequence
+
+  # terminate the iteration if there are no further subtrees
+  if subtree_root_index > lastindex(level_sequence)
+    return nothing
+  end
+
+  # find the next complete subtree
+  subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
+  subtree = RootedTree(view(level_sequence,
+                            subtree_root_index:subtree_last_index))
+
+  return (subtree, subtree_last_index + 1)
+end
+
+
 struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
   level_sequence::Vector{T}
   indices::Vector{T}
@@ -1200,21 +1230,9 @@ function derivative_weight(t::RootedTree, A, b, c)
 
   # Iterate over all subtrees and update the `result` using recursion
   # This should finally be read as
-  # result = zero(c) .+ one(eltype(c))
-  # for subtree in Subtrees(t)
-  #   tmp = A * derivative_weight(subtree, A, b, c)
-  #   result = result .* tmp
-  # end
-  subtree_root_index = firstindex(t.level_sequence) + 1
-  while subtree_root_index <= order(t)
-    subtree_last_index = _subtree_last_index(subtree_root_index, t.level_sequence)
-    subtree = RootedTree(view(t.level_sequence,
-                              subtree_root_index:subtree_last_index))
-
+  for subtree in SubtreeIterator(t)
     tmp = A * derivative_weight(subtree, A, b, c)
     result = result .* tmp
-
-    subtree_root_index = subtree_last_index + 1
   end
 
   return result
