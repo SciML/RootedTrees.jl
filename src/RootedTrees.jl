@@ -632,37 +632,28 @@ Base.length(forest::PartitionForestIterator) = count(==(false), forest.edge_set)
 Base.eltype(::Type{PartitionForestIterator{T, V, Tree}}) where {T, V, Tree} = Tree
 
 function Base.iterate(forest::PartitionForestIterator)
-  edge_to_remove = findlast(==(false), forest.edge_set)
-  # If `edge_to_remove` can only be inferred as `Union{Nothing, Int}`, the
-  # return value of `iterate` can only be inferred as a double union, which
-  # is too much for the compiler right now and introduces type instabilities.
-  # Thus, we set `edge_to_remove` to a sensible value indicating that there
-  # is no edge to remove.
-  if edge_to_remove === nothing
-    edge_to_remove = typemin(Int)
-  end
-  finished = false
-  iterate(forest, (edge_to_remove, finished))
+  iterate(forest, lastindex(forest.edge_set))
 end
 
-function Base.iterate(forest::PartitionForestIterator, state)
+function Base.iterate(forest::PartitionForestIterator, search_start)
   t = forest.t
   edge_set = forest.edge_set
   level_sequence = forest.level_sequence
-  edge_to_remove, finished = state
 
-  # We have already returned the final tree.
-  if finished
+  # We use `search_start = typemin(Int)` to indicate that we have already
+  # returned the final tree in the previous call.
+  if search_start == typemin(Int)
     return nothing
   end
 
+  edge_to_remove = findprev(==(false), edge_set, search_start)
+
   # There are no further edges to remove and we can return the final tree.
-  if edge_to_remove == typemin(Int)
+  if edge_to_remove === nothing
     resize!(t.level_sequence, length(level_sequence))
     copy!(t.level_sequence, level_sequence)
     canonical_representation!(t)
-    finished = true
-    return (t, (edge_to_remove, finished))
+    return (t, typemin(Int))
   end
 
   # On to the next subtree
@@ -683,12 +674,7 @@ function Base.iterate(forest::PartitionForestIterator, state)
   deleteat!(level_sequence, subtree_root_index:subtree_last_index)
   deleteat!(edge_set, subtree_root_index-1:subtree_last_index-1)
 
-  edge_to_remove = findprev(==(false), edge_set, edge_to_remove - 1)
-  if edge_to_remove === nothing
-    edge_to_remove = typemin(Int)
-  end
-  finished = false
-  return (t, (edge_to_remove, finished))
+  return (t, edge_to_remove - 1)
 end
 
 # necessary for simple and convenient use since the iterates may be modified
