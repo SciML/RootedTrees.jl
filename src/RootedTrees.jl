@@ -1195,16 +1195,28 @@ Reference: Section 312 of
   John Wiley & Sons, 2008.
 """
 function derivative_weight(t::RootedTree, A, b, c)
-  if order(t) == 1
-    return zero(c) .+ one(eltype(c))
+  # Initialize `result` with the identity element of pointwise multiplication `.*`
+  result = zero(c) .+ one(eltype(c))
+
+  # Iterate over all subtrees and update the `result` using recursion
+  # This should finally be read as
+  # result = zero(c) .+ one(eltype(c))
+  # for subtree in Subtrees(t)
+  #   tmp = A * derivative_weight(subtree, A, b, c)
+  #   result = result .* tmp
+  # end
+  subtree_root_index = firstindex(t.level_sequence) + 1
+  while subtree_root_index <= order(t)
+    subtree_last_index = _subtree_last_index(subtree_root_index, t.level_sequence)
+    subtree = RootedTree(view(t.level_sequence,
+                              subtree_root_index:subtree_last_index))
+
+    tmp = A * derivative_weight(subtree, A, b, c)
+    result = result .* tmp
+
+    subtree_root_index = subtree_last_index + 1
   end
 
-  subtr = Subtrees(t)
-  result = A * derivative_weight(subtr[1], A, b, c)
-  for i in 2:length(subtr)
-    tmp = A * derivative_weight(subtr[i], A, b, c)
-    result = result .* tmp
-  end
   return result
 end
 
