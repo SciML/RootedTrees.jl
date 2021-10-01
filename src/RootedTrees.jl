@@ -489,35 +489,34 @@ end
 
 
 # subtrees
-struct Subtrees{T<:Integer} <: AbstractVector{RootedTree{T}}
-  level_sequence::Vector{T}
-  indices::Vector{T}
-  iscanonical::Bool
-
-  function Subtrees(t::RootedTree{T}) where {T}
-    level_sequence = t.level_sequence
-    indices = Vector{T}()
-
-    start = 2
-    i = 3
-    while i <= length(level_sequence)
-      if level_sequence[i] <= level_sequence[start]
-        push!(indices, start)
-        start = i
-      end
-      i += 1
-    end
-    push!(indices, start)
-
-    # in order to get the stopping index for the last subtree
-    push!(indices, length(level_sequence)+1)
-
-    new{T}(level_sequence, indices, iscanonical(t))
-  end
+struct SubtreeIterator{Tree<:RootedTree}
+  t::Tree
 end
 
-Base.size(s::Subtrees) = (length(s.indices)-1, )
-Base.getindex(s::Subtrees, i::Int) = RootedTree(view(s.level_sequence, s.indices[i]:s.indices[i+1]-1), s.iscanonical)
+# optional: define some interface methods such as
+# Base.IteratorSize(::Type{<:SubtreeIterator}) = Base.SizeUnknown()
+# Base.eltype(::Type{SubtreeIterator})
+
+@inline function Base.iterate(subtrees::SubtreeIterator)
+  subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
+  iterate(subtrees, subtree_root_index)
+end
+
+@inline function Base.iterate(subtrees::SubtreeIterator, subtree_root_index)
+  level_sequence = subtrees.t.level_sequence
+
+  # terminate the iteration if there are no further subtrees
+  if subtree_root_index > lastindex(level_sequence)
+    return nothing
+  end
+
+  # find the next complete subtree
+  subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
+  subtree = RootedTree(view(level_sequence,
+                            subtree_root_index:subtree_last_index))
+
+  return (subtree, subtree_last_index + 1)
+end
 
 
 """
@@ -1076,27 +1075,42 @@ Reference: Section 301 of
   John Wiley & Sons, 2008.
 """
 function symmetry(t::RootedTree)
-  if order(t) == 1 || order(t) == 2
+  if order(t) <= 2
     return 1
   end
 
+  # Rely on the canonical ordering to guarantee that identical subtrees are
+  # next to each other.
   if !iscanonical(t)
-    t = canonical_representation(t)
+    return symmetry(canonical_representation(t))
   end
 
-  subtr = Subtrees(t)
-  sym = 1
-  num = 1
+  # Iterate over all subtrees. Since we know that the `order(t)` is at least 3,
+  # there must be at least one subtree.
+  subtrees = SubtreeIterator(t)
 
-  @inbounds for i in 2:length(subtr)
-    if subtr[i] == subtr[i-1]
-      num += 1
+  # Unroll the `for` loop manually to be able to compare the next iterate with
+  # the previous one.
+  previous_subtree, state = iterate(subtrees)
+
+  result = 1
+  num_same_subtrees = 1
+  iter = iterate(subtrees, state)
+  while iter !== nothing
+    subtree, state = iter
+    if subtree == previous_subtree
+      num_same_subtrees += 1
     else
-      sym *= factorial(num) * symmetry(subtr[i-1])^num
-      num = 1
+      result *= factorial(num_same_subtrees) * symmetry(previous_subtree)^num_same_subtrees
+      num_same_subtrees = 1
     end
+
+    previous_subtree = subtree
+    iter = iterate(subtrees, state)
   end
-  sym *= factorial(num) * symmetry(subtr[end])^num
+
+  result *= factorial(num_same_subtrees) * symmetry(previous_subtree)^num_same_subtrees
+  return result
 end
 
 const σ = symmetry
@@ -1115,18 +1129,11 @@ Reference: Section 301 of
   John Wiley & Sons, 2008.
 """
 function density(t::RootedTree)
-  if order(t) == 1
-    return 1
-  elseif order(t) == 2
-    return 2
+  result = order(t)
+  for subtree in SubtreeIterator(t)
+    result *= density(subtree)
   end
-
-  subtr = Subtrees(t)
-  den = order(t)
-  for τ in subtr
-    den *= density(τ)
-  end
-  den
+  result
 end
 
 const γ = density
@@ -1195,16 +1202,16 @@ Reference: Section 312 of
   John Wiley & Sons, 2008.
 """
 function derivative_weight(t::RootedTree, A, b, c)
-  if order(t) == 1
-    return zero(c) .+ one(eltype(c))
-  end
+  # Initialize `result` with the identity element of pointwise multiplication `.*`
+  result = zero(c) .+ one(eltype(c))
 
-  subtr = Subtrees(t)
-  result = A * derivative_weight(subtr[1], A, b, c)
-  for i in 2:length(subtr)
-    tmp = A * derivative_weight(subtr[i], A, b, c)
+  # Iterate over all subtrees and update the `result` using recursion
+  # This should finally be read as
+  for subtree in SubtreeIterator(t)
+    tmp = A * derivative_weight(subtree, A, b, c)
     result = result .* tmp
   end
+
   return result
 end
 
@@ -1283,10 +1290,9 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
     return "τ"
   end
 
-  subtr = Subtrees(t)
   result = ""
-  for i in eachindex(subtr)
-    result = result * butcher_representation(subtr[i], normalize)
+  for subtree in SubtreeIterator(t)
+    result = result * butcher_representation(subtree, normalize)
   end
   result = "[" * result * "]"
 
