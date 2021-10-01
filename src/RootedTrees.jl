@@ -306,6 +306,13 @@ one with lexicographically biggest level sequence.
 See also [`canonical_representation`](@ref).
 """
 function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequence))
+  # Since we use a recursive implementation, it is useful to exit early for
+  # small trees. If there are at most 3 vertices in a valid rooted tree, its
+  # level sequence must already be in canonical representation.
+  if order(t) <= 3
+    return RootedTree(t.level_sequence, true)
+  end
+
   # First, sort all subtrees recursively. Here, we use `view`s to avoid memory
   # allocations.
   # TODO: Assume 1-based indexing in the following
