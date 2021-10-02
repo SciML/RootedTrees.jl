@@ -501,6 +501,8 @@ end
     level_sequence[1] -= 1
     t = rootedtree(level_sequence)
     @inferred PartitionIterator(t)
+    t = @inferred rootedtree!(view(level_sequence, :))
+    @inferred PartitionIterator(t)
   end
 end
 
