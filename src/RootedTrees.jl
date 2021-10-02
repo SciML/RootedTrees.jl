@@ -512,8 +512,10 @@ end
 
   # find the next complete subtree
   subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
-  subtree = RootedTree(view(level_sequence,
-                            subtree_root_index:subtree_last_index))
+  subtree = RootedTree(
+    view(level_sequence, subtree_root_index:subtree_last_index),
+    # if t is in canonical representation, its subtrees are, too
+    iscanonical(subtrees.t))
 
   return (subtree, subtree_last_index + 1)
 end
