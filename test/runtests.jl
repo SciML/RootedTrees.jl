@@ -246,6 +246,10 @@ end
   @test β(t17) == α(t17)*γ(t17)
   @test t17 == t1 ∘ t8
   @test butcher_representation(t17) == "[[[[τ]]]]"
+
+  # test non-canonical representation
+  level_sequence = [1, 2, 3, 2, 3, 4, 2, 3, 2, 3, 4, 5, 6, 2, 3, 4]
+  @test σ(rootedtree(level_sequence)) == σ(RootedTrees.RootedTree(level_sequence))
 end
 
 
