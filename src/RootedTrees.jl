@@ -1448,6 +1448,9 @@ julia> rootedtree([1, 2, 3, 3, 2]) |> RootedTrees.latexify |> println
 ```
 """
 function latexify(t::RootedTree)
+  if isempty(t)
+    return "\\varnothing"
+  end
   list_representation = butcher_representation(t, false)
   "\\rootedtree" * replace(list_representation, "τ" => "[]")
 end

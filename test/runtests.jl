@@ -99,6 +99,7 @@ end
   @test RootedTrees.latexify(t1) == latex_string
   @test latexify(t1) == "\$" * latex_string * "\$"
   @test isempty(RootedTrees.subtrees(t1))
+  @test RootedTrees.latexify(empty(t1)) == "\\varnothing"
 
   @inferred order(t1)
   @inferred σ(t1)
