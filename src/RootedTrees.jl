@@ -7,6 +7,8 @@ using LinearAlgebra: dot
 
 using RecipesBase: RecipesBase
 
+using Requires: @require
+
 
 export rootedtree, rootedtree!, RootedTreeIterator
 
@@ -402,6 +404,12 @@ end
 
 
 function __init__()
+  @require Latexify="23fbe1c1-3f47-55db-b15f-69d7ec21a316" begin
+    using .Latexify: Latexify
+
+    Latexify._latexraw(t::RootedTree; kwargs...) = latexify(t)
+  end
+
   # canonical_representation!
   Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
                            Vector{Int}(undef, BUFFER_LENGTH))
