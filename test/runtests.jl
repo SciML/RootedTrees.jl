@@ -67,12 +67,18 @@ Plots.unicodeplots()
   # more tests of the canonical representation
   t = rootedtree([1, 2, 3, 2, 3, 3, 2])
   @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
+  @test !isempty(t)
 
   t = rootedtree([1, 2, 3, 2, 3, 4, 2, 3])
   @test t.level_sequence == [1, 2, 3, 4, 2, 3, 2, 3]
+  @test !isempty(t)
 
   t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3])
   @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2, 3]
+  @test !isempty(t)
+
+  @test isempty(rootedtree(Int[]))
+  @test isempty(empty(t))
 
   level_sequence = zeros(Int, RootedTrees.BUFFER_LENGTH + 1)
   level_sequence[1] -= 1

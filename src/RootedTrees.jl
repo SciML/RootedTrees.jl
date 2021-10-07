@@ -83,6 +83,8 @@ iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
 Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
+Base.isempty(t::RootedTree) = isempty(t.level_sequence)
+Base.empty(t::RootedTree) = RootedTree(empty(t.level_sequence), iscanonical(t))
 
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
