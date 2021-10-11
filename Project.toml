@@ -4,21 +4,22 @@ authors = ["Hendrik Ranocha <mail@ranocha.de> and contributors"]
 version = "2.6.3-pre"
 
 [deps]
+Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 RecipesBase = "3cdcf5f2-1ef4-517c-9805-6587b60abb01"
 Requires = "ae029012-a4dd-5104-9daa-d747884805df"
 
 [compat]
+Latexify = "0.15"
 RecipesBase = "1"
 Requires = "1"
 julia = "1"
 
 [extras]
-Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [targets]
-test = ["Latexify", "Plots", "StaticArrays", "Test", "UnicodePlots"]
+test = ["Plots", "StaticArrays", "Test", "UnicodePlots"]

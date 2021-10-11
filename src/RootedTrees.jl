@@ -5,12 +5,11 @@ module RootedTrees
 
 using LinearAlgebra: dot
 
+using Latexify: Latexify
 using RecipesBase: RecipesBase
 
-using Requires: @require
 
-
-export rootedtree, rootedtree!, RootedTreeIterator
+export RootedTree, rootedtree, rootedtree!, RootedTreeIterator
 
 export butcher_representation
 
@@ -116,70 +115,6 @@ Base.empty(t::RootedTree) = RootedTree(empty(t.level_sequence), iscanonical(t))
 function Base.show(io::IO, t::RootedTree{T}) where {T}
   print(io, "RootedTree{", T, "}: ")
   show(io, t.level_sequence)
-end
-
-
-RecipesBase.@recipe function plot(t::RootedTree)
-  # Compute x and y coordinates recursively
-  width = 2.0
-  height = 1.0
-  x, y = _plot_coordinates(t, 0.0, 0.0, width, height)
-
-  # Series properties
-  seriescolor --> :black
-  markershape --> :circle
-  markersize  --> 6
-  linewidth   --> 2
-
-  # Geometric properties
-  grid --> false
-  ticks --> false
-  foreground_color_border --> :white
-  legend --> :bottomright
-
-  # We need to filter out `NaN` since these pollute `extrema`
-  x_min, x_max = extrema(Iterators.filter(!isnan, x))
-  if x_min ≈ x_max
-    xlims --> (x_min - width/2, x_max + width/2)
-  end
-  y_min, y_max = extrema(Iterators.filter(!isnan, y))
-  if y_min ≈ y_max
-    ylims --> (y_min - height/2, y_max + height/2)
-  end
-
-  # Annotations
-  label --> "tree " * string(t.level_sequence)
-
-  x, y
-end
-
-function _plot_coordinates(t::RootedTree, x_root::T, y_root::T,
-                                          width::T,  height::T) where {T}
-  # Indicate a new line series by `NaN`
-  nan = convert(T, NaN)
-  x = [x_root]
-  y = [y_root]
-
-  # Compute plot coordinates recursively
-  subtr = subtrees(t)
-
-  # Distribute children uniformly in x and at equal y coordinates
-  y_child = y_root + height
-  num_children = length(subtr)
-  distance = width * (num_children - 1) / 2
-
-  x_children = range(x_root - distance, x_root + distance, length=num_children)
-  for idx in eachindex(subtr)
-    x_child = x_children[idx]
-    push!(x, nan, x_root, x_child)
-    push!(y, nan, y_root, y_child)
-    x_recursive, y_recursive = _plot_coordinates(subtr[idx],
-      x_child, y_child, width / 3, height)
-    append!(x, x_recursive)
-    append!(y, y_recursive)
-  end
-
-  return x, y
 end
 
 
@@ -406,12 +341,6 @@ end
 
 
 function __init__()
-  @require Latexify="23fbe1c1-3f47-55db-b15f-69d7ec21a316" begin
-    using .Latexify: Latexify
-
-    Latexify._latexraw(t::RootedTree; kwargs...) = latexify(t)
-  end
-
   # canonical_representation!
   Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
                            Vector{Int}(undef, BUFFER_LENGTH))
@@ -1388,72 +1317,8 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
 end
 
 
-"""
-    latexify(t::RootedTree)
-
-Return a LaTeX representation of the rooted tree `t`. This makes use of the
-LaTeX package [forest](https://ctan.org/pkg/forest) and assumes that you use
-the following LaTeX code in the preamble.
-
-```
-% Butcher trees, cf. https://tex.stackexchange.com/questions/283343/butcher-trees-in-tikz
-\\usepackage{forest}
-\\forestset{
-  */.style={
-    delay+={append={[]},}
-  },
-  rooted tree/.style={
-    for tree={
-      grow'=90,
-      parent anchor=center,
-      child anchor=center,
-      s sep=2.5pt,
-      if level=0{
-        baseline
-      }{},
-      delay={
-        if content={*}{
-          content=,
-          append={[]}
-        }{}
-      }
-    },
-    before typesetting nodes={
-      for tree={
-        circle,
-        fill,
-        minimum width=3pt,
-        inner sep=0pt,
-        child anchor=center,
-      },
-    },
-    before computing xy={
-      for tree={
-        l=5pt,
-      }
-    }
-  }
-}
-\\DeclareDocumentCommand\\rootedtree{o}{\\Forest{rooted tree [#1]}}
-```
-
-# Examples
-
-```jldoctest
-julia> rootedtree([1, 2, 2]) |> RootedTrees.latexify |> println
-\rootedtree[[][]]
-
-julia> rootedtree([1, 2, 3, 3, 2]) |> RootedTrees.latexify |> println
-\rootedtree[[[][]][]]
-```
-"""
-function latexify(t::RootedTree)
-  if isempty(t)
-    return "\\varnothing"
-  end
-  list_representation = butcher_representation(t, false)
-  "\\rootedtree" * replace(list_representation, "τ" => "[]")
-end
+include("latexify.jl")
+include("plots.jl")
 
 
 end # module

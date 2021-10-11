@@ -2,7 +2,7 @@ using Test
 using StaticArrays
 using RootedTrees
 
-using Latexify: latexify
+using RootedTrees.Latexify: latexify
 
 using Plots: Plots, plot
 Plots.unicodeplots()
@@ -97,7 +97,7 @@ end
   @test butcher_representation(t1) == "τ"
   latex_string = "\\rootedtree[]"
   @test RootedTrees.latexify(t1) == latex_string
-  @test latexify(t1) == "\$" * latex_string * "\$"
+  @test latexify(t1) == latex_string
   @test isempty(RootedTrees.subtrees(t1))
   @test RootedTrees.latexify(empty(t1)) == "\\varnothing"
 
@@ -118,7 +118,7 @@ end
   @test butcher_representation(t2) == "[τ]"
   latex_string = "\\rootedtree[[]]"
   @test RootedTrees.latexify(t2) == latex_string
-  @test latexify(t2) == "\$" * latex_string * "\$"
+  @test latexify(t2) == latex_string
   @test RootedTrees.subtrees(t2) == [rootedtree([2])]
 
   t3 = rootedtree([1, 2, 2])
@@ -131,7 +131,7 @@ end
   @test butcher_representation(t3) == "[τ²]"
   latex_string = "\\rootedtree[[][]]"
   @test RootedTrees.latexify(t3) == latex_string
-  @test latexify(t3) == "\$" * latex_string * "\$"
+  @test latexify(t3) == latex_string
   @test RootedTrees.subtrees(t3) == [rootedtree([2]), rootedtree([2])]
 
   t4 = rootedtree([1, 2, 3])
@@ -144,7 +144,7 @@ end
   @test butcher_representation(t4) == "[[τ]]"
   latex_string = "\\rootedtree[[[]]]"
   @test RootedTrees.latexify(t4) == latex_string
-  @test latexify(t4) == "\$" * latex_string * "\$"
+  @test latexify(t4) == latex_string
   @test RootedTrees.subtrees(t4) == [rootedtree([2, 3])]
 
   t5 = rootedtree([1, 2, 2, 2])
