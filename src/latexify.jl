@@ -52,10 +52,10 @@ the following LaTeX code in the preamble.
 
 ```jldoctest
 julia> rootedtree([1, 2, 2]) |> RootedTrees.latexify |> println
-\rootedtree[[][]]
+\\rootedtree[[][]]
 
 julia> rootedtree([1, 2, 3, 3, 2]) |> RootedTrees.latexify |> println
-\rootedtree[[[][]][]]
+\\rootedtree[[[][]][]]
 ```
 """
 function latexify(t::RootedTree)
