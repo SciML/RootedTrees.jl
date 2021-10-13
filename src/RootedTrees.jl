@@ -140,11 +140,10 @@ function Base.isless(t1::RootedTree, t2::RootedTree)
     return false
   end
 
-  root1 = first(t1.level_sequence)
-  root2 = first(t2.level_sequence)
+  root1_minus_root2 = first(t1.level_sequence) - first(t2.level_sequence)
   for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
-    v1 = e1 - root1
-    v2 = e2 - root2
+    v1 = e1
+    v2 = e2 + root1_minus_root2
     v1 == v2 || return isless(v1, v2)
   end
   return isless(length(t1.level_sequence), length(t2.level_sequence))
@@ -180,10 +179,9 @@ function Base.:(==)(t1::RootedTree, t2::RootedTree)
     return true
   end
 
-  root1 = first(t1.level_sequence)
-  root2 = first(t2.level_sequence)
+  root1_minus_root2 = first(t1.level_sequence) - first(t2.level_sequence)
   for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
-    e1 - root1 == e2 - root2 || return false
+    e1 == e2 + root1_minus_root2 || return false
   end
 
   return true
