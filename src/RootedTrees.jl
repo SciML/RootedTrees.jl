@@ -304,17 +304,24 @@ function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequenc
   # order of the level sequences).
   if number_of_subtrees > 1
     # Simple bubble sort that can act in-place, avoiding allocations
+    # We keep track of the last index of the last subtree that we need to sort
+    # since we know that the last `n` subtrees are already sorted after `n`
+    # iterations.
+    subtree_last_index_to_sort = order(t)
     swapped = true
     while swapped
       swapped = false
 
       # Search the first complete subtree
       subtree1_root_index = 2
-      while subtree1_root_index <= order(t)
+      subtree1_last_index = 0
+      subtree2_last_index = 0
+      while subtree1_root_index <= subtree_last_index_to_sort
         subtree1_last_index = _subtree_last_index(subtree1_root_index, t.level_sequence)
+        subtree2_last_index = subtree1_last_index
 
         # Search the next complete subtree
-        subtree1_last_index == order(t) && break
+        subtree1_last_index == subtree_last_index_to_sort && break
 
         subtree2_root_index = subtree1_last_index + 1
         subtree2_last_index = _subtree_last_index(subtree2_root_index, t.level_sequence)
@@ -333,9 +340,12 @@ function canonical_representation!(t::RootedTree, buffer=similar(t.level_sequenc
         end
 
         # Move on to the next pair of subtrees
-        subtree2_last_index == order(t) && break
+        subtree2_last_index == subtree_last_index_to_sort && break
         subtree1_root_index = subtree1_last_index + 1
       end
+
+      # Update the last subtree we need to look at
+      subtree_last_index_to_sort = min(subtree1_last_index, subtree2_last_index)
     end
   end
 
