@@ -86,6 +86,21 @@ Plots.unicodeplots()
 end
 
 
+@testset "hashing" begin
+  hashes = [hash(rootedtree(Int[]))]
+  for o in 1:12
+    for t in RootedTreeIterator(o)
+      new_hash = @inferred hash(t)
+      @test !(new_hash in hashes)
+      push!(hashes, new_hash)
+    end
+  end
+  t = rootedtree([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2])
+  new_hash = @inferred hash(t)
+  @test !(new_hash in hashes)
+end
+
+
 # see Table 301(I) etc. in butcher2016numerical
 @testset "functions on trees" begin
   t1 = rootedtree([1])

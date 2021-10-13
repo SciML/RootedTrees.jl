@@ -192,12 +192,43 @@ end
 
 # Factor out equivalence classes given by different roots
 function Base.hash(t::RootedTree, h::UInt)
+  # Use a fast path if possible
+  if UInt == UInt64 && length(t.level_sequence) <= 16
+    return simple_hash(t, h)
+  end
+
   isempty(t.level_sequence) && return h
   root = first(t.level_sequence)
   for l in t.level_sequence
     h = hash(l - root, h)
   end
   return h
+end
+
+# Map the level sequence to an unsigned integer by concatenating the bit
+# representations of level sequence differences. If the level sequence increases
+# from one vertex to the next, it can increase at most by unity. Since we want
+# to use simple bits representations, we measure the decrease compared to the
+# maximal possible increase.
+# The maximal drop in the level sequence is
+#   maximal_drop = length(t.level_sequence) - 3
+# We need at most
+#   number_of_bits = trunc(Int, log2(maximal_drop)) + 1
+# bits to represent this. Thus, 64 bit allow us to compute unique hashes for
+# level sequence up to length 16 in the following simple way; 64 bit result
+# in `number_of_bits = 4` for `maximal_drop = 16 - 3 = 13`.
+# For 32 bits, we could use a maximal length of 10 with `number_of_bits = 3`.
+# However, most user systems should use 64 bit by default, so we only implement
+# this option for simplicity.
+@inline function simple_hash(t::RootedTree, h_base::UInt64)
+  isempty(t.level_sequence) && return h_base
+  h = zero(h_base)
+  l_prev = first(t.level_sequence)
+  for l in t.level_sequence
+    h = (h << 4) | (l_prev + 1 - l)
+    l_prev = l
+  end
+  return hash(h, h_base)
 end
 
 
