@@ -1350,6 +1350,7 @@ end
 
 include("latexify.jl")
 include("plots.jl")
+include("rooted_tree_vertex_list.jl")
 
 
 end # module
