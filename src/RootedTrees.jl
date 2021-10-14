@@ -9,6 +9,10 @@ using Latexify: Latexify
 using RecipesBase: RecipesBase
 
 
+include("DeleteVectors.jl")
+using .DeleteVectors
+
+
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator
 
 export butcher_representation
