@@ -373,7 +373,11 @@ end
 const BUFFER_LENGTH = 64
 const CANONICAL_REPRESENTATION_BUFFER = Vector{Vector{Int}}()
 
-function canonical_representation!(t::RootedTree{Int, Vector{Int}})
+function canonical_representation!(t::Union{
+        RootedTree{Int, Vector{Int}},
+        RootedTree{Int, DeleteVector{Int, Vector{Int}}},
+        RootedTree{Int, SubArray{Int, 1, Vector{Int}, Tuple{UnitRange{Int}}, true}},
+        RootedTree{Int, SubArray{Int, 1, Vector{Int}, Tuple{Base.OneTo{Int}}, true}}})
   if order(t) <= BUFFER_LENGTH
     buffer = CANONICAL_REPRESENTATION_BUFFER[Threads.threadid()]
   else
@@ -620,10 +624,10 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-struct PartitionForestIterator{T, V, Tree<:RootedTree{T, V}}
+struct PartitionForestIterator{T, V, Tree<:RootedTree{T, V}, EdgeSet<:AbstractVector{Bool}}
   t::Tree
   level_sequence::V
-  edge_set::Vector{Bool}
+  edge_set::EdgeSet
 end
 
 function PartitionForestIterator(t::RootedTree, edge_set)
@@ -717,8 +721,8 @@ function partition_skeleton(t::RootedTree, edge_set)
   end
 
   edge_set_copy = copy(edge_set)
-  skeleton = RootedTree(copy(t.level_sequence), true)
-  return partition_skeleton!(skeleton.level_sequence, edge_set_copy)
+  level_sequence_copy = copy(t.level_sequence)
+  return partition_skeleton!(level_sequence_copy, edge_set_copy)
 end
 
 # internal in-place version of partition_skeleton modifying the inputs
@@ -734,7 +738,8 @@ function partition_skeleton!(level_sequence, edge_set)
     # Remember the convention node = edge + 1
     subtree_root_index = edge_to_contract + 1
     subtree_last_index = subtree_root_index + 1
-    while subtree_last_index <= length(level_sequence)
+    length_level_sequence = length(level_sequence)
+    while subtree_last_index <= length_level_sequence
       if level_sequence[subtree_last_index] > level_sequence[subtree_root_index]
         level_sequence[subtree_last_index] -= 1
         subtree_last_index += 1
@@ -791,7 +796,7 @@ end
 # A helper function to comute the binary representation of an integer `n` as
 # a vector of `Bool`s. This is a more efficient version of
 #   binary_digits!(digits, n) = digits!(digits, n, base=2)
-function binary_digits!(digits::Vector{Bool}, n::Int)
+function binary_digits!(digits::AbstractVector{Bool}, n::Int)
   bit = 1
   for i in eachindex(digits)
     digits[i] = n & bit > 0
@@ -823,23 +828,24 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-struct PartitionIterator{T, Tree<:RootedTree{T}}
+struct PartitionIterator{T, Tree<:RootedTree{T}, EdgeSet<:AbstractVector{Bool}}
   t::Tree
   forest::PartitionForestIterator{T, Vector{T}, RootedTree{T, Vector{T}}}
   skeleton::RootedTree{T, Vector{T}}
-  edge_set::Vector{Bool}
-  edge_set_tmp::Vector{Bool}
+  edge_set::EdgeSet
+  edge_set_tmp::EdgeSet
 end
 
 function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
   skeleton = RootedTree(Vector{T}(undef, order(t)), true)
-  edge_set = Vector{Bool}(undef, order(t) - 1)
+  edge_set = DeleteVector(Vector{Bool}(undef, order(t) - 1))
   edge_set_tmp = similar(edge_set)
 
   t_forest = RootedTree(Vector{T}(undef, order(t)), true)
   level_sequence = similar(t_forest.level_sequence)
   forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
-  PartitionIterator{T, Tree}(t, forest, skeleton, edge_set, edge_set_tmp)
+  PartitionIterator{T, Tree, typeof(edge_set)}(
+    t, forest, skeleton, edge_set, edge_set_tmp)
 end
 
 # Allocate global buffer for `PartitionIterator` for each thread
@@ -861,22 +867,22 @@ function PartitionIterator(t::RootedTree{Int, Vector{Int}})
     resize!(level_sequence, order_t)
     buffer_skeleton = PARTITION_ITERATOR_BUFFER_SKELETON[id]
     resize!(buffer_skeleton, order_t)
-    edge_set        = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
+    edge_set        = PARTITION_ITERATOR_BUFFER_EDGE_SET[id] |> DeleteVector
     resize!(edge_set, order_t - 1)
-    edge_set_tmp    = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
+    edge_set_tmp    = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id] |> DeleteVector
     resize!(edge_set_tmp, order_t - 1)
   else
     buffer_forest_t = Vector{Int}(undef, order_t)
     level_sequence  = similar(buffer_forest_t)
     buffer_skeleton = similar(buffer_forest_t)
-    edge_set        = Vector{Bool}(undef, order_t - 1)
+    edge_set        = Vector{Bool}(undef, order_t - 1) |> DeleteVector
     edge_set_tmp    = similar(edge_set)
   end
 
   skeleton = RootedTree(buffer_skeleton, true)
   t_forest = RootedTree(buffer_forest_t, true)
   forest = PartitionForestIterator(t_forest, level_sequence, edge_set_tmp)
-  PartitionIterator{Int, RootedTree{Int, Vector{Int}}}(
+  PartitionIterator{Int, RootedTree{Int, Vector{Int}}, typeof(edge_set)}(
     t, forest, skeleton, edge_set, edge_set_tmp)
 end
 
