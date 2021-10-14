@@ -84,7 +84,7 @@ function Base.deleteat!(v::DeleteVector, inds::UnitRange)
   p = parent(v)
   i = first(inds)
   offset = length(inds)
-  for j in i+1:lastindex(v)
+  for j in i+offset:lastindex(v)
     @inbounds p[j-offset] = p[j]
   end
   v.length[] -= offset
