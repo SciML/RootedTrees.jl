@@ -99,3 +99,22 @@ Additionally, functions on trees connected to Runge-Kutta methods are implemente
 
 - v2.0: Rooted trees are considered up to isomorphisms introduced by shifting
   each coefficient of their level sequence by the same number.
+
+
+## Referencing
+
+If you use
+[RootedTrees.jl](https://github.com/SciML/RootedTrees.jl)
+for your research, please cite it using the bibtex entry
+```bibtex
+@misc{ranocha2019rootedtrees,
+  title={{RootedTrees.jl}: {A} collection of functionality around rooted trees
+         to generate order conditions for {R}unge-{K}utta methods in {J}ulia
+         for differential equations and scientific machine learning ({SciM}L)},
+  author={Ranocha, Hendrik and contributors},
+  year={2019},
+  month={05},
+  howpublished={\url{https://github.com/SciML/RootedTrees.jl}},
+  doi={10.5281/zenodo.5534590}
+}
+```
