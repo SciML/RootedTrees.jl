@@ -1293,7 +1293,7 @@ end
 
 
 """
-    butcher_represetation(t::RootedTree)
+    butcher_representation(t::RootedTree)
 
 Returns the representation of `t::RootedTree` introduced by Butcher as a string.
 Thus, the rooted tree consisting whose only vertex is the root itself is
