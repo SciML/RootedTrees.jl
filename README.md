@@ -8,6 +8,8 @@
 
 A collection of functionality around rooted trees to generate order conditions
 for Runge-Kutta methods in [Julia](https://julialang.org/).
+This package also provides basic functionality for
+[BSeries.jl](https://github.com/ranocha/BSeries.jl).
 
 
 ## API Documentation
