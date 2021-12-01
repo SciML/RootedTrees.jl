@@ -583,8 +583,52 @@ end
 
 
 @testset "plots" begin
-  for order in 1:4
-    for t in RootedTreeIterator(order)
+  @testset "RootedTree" begin
+    for order in 1:4
+      for t in RootedTreeIterator(order)
+        plot(t)
+      end
+    end
+  end
+
+  @testset "ColoredRootedTree" begin
+    let t = rootedtree(Int[], Int[])
+      plot(t)
+    end
+
+    let t = rootedtree([1], [1])
+      plot(t)
+    end
+
+    let t = rootedtree([1], [2])
+      plot(t)
+    end
+
+    let t = rootedtree([1], [3])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2], [1, 1])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2], [1, 2])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2], [3, 1])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2, 2], [2, 1, 1])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2, 2], [2, 1, 2])
+      plot(t)
+    end
+
+    let t = rootedtree([1, 2, 3], [3, 2, 1])
       plot(t)
     end
   end
