@@ -33,7 +33,7 @@ julia> t = rootedtree([1, 2, 3, 2])
 RootedTree{Int64}: [1, 2, 3, 2]
 ```
 In the notation of [Butcher (Numerical Methods for ODEs, 2016)](https://doi.org/10.1002/9781119121534),
-this tree can be written as `[[τ²] τ]` or `(τ ∘ τ) ∘ (τ ∘ τ)`, where
+this tree can be written as `[[τ] τ]` or `(τ ∘ τ) ∘ (τ ∘ τ)`, where
 `∘` is the non-associative Butcher product of `RootedTree`s, which is also
 implemented.
 
