@@ -644,6 +644,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 1
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1], [1])
@@ -651,6 +652,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 1
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1], [2])
@@ -658,6 +660,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 1
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1], [3])
@@ -665,6 +668,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 1
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2], [1, 1])
@@ -672,6 +676,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 2
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2], [1, 2])
@@ -679,6 +684,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 2
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2], [3, 1])
@@ -686,6 +692,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 2
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2, 2], [2, 1, 1])
@@ -693,6 +700,7 @@ end
       @test α(t) == 1
       @test σ(t) == 2
       @test γ(t) == 3
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2, 2], [2, 1, 2])
@@ -700,6 +708,7 @@ end
       @test α(t) == 2
       @test σ(t) == 1
       @test γ(t) == 3
+      @test_nowarn println(devnull, t)
     end
 
     let t = rootedtree([1, 2, 3], [3, 2, 1])
@@ -707,6 +716,7 @@ end
       @test α(t) == 1
       @test σ(t) == 1
       @test γ(t) == 6
+      @test_nowarn println(devnull, t)
     end
   end
 end
