@@ -111,12 +111,12 @@ function Base.isless(t1::ColoredRootedTree, t2::ColoredRootedTree)
   end
 
   root1_minus_root2 = first(t1.level_sequence) - first(t2.level_sequence)
-  for (e1, c1, e2, c2) in zip(t1.level_sequence, t1.color_sequence, t2.level_sequence, t2.color_sequence)
+  for (e1, e2) in zip(t1.level_sequence, t2.level_sequence)
     v1 = e1
     v2 = e2 + root1_minus_root2
-    (v1 == v2 && c1 == c2) || return isless((v1, c1), (v2, c2))
+    (v1 == v2) || return isless(v1, v2)
   end
-  return isless(length(t1.level_sequence), length(t2.level_sequence))
+  return isless(t1.color_sequence, t2.color_sequence)
 end
 
 """

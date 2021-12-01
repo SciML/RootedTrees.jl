@@ -586,6 +586,111 @@ end # @testset "RootedTree"
 
 
 @testset "ColoredRootedTree" begin
+  @testset "comparisons etc." begin
+    trees = (rootedtree([1, 2, 3], [1, 1, 1]),
+             rootedtree([1, 2, 3], [1, 1, 1]),
+             rootedtree([1, 2, 2], [1, 1, 1]),
+             rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+             rootedtree(Int[], Int[]),
+             rootedtree([1, 2, 3], [1, 1, 2]),
+             rootedtree([1, 2, 3], [1, 2, 1]),
+             rootedtree([1, 2, 3], [1, 2, 2]),
+             rootedtree([1, 2, 2], [2, 2, 2]),)
+    trees_shifted = (rootedtree([1, 2, 3], [1, 1, 1]),
+                     rootedtree([2, 3, 4], [1, 1, 1]),
+                     rootedtree([1, 2, 2], [1, 1, 1]),
+                     rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+                     rootedtree(Int[], Int[]),
+                     rootedtree([1, 2, 3], [1, 1, 2]),
+                     rootedtree([0, 1, 2], [1, 2, 1]),
+                     rootedtree([2, 3, 4], [1, 2, 2]),
+                     rootedtree([1, 2, 2], [2, 2, 2]),)
+
+    for (t1,t2,t3,t4,t5,t6,t7,t8,t9) in (trees, trees_shifted)
+      @test t1 == t1
+      @test t1 == t2
+      @test !(t1 == t3)
+      @test !(t1 == t4)
+      @test !(t1 == t5)
+      @test !(t2 == t5)
+      @test !(t3 == t5)
+      @test !(t4 == t5)
+      @test t5 == t5
+      @test !(t1 == t6)
+      @test !(t1 == t7)
+      @test !(t1 == t8)
+
+      @test hash(t1) == hash(t1)
+      @test hash(t1) == hash(t2)
+      @test !(hash(t1) == hash(t3))
+      @test !(hash(t1) == hash(t4))
+      @test hash(t1) != hash(t5)
+      @test hash(t2) != hash(t5)
+      @test hash(t3) != hash(t5)
+      @test hash(t4) != hash(t5)
+      @test hash(t5) == hash(t5)
+      @test hash(t1) != hash(t6)
+      @test hash(t1) != hash(t7)
+      @test hash(t1) != hash(t8)
+
+      @test !(t1 < t1)
+      @test !(t1 < t2)
+      @test !(t2 < t1)
+      @test !(t1 > t2)
+      @test !(t2 > t1)
+      @test t3 < t2    && t2 > t3
+      @test !(t2 < t3) && !(t3 > t2)
+      @test t1 < t4    && t4 > t1
+      @test !(t4 < t1) && !(t1 > t4)
+      @test t1 <= t2   && t2 >= t1
+      @test t2 <= t2   && t2 >= t2
+      @test t5 < t1
+      @test t1 > t5
+      @test !(t5 < t5)
+      @test !(t1 < t5)
+      @test t1 < t6
+      @test t1 < t7
+      @test t1 < t8
+      @test t6 < t7
+      @test t6 < t8
+      @test t7 < t8
+      @test !(t1 < t9)
+      @test !(t6 < t9)
+      @test !(t7 < t9)
+      @test !(t8 < t9)
+
+      println(devnull, t1)
+      println(devnull, t2)
+      println(devnull, t3)
+      println(devnull, t4)
+      println(devnull, t5)
+      println(devnull, t6)
+      println(devnull, t7)
+      println(devnull, t8)
+    end
+
+    # more tests of the canonical representation
+    t = rootedtree([1, 2, 3, 2, 3, 3, 2])
+    @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
+    @test !isempty(t)
+
+    t = rootedtree([1, 2, 3, 2, 3, 4, 2, 3])
+    @test t.level_sequence == [1, 2, 3, 4, 2, 3, 2, 3]
+    @test !isempty(t)
+
+    t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3])
+    @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2, 3]
+    @test !isempty(t)
+
+    @test isempty(rootedtree(Int[]))
+    @test isempty(empty(t))
+
+    level_sequence = zeros(Int, RootedTrees.BUFFER_LENGTH + 1)
+    level_sequence[1] -= 1
+    @inferred rootedtree(level_sequence)
+  end
+
+
   @testset "functions on trees" begin
     # See Araujo, Murua, and Sanz-Serna (1997), Table 1
     # https://doi.org/10.1137/S0036142995292128
