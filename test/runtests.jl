@@ -670,24 +670,23 @@ end # @testset "RootedTree"
     end
 
     # more tests of the canonical representation
-    t = rootedtree([1, 2, 3, 2, 3, 3, 2])
+    t = rootedtree([1, 2, 3, 2, 3, 3, 2], Bool[1, 0, 1, 1, 0, 0, 0])
     @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
     @test !isempty(t)
 
-    t = rootedtree([1, 2, 3, 2, 3, 4, 2, 3])
+    t = rootedtree([1, 2, 3, 2, 3, 4, 2, 3], [1, 0, 1, 1, 0, 0, 0, 1])
     @test t.level_sequence == [1, 2, 3, 4, 2, 3, 2, 3]
     @test !isempty(t)
 
-    t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3])
+    t = rootedtree([1, 2, 3, 2, 3, 3, 2, 3], Bool[1, 0, 1, 1, 0, 0, 0, 1])
     @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2, 3]
     @test !isempty(t)
 
     @test isempty(rootedtree(Int[]))
     @test isempty(empty(t))
 
-    level_sequence = zeros(Int, RootedTrees.BUFFER_LENGTH + 1)
-    level_sequence[1] -= 1
-    @inferred rootedtree(level_sequence)
+    # misc
+    @test_throws DimensionMismatch rootedtree([1, 2, 3], [1, 2])
   end
 
 
