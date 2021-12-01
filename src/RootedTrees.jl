@@ -9,7 +9,8 @@ using Latexify: Latexify
 using RecipesBase: RecipesBase
 
 
-export RootedTree, rootedtree, rootedtree!, RootedTreeIterator
+export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
+       ColoredRootedTree
 
 export butcher_representation
 
@@ -26,6 +27,8 @@ export partition_forest, PartitionForestIterator,
 export all_splittings, SplittingIterator
 
 
+abstract type AbstractRootedTree end
+
 
 """
     RootedTree(level_sequence, is_canonical::Bool=false)
@@ -35,11 +38,11 @@ Represents a rooted tree using its level sequence.
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
-struct RootedTree{T<:Integer, V<:AbstractVector{T}}
+struct RootedTree{T<:Integer, V<:AbstractVector{T}} <: AbstractRootedTree
   level_sequence::V
   iscanonical::Bool
 
@@ -51,13 +54,13 @@ end
 """
     rootedtree(level_sequence)
 
-Construct a canonical `RootedTree` object from a `level_sequence`, i.e.,
+Construct a canonical [`RootedTree`](@ref) object from a `level_sequence`, i.e.,
 a vector of integers representing the levels of each node of the tree.
 
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
@@ -72,7 +75,7 @@ modified in this process. See also [`rootedtree`](@ref).
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
@@ -232,14 +235,14 @@ end
 
 # generation and canonical representation
 """
-    canonical_representation(t::RootedTree)
+    canonical_representation(t::AbstractRootedTree)
 
 Returns a new tree using the canonical representation of the rooted tree `t`,
 i.e., the one with lexicographically biggest level sequence.
 
 See also [`canonical_representation!`](@ref).
 """
-function canonical_representation(t::RootedTree)
+function canonical_representation(t::AbstractRootedTree)
   canonical_representation!(copy(t))
 end
 
@@ -263,7 +266,7 @@ end
 # However, this would create a lot of intermediate allocations, which make it
 # rather slow. Since most trees in use are relatively small, we can use a
 # non-allocating sorting algorithm instead - although bubble sort is slower in
-# generalwhen comparing the complexity with quicksort etc., it will be faster
+# general when comparing the complexity with quicksort etc., it will be faster
 # here since we can avoid allocations.
 """
     canonical_representation!(t::RootedTree)
@@ -401,12 +404,12 @@ end
 
 
 """
-    normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+    normalize_root!(t::AbstractRootedTree, root=one(eltype(t.level_sequence)))
 
 Normalize the level sequence of the rooted tree `t` such that the root is
 set to `root`.
 """
-function normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+function normalize_root!(t::AbstractRootedTree, root=one(eltype(t.level_sequence)))
   t.level_sequence .+= root - first(t.level_sequence)
   t
 end
@@ -482,7 +485,7 @@ end
 
 
 # subtrees
-struct SubtreeIterator{Tree<:RootedTree}
+struct SubtreeIterator{Tree<:AbstractRootedTree}
   t::Tree
 end
 
@@ -490,12 +493,12 @@ end
 # Base.IteratorSize(::Type{<:SubtreeIterator}) = Base.SizeUnknown()
 # Base.eltype(::Type{SubtreeIterator})
 
-@inline function Base.iterate(subtrees::SubtreeIterator)
+@inline function Base.iterate(subtrees::SubtreeIterator{<:RootedTree})
   subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
   iterate(subtrees, subtree_root_index)
 end
 
-@inline function Base.iterate(subtrees::SubtreeIterator, subtree_root_index)
+@inline function Base.iterate(subtrees::SubtreeIterator{<:RootedTree}, subtree_root_index)
   level_sequence = subtrees.t.level_sequence
 
   # terminate the iteration if there are no further subtrees
@@ -519,7 +522,7 @@ end
 
 Returns a vector of all subtrees of `t`.
 """
-function subtrees(t::RootedTree{T}) where {T}
+function subtrees(t::RootedTree)
   subtr = typeof(t)[]
 
   if length(t.level_sequence) < 2
@@ -1089,16 +1092,16 @@ end
 # functions on trees
 
 """
-    order(t::RootedTree)
+    order(t::AbstractRootedTree)
 
 The `order` of a rooted tree `t`, i.e., the length of its level sequence.
 """
-order(t::RootedTree) = length(t.level_sequence)
+order(t::AbstractRootedTree) = length(t.level_sequence)
 
 
 """
-    σ(t::RootedTree)
-    symmetry(t::RootedTree)
+    σ(t::AbstractRootedTree)
+    symmetry(t::AbstractRootedTree)
 
 The symmetry `σ` of a rooted tree `t`, i.e., the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
@@ -1108,7 +1111,7 @@ Reference: Section 301 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function symmetry(t::RootedTree)
+function symmetry(t::AbstractRootedTree)
   if order(t) <= 2
     return 1
   end
@@ -1151,8 +1154,8 @@ const σ = symmetry
 
 
 """
-    γ(t::RootedTree)
-    density(t::RootedTree)
+    γ(t::AbstractRootedTree)
+    density(t::AbstractRootedTree)
 
 The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t`
 of the order of the subtree rooted at that vertex.
@@ -1162,7 +1165,9 @@ Reference: Section 301 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function density(t::RootedTree)
+function density(t::AbstractRootedTree)
+  isempty(t) && return 1
+
   result = order(t)
   for subtree in SubtreeIterator(t)
     result *= density(subtree)
@@ -1174,7 +1179,7 @@ const γ = density
 
 
 """
-    α(t::RootedTree)
+    α(t::AbstractRootedTree)
 
 The number of monotonic labelings of `t` not equivalent under the symmetry group.
 
@@ -1183,13 +1188,13 @@ Reference: Section 302 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function α(t::RootedTree)
-  div(factorial(order(t)), σ(t)*γ(t))
+function α(t::AbstractRootedTree)
+  div(factorial(order(t)), σ(t) * γ(t))
 end
 
 
 """
-    β(t::RootedTree)
+    β(t::AbstractRootedTree)
 
 The total number of labelings of `t` not equivalent under the symmetry group.
 
@@ -1198,7 +1203,7 @@ Reference: Section 302 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function β(t::RootedTree)
+function β(t::AbstractRootedTree)
   div(factorial(order(t)), σ(t))
 end
 
@@ -1356,6 +1361,7 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
 end
 
 
+include("colored_trees.jl")
 include("latexify.jl")
 include("plots.jl")
 

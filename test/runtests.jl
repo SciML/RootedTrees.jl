@@ -591,4 +591,81 @@ end
 end
 
 
+@testset "ColoredRootedTree" begin
+  @testset "functions on trees" begin
+    # See Araujo, Murua, and Sanz-Serna (1997), Table 1
+    # https://doi.org/10.1137/S0036142995292128
+    let t = rootedtree(Int[], Int[])
+      @test order(t) == 0
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 1
+    end
+
+    let t = rootedtree([1], [1])
+      @test order(t) == 1
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 1
+    end
+
+    let t = rootedtree([1], [2])
+      @test order(t) == 1
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 1
+    end
+
+    let t = rootedtree([1], [3])
+      @test order(t) == 1
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 1
+    end
+
+    let t = rootedtree([1, 2], [1, 1])
+      @test order(t) == 2
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 2
+    end
+
+    let t = rootedtree([1, 2], [1, 2])
+      @test order(t) == 2
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 2
+    end
+
+    let t = rootedtree([1, 2], [3, 1])
+      @test order(t) == 2
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 2
+    end
+
+    let t = rootedtree([1, 2, 2], [2, 1, 1])
+      @test order(t) == 3
+      @test α(t) == 1
+      @test σ(t) == 2
+      @test γ(t) == 3
+    end
+
+    let t = rootedtree([1, 2, 2], [2, 1, 2])
+      @test order(t) == 3
+      @test α(t) == 2
+      @test σ(t) == 1
+      @test γ(t) == 3
+    end
+
+    let t = rootedtree([1, 2, 3], [3, 2, 1])
+      @test order(t) == 3
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 6
+    end
+  end
+end
+
+
 end # @testset "RootedTrees"
