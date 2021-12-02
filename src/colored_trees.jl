@@ -26,6 +26,10 @@ struct ColoredRootedTree{T<:Integer, V<:AbstractVector{T}, C<:AbstractVector} <:
   end
 end
 
+
+const BicoloredRootedTree{T<:Integer, V<:AbstractVector{T}, C<:AbstractVector{Bool}} = ColoredRootedTree{T, V, C}
+
+
 """
     rootedtree(level_sequence, color_sequence)
 
@@ -230,3 +234,78 @@ function subtrees(t::ColoredRootedTree)
 end
 
 
+# additional representation and construction methods
+
+function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)
+  offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
+  level_sequence = vcat(t1.level_sequence, t2.level_sequence .+ offset)
+  color_sequence = vcat(t1.color_sequence, t2.color_sequence)
+  rootedtree(level_sequence, color_sequence)
+end
+
+
+#
+function butcher_representation(t::ColoredRootedTree, normalize::Bool=true;
+                                colormap=_colormap_butcher_representation(t))
+  if order(t) == 0
+    return "∅"
+  elseif order(t) == 1
+    return "τ" * colormap[first(t.color_sequence)]
+  end
+
+  result = ""
+  for subtree in SubtreeIterator(t)
+    result = result * butcher_representation(subtree, normalize, colormap=colormap)
+  end
+  result = "[" * result * "]" * colormap[first(t.color_sequence)]
+
+  if normalize
+    # normalize the result by grouping repeated occurrences of τ
+    # TODO: Decide whether powers should also be used for subtrees,
+    #       e.g., "[[τ]²]" instead of "[[τ][τ]]"
+    #       for rootedtree([1, 2, 3, 2, 3]).
+    #       Currently, powers are only used for τ.
+    for n in order(t):-1:2
+      n_str = string(n)
+      n_str = replace(n_str, "1" => "¹")
+      n_str = replace(n_str, "2" => "²")
+      n_str = replace(n_str, "3" => "³")
+      n_str = replace(n_str, "4" => "⁴")
+      n_str = replace(n_str, "5" => "⁵")
+      n_str = replace(n_str, "6" => "⁶")
+      n_str = replace(n_str, "7" => "⁷")
+      n_str = replace(n_str, "8" => "⁸")
+      n_str = replace(n_str, "9" => "⁹")
+      n_str = replace(n_str, "0" => "⁰")
+      for index in values(colormap)
+        str = "τ" * index
+        result = replace(result, str^n => str * n_str)
+      end
+    end
+  end
+
+  return result
+end
+
+function _colormap_butcher_representation(t::ColoredRootedTree)
+  colors = sort!(unique(t.color_sequence))
+  if length(colors) > 10
+    @error "Not implemented for trees with more than 10 colors"
+  end
+
+  indices = ["₀", "₁", "₂", "₃", "₄", "₅", "₆", "₇", "₈", "₉"]
+
+  colormap = Dict{eltype(colors), String}()
+
+  if issubset(colors, 0:9) || eltype(colors) == Bool
+    for color in colors
+      colormap[color] = indices[color + 1]
+    end
+  else
+    for (color, index) in zip(colors, indices)
+      colormap[color] = index
+    end
+  end
+
+  return colormap
+end

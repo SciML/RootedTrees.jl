@@ -115,6 +115,7 @@ Plots.unicodeplots()
     @test RootedTrees.latexify(t1) == latex_string
     @test latexify(t1) == latex_string
     @test isempty(RootedTrees.subtrees(t1))
+    @test butcher_representation(empty(t1)) == "∅"
     @test RootedTrees.latexify(empty(t1)) == "\\varnothing"
 
     @inferred order(t1)
@@ -699,6 +700,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 1
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "∅"
     end
 
     let t = rootedtree([1], [1])
@@ -707,6 +709,9 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 1
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "τ₁"
+
+      @test t ∘ t == rootedtree([1, 2], [1, 1])
     end
 
     let t = rootedtree([1], [2])
@@ -715,6 +720,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 1
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "τ₂"
     end
 
     let t = rootedtree([1], [3])
@@ -723,6 +729,16 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 1
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "τ₃"
+    end
+
+    let t = rootedtree([1], [typemax(Int)])
+      @test order(t) == 1
+      @test α(t) == 1
+      @test σ(t) == 1
+      @test γ(t) == 1
+      @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "τ₀"
     end
 
     let t = rootedtree([1, 2], [1, 1])
@@ -731,6 +747,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 2
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[τ₁]₁"
     end
 
     let t = rootedtree([1, 2], [1, 2])
@@ -739,6 +756,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 2
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[τ₂]₁"
     end
 
     let t = rootedtree([1, 2], [3, 1])
@@ -747,6 +765,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 2
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[τ₁]₃"
     end
 
     let t = rootedtree([1, 2, 2], [2, 1, 1])
@@ -755,6 +774,7 @@ end # @testset "RootedTree"
       @test σ(t) == 2
       @test γ(t) == 3
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[τ₁²]₂"
     end
 
     let t = rootedtree([1, 2, 2], [2, 1, 2])
@@ -763,6 +783,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 3
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[τ₁τ₂]₂"
     end
 
     let t = rootedtree([1, 2, 3], [3, 2, 1])
@@ -771,6 +792,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 6
       @test_nowarn println(devnull, t)
+      @test butcher_representation(t) == "[[τ₁]₂]₃"
     end
   end
 end # @testset "ColoredRootedTree"

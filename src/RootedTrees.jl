@@ -1325,7 +1325,9 @@ Section 300 of
   John Wiley & Sons, 2008.
 """
 function butcher_representation(t::RootedTree, normalize::Bool=true)
-  if order(t) == 1
+  if order(t) == 0
+    return "∅"
+  elseif order(t) == 1
     return "τ"
   end
 
@@ -1353,7 +1355,7 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
       n_str = replace(n_str, "8" => "⁸")
       n_str = replace(n_str, "9" => "⁹")
       n_str = replace(n_str, "0" => "⁰")
-      result = replace(result, "τ"^n => "τ"*n_str)
+      result = replace(result, "τ"^n => "τ" * n_str)
     end
   end
 
