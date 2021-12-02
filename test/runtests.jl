@@ -800,6 +800,8 @@ end # @testset "ColoredRootedTree"
 
 @testset "plots" begin
   @testset "RootedTree" begin
+    plot(rootedtree(Int[]))
+
     for order in 1:4
       for t in RootedTreeIterator(order)
         plot(t)
@@ -808,7 +810,7 @@ end # @testset "ColoredRootedTree"
   end
 
   @testset "ColoredRootedTree" begin
-    let t = rootedtree(Int[], Int[])
+    let t = rootedtree(Int[], Bool[])
       plot(t)
     end
 

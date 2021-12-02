@@ -7,6 +7,7 @@ using LinearAlgebra: dot
 
 using Latexify: Latexify
 using RecipesBase: RecipesBase
+using Requires: @require
 
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
@@ -379,27 +380,6 @@ function canonical_representation!(t::RootedTree{Int, Vector{Int}})
     buffer = similar(t.level_sequence)
   end
   canonical_representation!(t, buffer)
-end
-
-
-function __init__()
-  # canonical_representation!
-  Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-
-  # PartitionIterator
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
-                           Vector{Bool}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
-                           Vector{Bool}(undef, BUFFER_LENGTH))
-
-  return nothing
 end
 
 
@@ -1365,7 +1345,33 @@ end
 
 include("colored_trees.jl")
 include("latexify.jl")
-include("plots.jl")
+include("plot_recipes.jl")
+
+
+function __init__()
+  # canonical_representation!
+  Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+
+  # PartitionIterator
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+
+  @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
+    using .Plots: Plots
+    include("plots.jl")
+  end
+
+  return nothing
+end
 
 
 end # module
