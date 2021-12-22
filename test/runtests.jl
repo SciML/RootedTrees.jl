@@ -691,6 +691,22 @@ end # @testset "RootedTree"
   end
 
 
+  @testset "hashing" begin
+    hashes = [hash(rootedtree(Int[], Bool[]))]
+    for o in 1:8
+      for t in BicoloredRootedTreeIterator(o)
+        new_hash = @inferred hash(t)
+        @test !(new_hash in hashes)
+        push!(hashes, new_hash)
+      end
+    end
+    t = rootedtree([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2],
+                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
+    new_hash = @inferred hash(t)
+    @test !(new_hash in hashes)
+  end
+
+
   @testset "functions on trees" begin
     # See Araujo, Murua, and Sanz-Serna (1997), Table 1
     # https://doi.org/10.1137/S0036142995292128
@@ -793,6 +809,19 @@ end # @testset "RootedTree"
       @test γ(t) == 6
       @test_nowarn println(devnull, t)
       @test butcher_representation(t) == "[[τ₁]₂]₃"
+    end
+  end
+
+  # see butcher2008numerical, Table 302(I)
+  @testset "number of trees" begin
+    number_of_rooted_trees = [1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
+    for order in 1:10
+      num = 0
+      for t in BicoloredRootedTreeIterator(order)
+        num += 1
+      end
+      # number of plain rooted trees times number of possible color sequences
+      @test num == number_of_rooted_trees[order] * 2^order
     end
   end
 end # @testset "ColoredRootedTree"

@@ -11,7 +11,7 @@ using Requires: @require
 
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
-       ColoredRootedTree
+       ColoredRootedTree, BicoloredRootedTreeIterator
 
 export butcher_representation
 
@@ -397,7 +397,7 @@ end
 
 
 """
-    RootedTreeIterator{T<:Integer}
+    RootedTreeIterator(order::Integer)
 
 Iterator over all rooted trees of given `order`. The returned trees are views to
 an internal tree modified during the iteration. If the returned trees shall be

@@ -182,6 +182,59 @@ end
 
 
 
+"""
+    BicoloredRootedTreeIterator(order::Integer)
+
+Iterator over all bi-colored rooted trees of given `order`. The returned trees
+are views to an internal tree modified during the iteration. If the returned
+trees shall be stored or modified during the iteration, a `copy` has to be made.
+"""
+struct BicoloredRootedTreeIterator{T<:Integer}
+  number_of_colors::T
+  iter::RootedTreeIterator{T}
+  t::BicoloredRootedTree{T, Vector{T}, Vector{Bool}}
+
+  function BicoloredRootedTreeIterator(order::T) where {T<:Integer}
+    iter = RootedTreeIterator(order)
+    number_of_colors = convert(T, 2)^order
+    t = ColoredRootedTree(iter.t.level_sequence, zeros(Bool, order), true)
+    new{T}(number_of_colors, iter, t)
+  end
+end
+
+Base.IteratorSize(::Type{<:BicoloredRootedTreeIterator}) = Base.SizeUnknown()
+Base.eltype(::Type{BicoloredRootedTreeIterator{T}}) where T = BicoloredRootedTree{T, Vector{T}, Vector{Bool}}
+
+@inline function Base.iterate(iter::BicoloredRootedTreeIterator)
+  _, inner_state = iterate(iter.iter)
+  color_id = 0
+  binary_digits!(iter.t.color_sequence, color_id)
+  (iter.t, (inner_state, color_id + 1))
+end
+
+@inline function Base.iterate(iter::BicoloredRootedTreeIterator, state)
+  inner_state, color_id = state
+
+  # If we can iterate more by changing the color sequence, let's do so.
+  if color_id < iter.number_of_colors
+    binary_digits!(iter.t.color_sequence, color_id)
+    return (iter.t, (inner_state, color_id + 1))
+  end
+
+  # Now, we need to iterate to a new baseline (uncolored) tree - if possible
+  inner_value_state = iterate(iter.iter, inner_state)
+  if inner_value_state === nothing
+    return nothing
+  end
+
+  _, inner_state = inner_value_state
+  color_id = 0
+  binary_digits!(iter.t.color_sequence, color_id)
+  return (iter.t, (inner_state, color_id + 1))
+end
+
+
+
 # subtrees
 @inline function Base.iterate(subtrees::SubtreeIterator{<:ColoredRootedTree})
   subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
