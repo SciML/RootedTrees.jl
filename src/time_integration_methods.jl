@@ -20,8 +20,10 @@ function RungeKuttaMethod(A::AbstractMatrix, b::AbstractVector, c::AbstractVecto
   return RungeKuttaMethod(_A, _b, _c)
 end
 
-function Base.show(io::IO, rk::RungeKuttaMethod{T}) where {T}
-  print(io, "RungeKuttaMethod{", T, "}")
+Base.eltype(rk::RungeKuttaMethod{T}) where {T} = T
+
+function Base.show(io::IO, rk::RungeKuttaMethod)
+  print(io, "RungeKuttaMethod{", eltype(rk), "}")
   if get(io, :compact, false)
     print(io, "(")
     show(io, rk.A)
@@ -154,13 +156,24 @@ struct AdditiveRungeKuttaMethod{T, RKs<:AbstractVector{<:RungeKuttaMethod{T}}}
   rks::RKs
 end
 
+function AdditiveRungeKuttaMethod(rks) # if not all RK methods use the same eltype
+  T = mapreduce(eltype, promote_type, rks)
+  converter = x -> T.(x)
+  As = map(converter, rk.A for rk in rks)
+  bs = map(converter, rk.b for rk in rks)
+  cs = map(converter, rk.c for rk in rks)
+  AdditiveRungeKuttaMethod(As, bs, cs)
+end
+
 function AdditiveRungeKuttaMethod(As, bs, cs=map(A -> vec(sum(A, dims=2)), As))
   rks = map(RungeKuttaMethod, As, bs, cs)
   AdditiveRungeKuttaMethod(rks)
 end
 
-function Base.show(io::IO, ark::AdditiveRungeKuttaMethod{T}) where {T}
-  print(io, "AdditiveRungeKuttaMethod{", T, "} with methods\n")
+Base.eltype(ark::AdditiveRungeKuttaMethod{T}) where {T} = T
+
+function Base.show(io::IO, ark::AdditiveRungeKuttaMethod)
+  print(io, "AdditiveRungeKuttaMethod{", eltype(ark), "} with methods\n")
   for (idx, rk) in enumerate(ark.rks)
     print(io, idx, ". ")
     show(io, rk)

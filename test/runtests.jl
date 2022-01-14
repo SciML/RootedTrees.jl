@@ -929,6 +929,35 @@ end # @testset "ColoredRootedTree"
     end
   end
 
+  @testset "AdditiveRungeKuttaMethod, Griep3" begin
+    # Oswald Knoth and J. Wensch (2014)
+    # "Generalized Split-Explicit Runge–Kutta Methods for the
+    # Compressible Euler Equations".
+    # Monthly Weather Review, 142, 2067-2081
+    A_explicit = @SArray [0 0 0; 1//2 0 0; -1 2 0]
+    b_explicit = @SArray [1//6, 2//3, 1//6]
+    rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
+    β = sqrt(3) / 3
+    A_implicit = @SArray [0 0 0; -β/2 (1+β)/2 0; (3+5β)/2 -1-3β (1+β)/2]
+    b_implicit = @SArray [1//6, 2//3, 1//6]
+    rk_implicit = RungeKuttaMethod(A_implicit, b_implicit)
+    ark = AdditiveRungeKuttaMethod([rk_explicit, rk_implicit])
+
+    for order in 1:3
+      for t in BicoloredRootedTreeIterator(order)
+        @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=4
+      res = 0.0
+      for t in BicoloredRootedTreeIterator(order)
+        res += abs(residual_order_condition(t, ark))
+      end
+      @test res > 10*eps()
+    end
+  end
+
   @testset "AdditiveRungeKuttaMethod, SSPRK33 three times" begin
     # Using the same method multiple times is equivalent to using a plain RK
     # method without any splitting/partitioning/decomposition
