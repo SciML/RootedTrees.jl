@@ -297,7 +297,6 @@ function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)
 end
 
 
-#
 function butcher_representation(t::ColoredRootedTree, normalize::Bool=true;
                                 colormap=_colormap_butcher_representation(t))
   if order(t) == 0
