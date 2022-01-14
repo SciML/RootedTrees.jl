@@ -931,7 +931,7 @@ end # @testset "ColoredRootedTree"
 
   @testset "AdditiveRungeKuttaMethod, Griep3" begin
     # Oswald Knoth and J. Wensch (2014)
-    # "Generalized Split-Explicit Runge–Kutta Methods for the
+    # "Generalized Split-Explicit Runge-Kutta Methods for the
     # Compressible Euler Equations".
     # Monthly Weather Review, 142, 2067-2081
     A_explicit = @SArray [0 0 0; 1//2 0 0; -1 2 0]
