@@ -302,6 +302,7 @@ end
   A = [0 0 0; 1 0 0; 1/4 1/4 0]
   b = [1/6, 1/6, 2/3]
   rk = RungeKuttaMethod(A, b)
+  show(IOContext(stdout, :compact=>false), rk)
   for order in 1:3
     for t in RootedTreeIterator(order)
       @test residual_order_condition(t, rk) ≈ 0 atol=eps()
@@ -318,6 +319,7 @@ end
   A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
   b = @SArray [1/6, 1/6, 2/3]
   rk = RungeKuttaMethod(A, b)
+  show(IOContext(stdout, :compact=>true), rk)
   for order in 1:3
     @test all(RootedTreeIterator(order)) do t
       abs(residual_order_condition(t, rk)) < eps()
@@ -330,6 +332,15 @@ end
       res += abs(residual_order_condition(t, rk))
     end
     @test res > 10*eps()
+  end
+
+  # deprecations
+  let order=4
+    for t in RootedTreeIterator(order)
+      @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
+      @test derivative_weight(t, rk.A, rk.b, rk.c) ≈ derivative_weight(t, rk)
+      @test residual_order_condition(t, rk.A, rk.b, rk.c) ≈ residual_order_condition(t, rk)
+    end
   end
 end
 
