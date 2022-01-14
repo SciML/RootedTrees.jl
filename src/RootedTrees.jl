@@ -27,10 +27,13 @@ export partition_forest, PartitionForestIterator,
 
 export all_splittings, SplittingIterator
 
-export RungeKuttaMethod
+export RungeKuttaMethod, AdditiveRungeKuttaMethod
 
 
 abstract type AbstractRootedTree end
+
+
+include("time_integration_methods.jl")
 
 
 """
@@ -1190,56 +1193,12 @@ function β(t::AbstractRootedTree)
 end
 
 
-
-"""
-    RungeKuttaMethod(A, b, c=vec(sum(A, dims=2)))
-
-Represent a Runge-Kutta method with Butcher coefficients `A`, `b`, and `c`.
-If `c` is not provided, the usual "row sum" requirement of consistency with
-autonomous problems is applied.
-"""
-struct RungeKuttaMethod{T, MatT<:AbstractMatrix{T}, VecT<:AbstractVector{T}}
-  A::MatT
-  b::VecT
-  c::VecT
-end
-
-function RungeKuttaMethod(A::AbstractMatrix, b::AbstractVector, c::AbstractVector=vec(sum(A, dims=2)))
-  T = promote_type(eltype(A), eltype(b), eltype(c))
-  _A = T.(A)
-  _b = T.(b)
-  _c = T.(c)
-  return RungeKuttaMethod(_A, _b, _c)
-end
-
-function Base.show(io::IO, rk::RungeKuttaMethod{T}) where {T}
-  print(io, "RungeKuttaMethod{", T, "}")
-  if get(io, :compact, false)
-    print(io, "(")
-    show(io, rk.A)
-    print(io, ", ")
-    show(io, rk.b)
-    print(io, ", ")
-    show(io, rk.c)
-    print(io, ")")
-  else
-    print(io, " with\nA: ")
-    show(io, MIME"text/plain"(), rk.A)
-    print(io, "\nb: ")
-    show(io, MIME"text/plain"(), rk.b)
-    print(io, "\nc: ")
-    show(io, MIME"text/plain"(), rk.c)
-    print(io, "\n")
-  end
-end
-
-
 """
     elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
     elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
 
 Compute the elementary weight Φ(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
-with  Butcher coefficients `A, b, c` for a rooted tree `t``.
+with Butcher coefficients `A, b, c` for a rooted tree `t``.
 
 Reference: Section 312 of
 - Butcher, John Charles.
