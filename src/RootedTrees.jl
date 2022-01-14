@@ -11,7 +11,7 @@ using Requires: @require
 
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
-       ColoredRootedTree, BicoloredRootedTreeIterator
+       ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
 export butcher_representation
 
@@ -31,9 +31,6 @@ export RungeKuttaMethod, AdditiveRungeKuttaMethod
 
 
 abstract type AbstractRootedTree end
-
-
-include("time_integration_methods.jl")
 
 
 """
@@ -1193,87 +1190,8 @@ function β(t::AbstractRootedTree)
 end
 
 
-"""
-    elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
-    elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-
-Compute the elementary weight Φ(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
-with Butcher coefficients `A, b, c` for a rooted tree `t``.
-
-Reference: Section 312 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
-  dot(rk.b, derivative_weight(t, rk))
-end
-
-# TODO: Deprecate also this method?
-function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-  elementary_weight(t, RungeKuttaMethod(A, b, c))
-end
-
-
-"""
-    derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
-
-Compute the derivative weight (ΦᵢD)(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
-with Butcher coefficients `A, b, c` for the rooted tree `t`.
-
-Reference: Section 312 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
-  A = rk.A
-  c = rk.c
-
-  # Initialize `result` with the identity element of pointwise multiplication `.*`
-  result = zero(c) .+ one(eltype(c))
-
-  # Iterate over all subtrees and update the `result` using recursion
-  for subtree in SubtreeIterator(t)
-    tmp = A * derivative_weight(subtree, rk)
-    result = result .* tmp
-  end
-
-  return result
-end
-
-# TODO: Deprecations introduced in v2
-@deprecate derivative_weight(t::RootedTree, A, b, c) derivative_weight(t, RungeKuttaMethod(A, b, c))
-
-
-"""
-    residual_order_condition(t::RootedTree, rk::RungeKuttaMethod
-
-The residual of the order condition
-  `(Φ(t) - 1/γ(t)) / σ(t)`
-with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
-[`symmetry`](@ref) `σ(t)` of the [`RungeKuttaMethod`](@ref) `rk` with Butcher
-coefficients `A, b, c` for the rooted tree `t`.
-
-Reference: Section 315 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
-  ew = elementary_weight(t, rk)
-  T = typeof(ew)
-
-  (ew - one(T) / γ(t)) / σ(t)
-end
-
-# TODO: Deprecations introduced in v2
-@deprecate residual_order_condition(t::RootedTree, A, b, c) residual_order_condition(t, RungeKuttaMethod(A, b, c))
-
-
 
 # additional representation and construction methods
-
 """
     t1 ∘ t2
 
@@ -1361,6 +1279,7 @@ end
 include("colored_trees.jl")
 include("latexify.jl")
 include("plot_recipes.jl")
+include("time_integration_methods.jl")
 
 
 function __init__()

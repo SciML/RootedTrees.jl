@@ -299,52 +299,6 @@ Plots.unicodeplots()
     end
   end
 
-  # Runge-Kutta method SSPRK33 of order 3
-  @testset "Runge-Kutta order conditions" begin
-    A = [0 0 0; 1 0 0; 1/4 1/4 0]
-    b = [1/6, 1/6, 2/3]
-    rk = RungeKuttaMethod(A, b)
-    show(IOContext(stdout, :compact=>false), rk)
-    for order in 1:3
-      for t in RootedTreeIterator(order)
-        @test residual_order_condition(t, rk) ≈ 0 atol=eps()
-      end
-    end
-    let order=4
-      res = 0.0
-      for t in RootedTreeIterator(order)
-        res += abs(residual_order_condition(t, rk))
-      end
-      @test res > 10*eps()
-    end
-
-    A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
-    b = @SArray [1/6, 1/6, 2/3]
-    rk = RungeKuttaMethod(A, b)
-    show(IOContext(stdout, :compact=>true), rk)
-    for order in 1:3
-      @test all(RootedTreeIterator(order)) do t
-        abs(residual_order_condition(t, rk)) < eps()
-      end
-    end
-
-    let order=4
-      res = 0.0
-      for t in RootedTreeIterator(order)
-        res += abs(residual_order_condition(t, rk))
-      end
-      @test res > 10*eps()
-    end
-
-    # deprecations
-    let order=4
-      for t in RootedTreeIterator(order)
-        @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
-        @test derivative_weight(t, rk.A, rk.b, rk.c) ≈ derivative_weight(t, rk)
-        @test residual_order_condition(t, rk.A, rk.b, rk.c) ≈ residual_order_condition(t, rk)
-      end
-    end
-  end
 
   # See Section 2.3 and Table 2 of
   # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
@@ -836,6 +790,143 @@ end # @testset "RootedTree"
     end
   end
 end # @testset "ColoredRootedTree"
+
+
+@testset "Order conditions" begin
+  # Runge-Kutta method SSPRK33 of order 3
+  @testset "RungeKuttaMethod, SSPRK33" begin
+    A = [0 0 0; 1 0 0; 1/4 1/4 0]
+    b = [1/6, 1/6, 2/3]
+    rk = RungeKuttaMethod(A, b)
+    show(IOContext(stdout, :compact=>false), rk)
+
+    for order in 1:3
+      for t in RootedTreeIterator(order)
+        @test residual_order_condition(t, rk) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=4
+      res = 0.0
+      for t in RootedTreeIterator(order)
+        res += abs(residual_order_condition(t, rk))
+      end
+      @test res > 10*eps()
+    end
+
+
+    A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
+    b = @SArray [1/6, 1/6, 2/3]
+    rk = RungeKuttaMethod(A, b)
+    show(IOContext(stdout, :compact=>true), rk)
+    for order in 1:3
+      @test all(RootedTreeIterator(order)) do t
+        abs(residual_order_condition(t, rk)) < eps()
+      end
+    end
+
+    let order=4
+      res = 0.0
+      for t in RootedTreeIterator(order)
+        res += abs(residual_order_condition(t, rk))
+      end
+      @test res > 10*eps()
+    end
+
+    # deprecations
+    let order=4
+      for t in RootedTreeIterator(order)
+        @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
+        @test derivative_weight(t, rk.A, rk.b, rk.c) ≈ derivative_weight(t, rk)
+        @test residual_order_condition(t, rk.A, rk.b, rk.c) ≈ residual_order_condition(t, rk)
+      end
+    end
+  end
+
+  @testset "AdditiveRungeKuttaMethod, IMEX Euler" begin
+    ex_euler = RungeKuttaMethod(
+      @SMatrix([0//1]), @SVector [1]
+    )
+    im_euler = RungeKuttaMethod(
+      @SMatrix([1//1]), @SVector [1]
+    )
+    ark = AdditiveRungeKuttaMethod([ex_euler, im_euler])
+    show(IOContext(stdout, :compact=>true), ark)
+    show(IOContext(stdout, :compact=>false), ark)
+
+    for order in 1:1
+      for t in BicoloredRootedTreeIterator(order)
+        @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=2
+      res = 0.0
+      for t in BicoloredRootedTreeIterator(order)
+        res += abs(residual_order_condition(t, ark))
+      end
+      @test res > 10*eps()
+    end
+  end
+
+  @testset "AdditiveRungeKuttaMethod, Störmer-Verlet" begin
+    # Hairer, Lubich, Wanner (2002)
+    # Geometric numerical integration
+    # Table II.2.1
+    As = [
+      [0 0; 1//2 1//2],
+      [1//2 0; 1//2 0]
+    ]
+    bs = [
+      [1//2, 1//2],
+      [1//2, 1//2]
+    ]
+    ark = AdditiveRungeKuttaMethod(As, bs)
+
+    for order in 1:2
+      for t in BicoloredRootedTreeIterator(order)
+        @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=3
+      res = 0.0
+      for t in BicoloredRootedTreeIterator(order)
+        res += abs(residual_order_condition(t, ark))
+      end
+      @test res > 10*eps()
+    end
+  end
+
+  @testset "AdditiveRungeKuttaMethod, Lobatto IIIA-IIIB pair (s = 3)" begin
+    # Hairer, Lubich, Wanner (2002)
+    # Geometric numerical integration
+    # Table II.2.2
+    As = [
+      [0 0 0; 5//24 1//3 -1//24; 1//6 2//3 1//6],
+      [1//6 -1//6 0; 1//6 1//3 0; 1//6 5//6 0]
+    ]
+    bs = [
+      [1//6, 2//3, 1//6],
+      [1//6, 2//3, 1//6]
+    ]
+    ark = AdditiveRungeKuttaMethod(As, bs)
+
+    for order in 1:4
+      for t in BicoloredRootedTreeIterator(order)
+        @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=5
+      res = 0.0
+      for t in BicoloredRootedTreeIterator(order)
+        res += abs(residual_order_condition(t, ark))
+      end
+      @test res > 10*eps()
+    end
+  end
+end # @testset "Order conditions"
 
 
 @testset "plots" begin
