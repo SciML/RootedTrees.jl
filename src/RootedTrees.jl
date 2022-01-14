@@ -25,6 +25,8 @@ export partition_forest, PartitionForestIterator,
 
 export all_splittings, SplittingIterator
 
+export RungeKuttaMethod
+
 
 
 """
@@ -1203,73 +1205,127 @@ function β(t::RootedTree)
 end
 
 
+
 """
+    RungeKuttaMethod(A, b, c=vec(sum(A, dims=2)))
+
+Represent a Runge-Kutta method with Butcher coefficients `A`, `b`, and `c`.
+If `c` is not provided, the usual "row sum" requirement of consistency with
+autonomous problems is applied.
+"""
+struct RungeKuttaMethod{T, MatT<:AbstractMatrix{T}, VecT<:AbstractVector{T}}
+  A::MatT
+  b::VecT
+  c::VecT
+end
+
+function RungeKuttaMethod(A::AbstractMatrix, b::AbstractVector, c::AbstractVector=vec(sum(A, dims=2)))
+  T = promote_type(eltype(A), eltype(b), eltype(c))
+  _A = T.(A)
+  _b = T.(b)
+  _c = T.(c)
+  return RungeKuttaMethod(_A, _b, _c)
+end
+
+function Base.show(io::IO, rk::RungeKuttaMethod{T}) where {T}
+  print(io, "RungeKuttaMethod{", T, "}")
+  if get(io, :compact, false)
+    print(io, "(")
+    show(io, rk.A)
+    print(io, ", ")
+    show(io, rk.b)
+    print(io, ", ")
+    show(io, rk.c)
+    print(io, ")")
+  else
+    print(io, " with\nA: ")
+    show(io, MIME"text/plain"(), rk.A)
+    print(io, "\nb: ")
+    show(io, MIME"text/plain"(), rk.b)
+    print(io, "\nc: ")
+    show(io, MIME"text/plain"(), rk.c)
+    print(io, "\n")
+  end
+end
+
+
+"""
+    elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
     elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
 
-Compute the elementary weight Φ(`t`) of `t` for the Butcher coefficients
-`A, b, c` of a Runge-Kutta method.
+Compute the elementary weight Φ(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
+with  Butcher coefficients `A, b, c` for a rooted tree `t``.
 
 Reference: Section 312 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
+function elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
+  dot(rk.b, derivative_weight(t, rk))
+end
+
+# TODO: Deprecate also this method?
 function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-  T = promote_type(promote_type(eltype(A), eltype(b)), eltype(c))
-  elementary_weight(t, Matrix{T}(A), Vector{T}(b), Vector{T}(c))
-end
-
-function elementary_weight(t::RootedTree, A::AbstractMatrix{T}, b::AbstractVector{T}, c::AbstractVector{T}) where {T}
-  dot(b, derivative_weight(t, A, b, c))
+  elementary_weight(t, RungeKuttaMethod(A, b, c))
 end
 
 
 """
-    derivative_weight(t::RootedTree, A, b, c)
+    derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
 
-Compute the derivative weight (ΦᵢD)(`t`) of `t` for the Butcher coefficients
-`A, b, c` of a Runge-Kutta method.
+Compute the derivative weight (ΦᵢD)(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
+with Butcher coefficients `A, b, c` for the rooted tree `t`.
 
 Reference: Section 312 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function derivative_weight(t::RootedTree, A, b, c)
+function derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
+  A = rk.A
+  c = rk.c
+
   # Initialize `result` with the identity element of pointwise multiplication `.*`
   result = zero(c) .+ one(eltype(c))
 
   # Iterate over all subtrees and update the `result` using recursion
-  # This should finally be read as
   for subtree in SubtreeIterator(t)
-    tmp = A * derivative_weight(subtree, A, b, c)
+    tmp = A * derivative_weight(subtree, rk)
     result = result .* tmp
   end
 
   return result
 end
 
+# TODO: Deprecations introduced in v2
+@deprecate derivative_weight(t::RootedTree, A, b, c) derivative_weight(t, RungeKuttaMethod(A, b, c))
+
 
 """
-    residual_order_condition(t::RootedTree, A, b, c)
+    residual_order_condition(t::RootedTree, rk::RungeKuttaMethod
 
 The residual of the order condition
   `(Φ(t) - 1/γ(t)) / σ(t)`
-with elementary weight `Φ(t)`, density `γ(t)`, and symmetry `σ(t)` of the
-rooted tree `t` for the Runge-Kutta method with Butcher coefficients
-`A, b, c`.
+with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
+[`symmetry`](@ref) `σ(t)` of the [`RungeKuttaMethod`](@ref) `rk` with Butcher
+coefficients `A, b, c` for the rooted tree `t`.
 
 Reference: Section 315 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function residual_order_condition(t::RootedTree, A, b, c)
-  ew = elementary_weight(t, A, b, c)
+function residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
+  ew = elementary_weight(t, rk)
   T = typeof(ew)
 
   (ew - one(T) / γ(t)) / σ(t)
 end
+
+# TODO: Deprecations introduced in v2
+@deprecate residual_order_condition(t::RootedTree, A, b, c) residual_order_condition(t, RungeKuttaMethod(A, b, c))
+
 
 
 # additional representation and construction methods
