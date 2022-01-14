@@ -854,6 +854,8 @@ end # @testset "ColoredRootedTree"
     show(IOContext(stdout, :compact=>true), ark)
     show(IOContext(stdout, :compact=>false), ark)
 
+    @test elementary_weight(rootedtree(Int[], Bool[]), ark) ≈ 1
+
     for order in 1:1
       for t in BicoloredRootedTreeIterator(order)
         @test residual_order_condition(t, ark) ≈ 0 atol=eps()
@@ -924,6 +926,23 @@ end # @testset "ColoredRootedTree"
         res += abs(residual_order_condition(t, ark))
       end
       @test res > 10*eps()
+    end
+  end
+
+  @testset "AdditiveRungeKuttaMethod, SSPRK33 three times" begin
+    # Using the same method multiple times is equivalent to using a plain RK
+    # method without any splitting/partitioning/decomposition
+    A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
+    b = @SArray [1/6, 1/6, 2/3]
+    rk = RungeKuttaMethod(A, b)
+    ark = AdditiveRungeKuttaMethod([rk, rk, rk])
+
+    let t = rootedtree([1, 2, 2], [1, 2, 3])
+      @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+    end
+
+    let t = rootedtree([1, 2, 3, 2], [1, 2, 3, 1])
+      @test abs(residual_order_condition(t, ark)) > 10*eps()
     end
   end
 end # @testset "Order conditions"
