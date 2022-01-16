@@ -1,5 +1,11 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
+Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 Documenter = "0.27"
+ForwardDiff = "0.10"
+SymPy = "1"
+Zygote = "0.6"
