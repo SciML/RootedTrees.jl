@@ -89,3 +89,86 @@ using Test
 end
 nothing # hide
 ```
+
+
+## Symbolic computation and automatic differentiation
+
+The implementation is fully generic using plain Julia code. In particular,
+this enables automatic differentiation (AD) and symbolic computations.
+
+### Symbolic computations
+
+For example, you can determine the order conditions symbolically as follows.
+```@example
+using RootedTrees, SymPy
+
+s = 3 # number of stages
+A = [symbols("a_$(i)$(j)", real=true) for i in 1:s, j in 1:s]
+b = [symbols("b_$(i)", real=true) for i in 1:s]
+rk = RungeKuttaMethod(A, b)
+
+julia> for o in 1:3
+           println("Order ", o)
+           for t in RootedTreeIterator(o)
+               println("t = ", t)
+               println(residual_order_condition(t, rk))
+           end
+           println()
+       end
+Order 1
+t = RootedTree{Int64}: [1]
+b_1 + b_2 + b_3 - 1
+
+Order 2
+t = RootedTree{Int64}: [1, 2]
+b_1*(a_11 + a_12 + a_13) + b_2*(a_21 + a_22 + a_23) + b_3*(a_31 + a_32 + a_33) - 1/2
+
+Order 3
+t = RootedTree{Int64}: [1, 2, 3]
+b_1*(a_11*(a_11 + a_12 + a_13) + a_12*(a_21 + a_22 + a_23) + a_13*(a_31 + a_32 + a_33)) + b_2*(a_21*(a_11 + a_12 + a_13) + a_22*(a_21 + a_22 + a_23) + a_23*(a_31 + a_32 + a_33)) + b_3*(a_31*(a_11 + a_12 + a_13) + a_32*(a_21 + a_22 + a_23) + a_33*(a_31 + a_32 + a_33)) - 1/6
+t = RootedTree{Int64}: [1, 2, 2]
+b_1*(a_11 + a_12 + a_13)^2/2 + b_2*(a_21 + a_22 + a_23)^2/2 + b_3*(a_31 + a_32 + a_33)^2/2 - 1/6
+
+nothing # hide
+```
+
+### Automatic differentiation
+
+The order conditions can be differentiated with respect to the Runge-Kutta
+coefficients. For example, we can use
+[ForwardDiff.jl](https://github.com/JuliaDiff/ForwardDiff.jl) and
+[Zygote.jl](https://github.com/FluxML/Zygote.jl)
+as follows.
+
+```@example AD-Jacobian
+using RootedTrees, ForwardDiff, Zygote
+
+# collect all rooted trees up to order 4
+trees = [copy(t) for o in 1:4 for t in RootedTreeIterator(o)]
+
+# classical RK4 method
+A = [0 0 0 0; 1//2 0 0 0; 0 1//2 0 0; 0 0 1 0]
+b = [1//6, 1//3, 1//3, 1//6]
+coeffs = vcat(vec(A), vec(b)) # one vector of all parameters
+
+function all_order_conditions(trees, coeffs)
+  # extract Butcher coefficients from the vector of all coefficients
+  # for an RK method with four stages
+  A = reshape(view(coeffs, 1:16), 4, 4)
+  b = view(coeffs, 17:20)
+  rk = RungeKuttaMethod(A, b)
+  map(t -> residual_order_condition(t, rk), trees)
+end
+
+@assert iszero(all_order_conditions(trees, coeffs)) # fourth-order accurate
+
+ForwardDiff.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs)
+```
+
+```@example AD-Jacobian
+Zygote.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs
+```
+
+```@example AD-Jacobian
+ForwardDiff.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs) == first(Zygote.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs))
+```
