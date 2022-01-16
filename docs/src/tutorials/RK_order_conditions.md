@@ -99,6 +99,9 @@ this enables automatic differentiation (AD) and symbolic computations.
 ### Symbolic computations
 
 For example, you can determine the order conditions symbolically as follows.
+```@setup
+using SymPy # download required python stuff silently
+```
 ```@example
 using RootedTrees, SymPy
 
