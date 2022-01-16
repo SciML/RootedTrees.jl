@@ -53,9 +53,10 @@ makedocs(
   pages = [
     "Home" => "index.md",
     "Introduction" => "introduction.md",
-    # "Tutorials" => [
-    #   "tutorials/modified_equations.md",
-    # ],
+    "Tutorials" => [
+      "tutorials/RK_order_conditions.md",
+      "tutorials/ARK_order_conditions.md",
+    ],
     # "Benchmarks" => "benchmarks.md",
     "API reference" => "api_reference.md",
     "Contributing" => "contributing.md",

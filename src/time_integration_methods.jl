@@ -138,7 +138,7 @@ with autonomous problems is applied.
 
 An additive Runge-Kutta method applied to the ODE problem
 ```math
-  u'(t) = \\sum_\nu f^\\nu(u)
+  u'(t) = \\sum_\\nu f^\\nu(t, u(t))
 ```
 has the form
 ```math
@@ -151,9 +151,9 @@ has the form
 In particular, additive Runge-Kutta methods are a superset of partitioned RK
 methods, which are applied to partitioned problems of the form
 ```math
-  u^1'(t) = f^1(u^1, u^2),
-  \\qquad
-  u^2'(t) = f^2(u^1, u^2).
+  u^1'(t) = f^1(t, u^1, u^2),
+  \\quad
+  u^2'(t) = f^2(t, u^1, u^2).
 ```
 
 # References
