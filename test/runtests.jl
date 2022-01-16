@@ -958,6 +958,54 @@ end # @testset "ColoredRootedTree"
     end
   end
 
+  @testset "AdditiveRungeKuttaMethod, ARK3(2)4L[2]SA" begin
+    # Kennedy, Christopher A., and Mark H. Carpenter.
+    # "Additive Runge-Kutta schemes for convection-diffusion-reaction equations."
+    # Applied Numerical Mathematics 44, no. 1-2 (2003): 139-181.
+    # https://doi.org/10.1016/S0168-9274(02)00138-1
+    A_explicit = @SArray [
+      0 0 0 0
+      1767732205903/2027836641118 0 0 0
+      5535828885825/10492691773637 788022342437/10882634858940 0 0
+      6485989280629/16251701735622 -4246266847089/9704473918619 10755448449292/10357097424841 0
+    ]
+    b_explicit = @SArray [
+      1471266399579/7840856788654,
+      -4482444167858/7529755066697,
+      11266239266428/11593286722821,
+      1767732205903/4055673282236,
+    ]
+    rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
+    A_implicit = @SArray [
+      0 0 0 0
+      1767732205903/4055673282236 1767732205903/4055673282236 0 0
+      2746238789719/10658868560708 -640167445237/6845629431997 1767732205903/4055673282236 0
+      1471266399579/7840856788654 -4482444167858/7529755066697 11266239266428/11593286722821 1767732205903/4055673282236
+    ]
+    b_implicit = @SArray [
+      1471266399579/7840856788654,
+      -4482444167858/7529755066697,
+      11266239266428/11593286722821,
+      1767732205903/4055673282236,
+    ]
+    rk_implicit = RungeKuttaMethod(A_implicit, b_implicit)
+    ark = AdditiveRungeKuttaMethod([rk_explicit, rk_implicit])
+
+    for order in 1:3
+      for t in BicoloredRootedTreeIterator(order)
+        @test residual_order_condition(t, ark) ≈ 0 atol=eps()
+      end
+    end
+
+    let order=4
+      res = 0.0
+      for t in BicoloredRootedTreeIterator(order)
+        res += abs(residual_order_condition(t, ark))
+      end
+      @test res > 10*eps()
+    end
+  end
+
   @testset "AdditiveRungeKuttaMethod, SSPRK33 three times" begin
     # Using the same method multiple times is equivalent to using a plain RK
     # method without any splitting/partitioning/decomposition

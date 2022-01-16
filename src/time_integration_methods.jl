@@ -166,10 +166,9 @@ end
 
 function AdditiveRungeKuttaMethod(rks) # if not all RK methods use the same eltype
   T = mapreduce(eltype, promote_type, rks)
-  converter = x -> T.(x)
-  As = map(converter, rk.A for rk in rks)
-  bs = map(converter, rk.b for rk in rks)
-  cs = map(converter, rk.c for rk in rks)
+  As = map(rk -> T.(rk.A), rks)
+  bs = map(rk -> T.(rk.b), rks)
+  cs = map(rk -> T.(rk.c), rks)
   AdditiveRungeKuttaMethod(As, bs, cs)
 end
 
