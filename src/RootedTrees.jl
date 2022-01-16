@@ -7,9 +7,11 @@ using LinearAlgebra: dot
 
 using Latexify: Latexify
 using RecipesBase: RecipesBase
+using Requires: @require
 
 
-export RootedTree, rootedtree, rootedtree!, RootedTreeIterator
+export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
+       ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
 export butcher_representation
 
@@ -25,8 +27,10 @@ export partition_forest, PartitionForestIterator,
 
 export all_splittings, SplittingIterator
 
-export RungeKuttaMethod
+export RungeKuttaMethod, AdditiveRungeKuttaMethod
 
+
+abstract type AbstractRootedTree end
 
 
 """
@@ -37,11 +41,11 @@ Represents a rooted tree using its level sequence.
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
-struct RootedTree{T<:Integer, V<:AbstractVector{T}}
+struct RootedTree{T<:Integer, V<:AbstractVector{T}} <: AbstractRootedTree
   level_sequence::V
   iscanonical::Bool
 
@@ -53,13 +57,13 @@ end
 """
     rootedtree(level_sequence)
 
-Construct a canonical `RootedTree` object from a `level_sequence`, i.e.,
+Construct a canonical [`RootedTree`](@ref) object from a `level_sequence`, i.e.,
 a vector of integers representing the levels of each node of the tree.
 
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
@@ -74,7 +78,7 @@ modified in this process. See also [`rootedtree`](@ref).
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
-  "Constant time generation of rooted trees."
+  "Constant time generation of rooted trees".
   SIAM Journal on Computing 9.4 (1980): 706-712.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
@@ -234,14 +238,14 @@ end
 
 # generation and canonical representation
 """
-    canonical_representation(t::RootedTree)
+    canonical_representation(t::AbstractRootedTree)
 
 Returns a new tree using the canonical representation of the rooted tree `t`,
 i.e., the one with lexicographically biggest level sequence.
 
 See also [`canonical_representation!`](@ref).
 """
-function canonical_representation(t::RootedTree)
+function canonical_representation(t::AbstractRootedTree)
   canonical_representation!(copy(t))
 end
 
@@ -265,7 +269,7 @@ end
 # However, this would create a lot of intermediate allocations, which make it
 # rather slow. Since most trees in use are relatively small, we can use a
 # non-allocating sorting algorithm instead - although bubble sort is slower in
-# generalwhen comparing the complexity with quicksort etc., it will be faster
+# general when comparing the complexity with quicksort etc., it will be faster
 # here since we can avoid allocations.
 """
     canonical_representation!(t::RootedTree)
@@ -381,34 +385,13 @@ function canonical_representation!(t::RootedTree{Int, Vector{Int}})
 end
 
 
-function __init__()
-  # canonical_representation!
-  Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-
-  # PartitionIterator
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
-                           Vector{Int}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
-                           Vector{Bool}(undef, BUFFER_LENGTH))
-  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
-                           Vector{Bool}(undef, BUFFER_LENGTH))
-
-  return nothing
-end
-
-
 """
-    normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+    normalize_root!(t::AbstractRootedTree, root=one(eltype(t.level_sequence)))
 
 Normalize the level sequence of the rooted tree `t` such that the root is
 set to `root`.
 """
-function normalize_root!(t::RootedTree, root=one(eltype(t.level_sequence)))
+function normalize_root!(t::AbstractRootedTree, root=one(eltype(t.level_sequence)))
   t.level_sequence .+= root - first(t.level_sequence)
   t
 end
@@ -416,7 +399,7 @@ end
 
 
 """
-    RootedTreeIterator{T<:Integer}
+    RootedTreeIterator(order::Integer)
 
 Iterator over all rooted trees of given `order`. The returned trees are views to
 an internal tree modified during the iteration. If the returned trees shall be
@@ -484,7 +467,7 @@ end
 
 
 # subtrees
-struct SubtreeIterator{Tree<:RootedTree}
+struct SubtreeIterator{Tree<:AbstractRootedTree}
   t::Tree
 end
 
@@ -492,12 +475,12 @@ end
 # Base.IteratorSize(::Type{<:SubtreeIterator}) = Base.SizeUnknown()
 # Base.eltype(::Type{SubtreeIterator})
 
-@inline function Base.iterate(subtrees::SubtreeIterator)
+@inline function Base.iterate(subtrees::SubtreeIterator{<:RootedTree})
   subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
   iterate(subtrees, subtree_root_index)
 end
 
-@inline function Base.iterate(subtrees::SubtreeIterator, subtree_root_index)
+@inline function Base.iterate(subtrees::SubtreeIterator{<:RootedTree}, subtree_root_index)
   level_sequence = subtrees.t.level_sequence
 
   # terminate the iteration if there are no further subtrees
@@ -521,7 +504,7 @@ end
 
 Returns a vector of all subtrees of `t`.
 """
-function subtrees(t::RootedTree{T}) where {T}
+function subtrees(t::RootedTree)
   subtr = typeof(t)[]
 
   if length(t.level_sequence) < 2
@@ -1091,16 +1074,16 @@ end
 # functions on trees
 
 """
-    order(t::RootedTree)
+    order(t::AbstractRootedTree)
 
 The `order` of a rooted tree `t`, i.e., the length of its level sequence.
 """
-order(t::RootedTree) = length(t.level_sequence)
+order(t::AbstractRootedTree) = length(t.level_sequence)
 
 
 """
-    σ(t::RootedTree)
-    symmetry(t::RootedTree)
+    σ(t::AbstractRootedTree)
+    symmetry(t::AbstractRootedTree)
 
 The symmetry `σ` of a rooted tree `t`, i.e., the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
@@ -1110,7 +1093,7 @@ Reference: Section 301 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function symmetry(t::RootedTree)
+function symmetry(t::AbstractRootedTree)
   if order(t) <= 2
     return 1
   end
@@ -1153,8 +1136,8 @@ const σ = symmetry
 
 
 """
-    γ(t::RootedTree)
-    density(t::RootedTree)
+    γ(t::AbstractRootedTree)
+    density(t::AbstractRootedTree)
 
 The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t`
 of the order of the subtree rooted at that vertex.
@@ -1164,7 +1147,9 @@ Reference: Section 301 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function density(t::RootedTree)
+function density(t::AbstractRootedTree)
+  isempty(t) && return 1
+
   result = order(t)
   for subtree in SubtreeIterator(t)
     result *= density(subtree)
@@ -1176,7 +1161,7 @@ const γ = density
 
 
 """
-    α(t::RootedTree)
+    α(t::AbstractRootedTree)
 
 The number of monotonic labelings of `t` not equivalent under the symmetry group.
 
@@ -1185,13 +1170,13 @@ Reference: Section 302 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function α(t::RootedTree)
-  div(factorial(order(t)), σ(t)*γ(t))
+function α(t::AbstractRootedTree)
+  div(factorial(order(t)), σ(t) * γ(t))
 end
 
 
 """
-    β(t::RootedTree)
+    β(t::AbstractRootedTree)
 
 The total number of labelings of `t` not equivalent under the symmetry group.
 
@@ -1200,136 +1185,13 @@ Reference: Section 302 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2008.
 """
-function β(t::RootedTree)
+function β(t::AbstractRootedTree)
   div(factorial(order(t)), σ(t))
 end
 
 
 
-"""
-    RungeKuttaMethod(A, b, c=vec(sum(A, dims=2)))
-
-Represent a Runge-Kutta method with Butcher coefficients `A`, `b`, and `c`.
-If `c` is not provided, the usual "row sum" requirement of consistency with
-autonomous problems is applied.
-"""
-struct RungeKuttaMethod{T, MatT<:AbstractMatrix{T}, VecT<:AbstractVector{T}}
-  A::MatT
-  b::VecT
-  c::VecT
-end
-
-function RungeKuttaMethod(A::AbstractMatrix, b::AbstractVector, c::AbstractVector=vec(sum(A, dims=2)))
-  T = promote_type(eltype(A), eltype(b), eltype(c))
-  _A = T.(A)
-  _b = T.(b)
-  _c = T.(c)
-  return RungeKuttaMethod(_A, _b, _c)
-end
-
-function Base.show(io::IO, rk::RungeKuttaMethod{T}) where {T}
-  print(io, "RungeKuttaMethod{", T, "}")
-  if get(io, :compact, false)
-    print(io, "(")
-    show(io, rk.A)
-    print(io, ", ")
-    show(io, rk.b)
-    print(io, ", ")
-    show(io, rk.c)
-    print(io, ")")
-  else
-    print(io, " with\nA: ")
-    show(io, MIME"text/plain"(), rk.A)
-    print(io, "\nb: ")
-    show(io, MIME"text/plain"(), rk.b)
-    print(io, "\nc: ")
-    show(io, MIME"text/plain"(), rk.c)
-    print(io, "\n")
-  end
-end
-
-
-"""
-    elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
-    elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-
-Compute the elementary weight Φ(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
-with  Butcher coefficients `A, b, c` for a rooted tree `t``.
-
-Reference: Section 312 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
-  dot(rk.b, derivative_weight(t, rk))
-end
-
-# TODO: Deprecate also this method?
-function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector, c::AbstractVector)
-  elementary_weight(t, RungeKuttaMethod(A, b, c))
-end
-
-
-"""
-    derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
-
-Compute the derivative weight (ΦᵢD)(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
-with Butcher coefficients `A, b, c` for the rooted tree `t`.
-
-Reference: Section 312 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
-  A = rk.A
-  c = rk.c
-
-  # Initialize `result` with the identity element of pointwise multiplication `.*`
-  result = zero(c) .+ one(eltype(c))
-
-  # Iterate over all subtrees and update the `result` using recursion
-  for subtree in SubtreeIterator(t)
-    tmp = A * derivative_weight(subtree, rk)
-    result = result .* tmp
-  end
-
-  return result
-end
-
-# TODO: Deprecations introduced in v2
-@deprecate derivative_weight(t::RootedTree, A, b, c) derivative_weight(t, RungeKuttaMethod(A, b, c))
-
-
-"""
-    residual_order_condition(t::RootedTree, rk::RungeKuttaMethod
-
-The residual of the order condition
-  `(Φ(t) - 1/γ(t)) / σ(t)`
-with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
-[`symmetry`](@ref) `σ(t)` of the [`RungeKuttaMethod`](@ref) `rk` with Butcher
-coefficients `A, b, c` for the rooted tree `t`.
-
-Reference: Section 315 of
-- Butcher, John Charles.
-  Numerical methods for ordinary differential equations.
-  John Wiley & Sons, 2008.
-"""
-function residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
-  ew = elementary_weight(t, rk)
-  T = typeof(ew)
-
-  (ew - one(T) / γ(t)) / σ(t)
-end
-
-# TODO: Deprecations introduced in v2
-@deprecate residual_order_condition(t::RootedTree, A, b, c) residual_order_condition(t, RungeKuttaMethod(A, b, c))
-
-
-
 # additional representation and construction methods
-
 """
     t1 ∘ t2
 
@@ -1376,7 +1238,9 @@ Section 300 of
   John Wiley & Sons, 2008.
 """
 function butcher_representation(t::RootedTree, normalize::Bool=true)
-  if order(t) == 1
+  if order(t) == 0
+    return "∅"
+  elseif order(t) == 1
     return "τ"
   end
 
@@ -1404,7 +1268,7 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
       n_str = replace(n_str, "8" => "⁸")
       n_str = replace(n_str, "9" => "⁹")
       n_str = replace(n_str, "0" => "⁰")
-      result = replace(result, "τ"^n => "τ"*n_str)
+      result = replace(result, "τ"^n => "τ" * n_str)
     end
   end
 
@@ -1412,8 +1276,36 @@ function butcher_representation(t::RootedTree, normalize::Bool=true)
 end
 
 
+include("colored_trees.jl")
 include("latexify.jl")
-include("plots.jl")
+include("plot_recipes.jl")
+include("time_integration_methods.jl")
+
+
+function __init__()
+  # canonical_representation!
+  Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+
+  # PartitionIterator
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
+                           Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
+
+  @require Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
+    using .Plots: Plots
+    include("plots.jl")
+  end
+
+  return nothing
+end
 
 
 end # module
