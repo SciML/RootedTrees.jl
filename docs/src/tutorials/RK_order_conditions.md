@@ -153,7 +153,7 @@ ForwardDiff.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs)
 ```
 
 ```@example AD-Jacobian
-Zygote.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs
+Zygote.jacobian(coeffs -> all_order_conditions(trees, coeffs), coeffs)
 ```
 
 ```@example AD-Jacobian
