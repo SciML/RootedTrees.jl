@@ -107,27 +107,14 @@ A = [symbols("a_$(i)$(j)", real=true) for i in 1:s, j in 1:s]
 b = [symbols("b_$(i)", real=true) for i in 1:s]
 rk = RungeKuttaMethod(A, b)
 
-julia> for o in 1:3
-           println("Order ", o)
-           for t in RootedTreeIterator(o)
-               println("t = ", t)
-               println(residual_order_condition(t, rk))
-           end
-           println()
-       end
-Order 1
-t = RootedTree{Int64}: [1]
-b_1 + b_2 + b_3 - 1
-
-Order 2
-t = RootedTree{Int64}: [1, 2]
-b_1*(a_11 + a_12 + a_13) + b_2*(a_21 + a_22 + a_23) + b_3*(a_31 + a_32 + a_33) - 1/2
-
-Order 3
-t = RootedTree{Int64}: [1, 2, 3]
-b_1*(a_11*(a_11 + a_12 + a_13) + a_12*(a_21 + a_22 + a_23) + a_13*(a_31 + a_32 + a_33)) + b_2*(a_21*(a_11 + a_12 + a_13) + a_22*(a_21 + a_22 + a_23) + a_23*(a_31 + a_32 + a_33)) + b_3*(a_31*(a_11 + a_12 + a_13) + a_32*(a_21 + a_22 + a_23) + a_33*(a_31 + a_32 + a_33)) - 1/6
-t = RootedTree{Int64}: [1, 2, 2]
-b_1*(a_11 + a_12 + a_13)^2/2 + b_2*(a_21 + a_22 + a_23)^2/2 + b_3*(a_31 + a_32 + a_33)^2/2 - 1/6
+for o in 1:3
+  println("Order ", o)
+  for t in RootedTreeIterator(o)
+    println("t = ", t)
+    println(residual_order_condition(t, rk))
+  end
+  println()
+end
 
 nothing # hide
 ```
