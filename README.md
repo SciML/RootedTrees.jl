@@ -107,7 +107,19 @@ Additionally, functions on trees connected to Runge-Kutta methods are implemente
 
 If you use
 [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl)
-for your research, please cite it using the bibtex entry
+for your research, please cite the paper
+```bibtex
+@online{ketcheson2021computing,
+  title={Computing with {B}-series},
+  author={Ketcheson, David I and Ranocha, Hendrik},
+  year={2021},
+  month={11},
+  eprint={2111.11680},
+  eprinttype={arXiv},
+  eprintclass={math.NA}
+}
+```
+In addition, you can also refer to RootedTrees.jl directly as
 ```bibtex
 @misc{ranocha2019rootedtrees,
   title={{RootedTrees.jl}: {A} collection of functionality around rooted trees
