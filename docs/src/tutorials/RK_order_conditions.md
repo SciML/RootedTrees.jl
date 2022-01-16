@@ -2,7 +2,7 @@
 
 Consider an ordinary differential equation (ODE) of the form
 ```math
-u'(t) = f(u(t)).
+u'(t) = f(t, u(t)).
 ```
 
 A Runge-Kutta (RK) method with ``s`` stages is given by its
@@ -36,7 +36,7 @@ The step from ``u^{n}`` to ``u^{n+1}`` is given by
 where ``y^i`` are the stage values.
 
 In [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl),
-Runge-Kutta methods are represented as
+RK methods are represented as
 [`RungeKuttaMethod`](@ref)s.
 
 
@@ -89,4 +89,3 @@ using Test
 end
 nothing # hide
 ```
-

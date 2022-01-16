@@ -5,6 +5,8 @@
 Represents a colored rooted tree using its level sequence. The single-colored
 version is [`RootedTree`](@ref).
 
+See also [`BicoloredRootedTree`](@ref), [`rootedtree`](@ref).
+
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
@@ -27,6 +29,13 @@ struct ColoredRootedTree{T<:Integer, V<:AbstractVector{T}, C<:AbstractVector} <:
 end
 
 
+"""
+    BicoloredRootedTree{T<:Integer}
+
+Representation of bicolored rooted trees.
+
+See also [`ColoredRootedTree`](@ref), [`RootedTree`](@ref), [`rootedtree`](@ref).
+"""
 const BicoloredRootedTree{T<:Integer, V<:AbstractVector{T}, C<:AbstractVector{Bool}} = ColoredRootedTree{T, V, C}
 
 
