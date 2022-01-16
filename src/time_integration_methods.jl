@@ -1,4 +1,7 @@
 
+abstract type AbstractTimeIntegrationMethod end
+
+
 """
     RungeKuttaMethod(A, b, c=vec(sum(A, dims=2)))
 
@@ -6,7 +9,7 @@ Represent a Runge-Kutta method with Butcher coefficients `A`, `b`, and `c`.
 If `c` is not provided, the usual "row sum" requirement of consistency with
 autonomous problems is applied.
 """
-struct RungeKuttaMethod{T, MatT<:AbstractMatrix{T}, VecT<:AbstractVector{T}}
+struct RungeKuttaMethod{T, MatT<:AbstractMatrix{T}, VecT<:AbstractVector{T}} <: AbstractTimeIntegrationMethod
   A::MatT
   b::VecT
   c::VecT
@@ -160,7 +163,7 @@ methods, which are applied to partitioned problems of the form
   SIAM Journal on Numerical Analysis 34.5 (1997): 1926-1947.
   [DOI: 10.1137/S0036142995292128](https://doi.org/10.1137/S0036142995292128)
 """
-struct AdditiveRungeKuttaMethod{T, RKs<:AbstractVector{<:RungeKuttaMethod{T}}}
+struct AdditiveRungeKuttaMethod{T, RKs<:AbstractVector{<:RungeKuttaMethod{T}}} <: AbstractTimeIntegrationMethod
   rks::RKs
 end
 
