@@ -6,19 +6,19 @@ are
 - John Charles Butcher.
   "Numerical methods for ordinary differential equations".
   John Wiley & Sons, 2016.
-  https://doi.org/10.1002/9780470753767
+  [DOI: 10.1002/9780470753767](https://doi.org/10.1002/9780470753767)
 - Ernst Hairer, Gerhard Wanner, Syvert P. Nørsett.
   "Solving Ordinary Differential Equations I".
   Springer, 1993.
-  https://doi.org/10.1007/978-3-540-78862-1
+  [DOI: 10.1007/978-3-540-78862-1](https://doi.org/10.1007/978-3-540-78862-1)
 - Ernst Hairer, Gerhard Wanner.
   "Solving Ordinary Differential Equations II".
   Springer, 1996.
-  https://doi.org/10.1007/978-3-642-05221-7
+  [DOI: 10.1007/978-3-642-05221-7](https://doi.org/10.1007/978-3-642-05221-7)
 - Ernst Hairer, Gerhard Wanner, Christian Lubich.
   "Geometric Numerical Integration".
   Springer, 2006.
-  https://doi.org/10.1007/3-540-30666-8
+  [DOI: 10.1007/3-540-30666-8](https://doi.org/10.1007/3-540-30666-8)
 
 
 ## Construction
