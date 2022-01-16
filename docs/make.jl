@@ -52,7 +52,7 @@ makedocs(
   # Explicitly specify documentation structure
   pages = [
     "Home" => "index.md",
-    # "Introduction" => "introduction.md",
+    "Introduction" => "introduction.md",
     # "Tutorials" => [
     #   "tutorials/modified_equations.md",
     # ],
