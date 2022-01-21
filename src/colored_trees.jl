@@ -129,6 +129,9 @@ function Base.isless(t1::ColoredRootedTree, t2::ColoredRootedTree)
     v2 = e2 + root1_minus_root2
     (v1 == v2) || return isless(v1, v2)
   end
+  if length(t1.level_sequence) != length(t2.level_sequence)
+    return isless(length(t1.level_sequence), length(t2.level_sequence))
+  end
   return isless(t1.color_sequence, t2.color_sequence)
 end
 
@@ -183,6 +186,7 @@ function canonical_representation!(t::ColoredRootedTree)
   i = 2
   for τ in subtr
     t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
+    t.color_sequence[i:i+order(τ)-1] = τ.color_sequence
     i += order(τ)
   end
 
