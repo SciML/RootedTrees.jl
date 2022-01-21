@@ -789,6 +789,148 @@ end # @testset "RootedTree"
       @test num == number_of_rooted_trees[order] * 2^order
     end
   end
+
+  # See Sections 2.3 & 6.1 and Table 2 of
+  # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  #   Algebraic Structures of B-series.
+  #   Foundations of Computational Mathematics
+  #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+  @testset "partitions" begin
+    # Example in Section 6.1
+    let t = rootedtree([1, 2, 3, 3], Bool[0, 1, 0, 0])
+      edge_set = [false, true, false]
+      # reference_forest = [rootedtree([1, 2, 3]),
+      #                     rootedtree([4]),
+      #                     rootedtree([3])]
+      # @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+      # @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3], Bool[0, 1, 0])
+      @test reference_skeleton == partition_skeleton(t, edge_set)
+    end
+
+  #   # Other examples for single-colored trees
+  #   let t = rootedtree([1, 2, 3, 4, 3])
+  #     edge_set = [true, true, false, false]
+  #     reference_forest = [rootedtree([1, 2, 3]),
+  #                         rootedtree([4]),
+  #                         rootedtree([3])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 2])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 4, 3])
+  #     edge_set = [false, true, true, false]
+  #     reference_forest = [rootedtree([3]),
+  #                         rootedtree([2, 3, 4]),
+  #                         rootedtree([1])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 3])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 4, 3])
+  #     edge_set = [false, true, false, false]
+  #     reference_forest = [rootedtree([4]),
+  #                         rootedtree([3]),
+  #                         rootedtree([2, 3]),
+  #                         rootedtree([1])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 3, 3])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 2, 2, 2])
+  #     edge_set = [false, false, true, true]
+  #     reference_forest = [rootedtree([2]),
+  #                         rootedtree([2]),
+  #                         rootedtree([1, 2, 2])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 2])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 2, 2])
+  #     edge_set = [false, false, false, true]
+  #     reference_forest = [rootedtree([3]),
+  #                         rootedtree([2]),
+  #                         rootedtree([2]),
+  #                         rootedtree([1, 2])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 3, 2])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 2, 2])
+  #     edge_set = [true, true, true, true]
+  #     reference_forest = [rootedtree([1, 2, 3, 2, 2])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 2, 3])
+  #     edge_set = [true, true, false, false]
+  #     reference_forest = [rootedtree([3]),
+  #                         rootedtree([2]),
+  #                         rootedtree([1, 2, 3])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 3])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 2, 3])
+  #     edge_set = [false, true, false, false]
+  #     reference_forest = [rootedtree([2, 3]),
+  #                         rootedtree([3]),
+  #                         rootedtree([2]),
+  #                         rootedtree([1])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 2, 3])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   let t = rootedtree([1, 2, 3, 3, 3])
+  #     edge_set = [false, true, true, false]
+  #     reference_forest = [rootedtree([3]),
+  #                         rootedtree([2, 3, 3]),
+  #                         rootedtree([1])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2, 3])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+
+  #   # additional tests not included in the examples of the paper
+  #   let t = rootedtree([1, 2, 3, 2, 3])
+  #     edge_set = [true, false, true, true]
+  #     reference_forest = [rootedtree([1, 2, 3, 2]),
+  #                         rootedtree([3])]
+  #     @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
+  #     @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+  #     reference_skeleton = rootedtree([1, 2])
+  #     @test reference_skeleton == partition_skeleton(t, edge_set)
+  #   end
+  # end
 end # @testset "ColoredRootedTree"
 
 

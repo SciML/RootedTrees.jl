@@ -676,9 +676,9 @@ end
 """
     partition_skeleton(t::RootedTree, edge_set)
 
-Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree obtained
-by contracting each tree of the partition forest to a single vertex and re-establishing
-the edges removed to obtain the partition forest.
+Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree
+obtained by contracting each tree of the partition forest to a single vertex
+and re-establishing the edges removed to obtain the partition forest.
 
 See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
 
