@@ -296,6 +296,20 @@ function subtrees(t::ColoredRootedTree)
 end
 
 
+
+# TODO: ColoredRootedTree. partitions
+# partition_skeleton!
+# PartitionForestIterator
+# PartitionIterator
+
+
+
+# TODO: ColoredRootedTree. splittings
+# SplittingIterator
+
+
+
+
 # additional representation and construction methods
 
 function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)

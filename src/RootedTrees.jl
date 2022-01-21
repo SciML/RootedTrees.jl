@@ -526,7 +526,6 @@ end
 
 
 # partitions
-# TODO: partitions; add documentation in the README to make them public API
 """
     partition_forest(t::RootedTree, edge_set)
 
@@ -674,7 +673,6 @@ function Base.collect(forest::PartitionForestIterator)
 end
 
 
-# TODO: partitions; add documentation in the README to make them public API
 """
     partition_skeleton(t::RootedTree, edge_set)
 
@@ -737,7 +735,6 @@ function partition_skeleton!(level_sequence, edge_set)
 end
 
 
-# TODO: partitions; add documentation in the README to make them public API
 """
     all_partitions(t::RootedTree)
 
@@ -918,7 +915,6 @@ end
 
 
 # splittings
-# TODO: splittings; add documentation in the README to make them public API
 """
     all_splittings(t::RootedTree)
 
