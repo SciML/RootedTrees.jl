@@ -192,7 +192,11 @@ end
 
 # Factor out equivalence classes given by different roots
 function Base.hash(t::ColoredRootedTree, h::UInt)
-  # TODO: ColoredRootedTree. Use a fast path if possible
+  # Use a fast path if possible
+  if UInt == UInt64 && t isa BicoloredRootedTree && order(t) <= 12
+    return simple_hash(t, h)
+  end
+
   isempty(t.level_sequence) && return h
   root = first(t.level_sequence)
   for (l, c) in zip(t.level_sequence, t.color_sequence)
@@ -202,21 +206,154 @@ function Base.hash(t::ColoredRootedTree, h::UInt)
   return h
 end
 
+# Map the level sequence to an unsigned integer by concatenating the bit
+# representations of level sequence differences. If the level sequence increases
+# from one vertex to the next, it can increase at most by unity. Since we want
+# to use simple bits representations, we measure the decrease compared to the
+# maximal possible increase.
+# The maximal drop in the level sequence is
+#   maximal_drop = length(t.level_sequence) - 3
+# We need at most
+#   number_of_bits = trunc(Int, log2(maximal_drop)) + 1
+# bits to represent this. Thus, 64 bit allow us to compute unique hashes for
+# level sequence up to length 16 in the following simple way; 64 bit result
+# in `number_of_bits = 4` for `maximal_drop = 16 - 3 = 13`.
+# For 32 bits, we could use a maximal length of 10 with `number_of_bits = 3`.
+# However, most user systems should use 64 bit by default, so we only implement
+# this option for simplicity.
+# The binary color sequence is mapped to an unsigned integer by interpreting
+# the Boolean colors as bits of an unsigned integer. Thus, we need one
+# additional bit per level to store also the color information. Thus, we
+# can use this simple version with 64 bits up to a maximal length of 12
+# (maximal_drop = 9; number_of_bits = 4; max_length * (number_of_bits + 1) = 60)
+@inline function simple_hash(t::BicoloredRootedTree, h_base::UInt64)
+  isempty(t.level_sequence) && return h_base
+  h = zero(h_base)
+  l_prev = first(t.level_sequence)
+  for l in t.level_sequence
+    h = (h << 4) | (l_prev + 1 - l)
+    l_prev = l
+  end
+  for c in t.color_sequence
+    h = (h << 1) | c
+  end
+  return hash(h, h_base)
+end
+
 
 # generation and canonical representation
-# TODO: ColoredRootedTree. Performance improvements possible using in-place sort
-function canonical_representation!(t::ColoredRootedTree)
-  subtr = subtrees(t)
-  for i in eachindex(subtr)
-    canonical_representation!(subtr[i])
-  end
-  sort!(subtr, rev=true)
+# A very simple implementation of `canonical_representation!` could read as
+# follows.
+#     function canonical_representation!(t::ColoredRootedTree)
+#       subtr = subtrees(t)
+#       for i in eachindex(subtr)
+#         canonical_representation!(subtr[i])
+#       end
+#       sort!(subtr, rev=true)
 
-  i = 2
-  for τ in subtr
-    t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
-    t.color_sequence[i:i+order(τ)-1] = τ.color_sequence
-    i += order(τ)
+#       i = 2
+#       for τ in subtr
+#         t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
+#         t.color_sequence[i:i+order(τ)-1] = τ.color_sequence
+#         i += order(τ)
+#       end
+
+#       ColoredRootedTree(t.level_sequence, t.color_sequence, true)
+#     end
+# However, this would create a lot of intermediate allocations, which make it
+# rather slow. Since most trees in use are relatively small, we can use a
+# non-allocating sorting algorithm instead - although bubble sort is slower in
+# general when comparing the complexity with quicksort etc., it will be faster
+# here since we can avoid allocations.
+function canonical_representation!(t::ColoredRootedTree,
+                                   buffer_level=similar(t.level_sequence),
+                                   buffer_color=similar(t.color_sequence))
+  # Since we use a recursive implementation, it is useful to exit early for
+  # small trees. If there are at most 3 vertices in a valid rooted tree, its
+  # level sequence must already be in canonical representation. However, the
+  # color sequence of the bushy tree may be wrong. Thus, we can only skip the
+  # sorting for colored trees with at most two nodes.
+  if order(t) <= 2
+    return ColoredRootedTree(t.level_sequence, t.color_sequence, true)
+  end
+
+  # First, sort all subtrees recursively. Here, we use `view`s to avoid memory
+  # allocations.
+  # TODO: Assume 1-based indexing in the following
+  subtree_root_index = 2
+  number_of_subtrees = 0
+
+  while subtree_root_index <= order(t)
+    subtree_last_index = _subtree_last_index(subtree_root_index, t.level_sequence)
+
+    # We found a complete subtree
+    idx_subtree = subtree_root_index:subtree_last_index
+    subtree = ColoredRootedTree(view(t.level_sequence, idx_subtree),
+                                view(t.color_sequence, idx_subtree))
+    canonical_representation!(subtree,
+                              view(buffer_level, idx_subtree),
+                              view(buffer_color, idx_subtree))
+
+    subtree_root_index = subtree_last_index + 1
+    number_of_subtrees += 1
+  end
+
+  # Next, we need to sort the subtrees of `t` (in lexicographically decreasing
+  # order of the level sequences).
+  if number_of_subtrees > 1
+    # Simple bubble sort that can act in-place, avoiding allocations
+    # We keep track of the last index of the last subtree that we need to sort
+    # since we know that the last `n` subtrees are already sorted after `n`
+    # iterations.
+    subtree_last_index_to_sort = order(t)
+    swapped = true
+    while swapped
+      swapped = false
+
+      # Search the first complete subtree
+      subtree1_root_index = 2
+      subtree1_last_index = 0
+      subtree2_last_index = 0
+      while subtree1_root_index <= subtree_last_index_to_sort
+        subtree1_last_index = _subtree_last_index(subtree1_root_index, t.level_sequence)
+        subtree2_last_index = subtree1_last_index
+
+        # Search the next complete subtree
+        subtree1_last_index == subtree_last_index_to_sort && break
+
+        subtree2_root_index = subtree1_last_index + 1
+        subtree2_last_index = _subtree_last_index(subtree2_root_index, t.level_sequence)
+
+        # Swap the subtrees if they are not sorted correctly
+        subtree1_idx = subtree1_root_index:subtree1_last_index
+        subtree1 = ColoredRootedTree(view(t.level_sequence, subtree1_idx),
+                                     view(t.color_sequence, subtree1_idx))
+        subtree2_idx = subtree2_root_index:subtree2_last_index
+        subtree2 = ColoredRootedTree(view(t.level_sequence, subtree2_idx),
+                                     view(t.color_sequence, subtree2_idx))
+        if isless(subtree1, subtree2)
+          copyto!(buffer_level, 1, t.level_sequence, subtree1_root_index, order(subtree1) + order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index, buffer_level, order(subtree1) + 1, order(subtree2))
+          copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer_level, 1, order(subtree1))
+
+          copyto!(buffer_color, 1, t.color_sequence, subtree1_root_index, order(subtree1) + order(subtree2))
+          copyto!(t.color_sequence, subtree1_root_index, buffer_color, order(subtree1) + 1, order(subtree2))
+          copyto!(t.color_sequence, subtree1_root_index + order(subtree2), buffer_color, 1, order(subtree1))
+
+          # `subtree1_root_index` will be updated below using `subtree1_last_index`.
+          # Thus, we need to adapt this variable here.
+          subtree1_last_index = subtree1_root_index + order(subtree2) - 1
+          swapped = true
+        end
+
+        # Move on to the next pair of subtrees
+        subtree2_last_index == subtree_last_index_to_sort && break
+        subtree1_root_index = subtree1_last_index + 1
+      end
+
+      # Update the last subtree we need to look at
+      subtree_last_index_to_sort = min(subtree1_last_index, subtree2_last_index)
+    end
   end
 
   ColoredRootedTree(t.level_sequence, t.color_sequence, true)

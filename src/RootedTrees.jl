@@ -333,7 +333,7 @@ end
 # general when comparing the complexity with quicksort etc., it will be faster
 # here since we can avoid allocations.
 """
-    canonical_representation!(t::RootedTree)
+    canonical_representation!(t::AbstractRootedTree)
 
 Change the representation of the rooted tree `t` to the canonical one, i.e., the
 one with lexicographically biggest level sequence.
@@ -1354,7 +1354,7 @@ function __init__()
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
                            Vector{Int}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS,
-                           Vector{Int}(undef, BUFFER_LENGTH))
+                           Vector{Bool}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
                            Vector{Int}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE,
