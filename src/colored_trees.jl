@@ -395,9 +395,21 @@ end
   inner_state, color_id = state
 
   # If we can iterate more by changing the color sequence, let's do so.
-  if color_id < iter.number_of_colors
+  while color_id < iter.number_of_colors
     binary_digits!(iter.t.color_sequence, color_id)
-    return (iter.t, (inner_state, color_id + 1))
+
+    # This simple enumeration of all possible colors can also yield colored
+    # trees that are not in canonical representation. For example, the trees
+    #   rootedtree([1, 2, 2], Bool[0, 0, 1])
+    #   rootedtree([1, 2, 2], Bool[1, 0, 1])
+    # are not in canonical representation.
+    # TODO: ColoredRootedTrees. Is there a more efficient way to get only
+    #       canonical representations?
+    if check_canonical(iter.t)
+      return (iter.t, (inner_state, color_id + 1))
+    else
+      color_id = color_id + 1
+    end
   end
 
   # Now, we need to iterate to a new baseline (uncolored) tree - if possible

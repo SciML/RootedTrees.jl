@@ -792,7 +792,18 @@ end # @testset "RootedTree"
         num += 1
       end
       # number of plain rooted trees times number of possible color sequences
-      @test num == number_of_rooted_trees[order] * 2^order
+      # <= since not all possible color sequences are in canonical representation
+      @test num <= number_of_rooted_trees[order] * 2^order
+    end
+  end
+
+  # https://github.com/SciML/RootedTrees.jl/issues/72
+  @testset "BicoloredRootedTreeIterator is canonical" begin
+    for o in 1:10
+      for t_iterator in BicoloredRootedTreeIterator(o)
+        t_canonical = RootedTrees.canonical_representation(t_iterator)
+        @test t_iterator == t_canonical
+      end
     end
   end
 
