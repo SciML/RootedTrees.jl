@@ -192,7 +192,11 @@ end
 
 # Factor out equivalence classes given by different roots
 function Base.hash(t::ColoredRootedTree, h::UInt)
-  # TODO: ColoredRootedTree. Use a fast path if possible
+  # Use a fast path if possible
+  if UInt == UInt64 && t isa BicoloredRootedTree && order(t) <= 12
+    return simple_hash(t, h)
+  end
+
   isempty(t.level_sequence) && return h
   root = first(t.level_sequence)
   for (l, c) in zip(t.level_sequence, t.color_sequence)
@@ -200,6 +204,40 @@ function Base.hash(t::ColoredRootedTree, h::UInt)
     h = hash(c, h)
   end
   return h
+end
+
+# Map the level sequence to an unsigned integer by concatenating the bit
+# representations of level sequence differences. If the level sequence increases
+# from one vertex to the next, it can increase at most by unity. Since we want
+# to use simple bits representations, we measure the decrease compared to the
+# maximal possible increase.
+# The maximal drop in the level sequence is
+#   maximal_drop = length(t.level_sequence) - 3
+# We need at most
+#   number_of_bits = trunc(Int, log2(maximal_drop)) + 1
+# bits to represent this. Thus, 64 bit allow us to compute unique hashes for
+# level sequence up to length 16 in the following simple way; 64 bit result
+# in `number_of_bits = 4` for `maximal_drop = 16 - 3 = 13`.
+# For 32 bits, we could use a maximal length of 10 with `number_of_bits = 3`.
+# However, most user systems should use 64 bit by default, so we only implement
+# this option for simplicity.
+# The binary color sequence is mapped to an unsigned integer by interpreting
+# the Boolean colors as bits of an unsigned integer. Thus, we need one
+# additional bit per level to store also the color information. Thus, we
+# can use this simple version with 64 bits up to a maximal length of 12
+# (maximal_drop = 9; number_of_bits = 4; max_length * (number_of_bits + 1) = 60)
+@inline function simple_hash(t::BicoloredRootedTree, h_base::UInt64)
+  isempty(t.level_sequence) && return h_base
+  h = zero(h_base)
+  l_prev = first(t.level_sequence)
+  for l in t.level_sequence
+    h = (h << 4) | (l_prev + 1 - l)
+    l_prev = l
+  end
+  for c in t.color_sequence
+    h = (h << 1) | c
+  end
+  return hash(h, h_base)
 end
 
 
