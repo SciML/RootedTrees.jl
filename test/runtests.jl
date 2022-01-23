@@ -937,6 +937,66 @@ end # @testset "RootedTree"
       @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
     end
   end
+
+  # See Table 3 of
+  # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  #   Algebraic Structures of B-series.
+  #   Foundations of Computational Mathematics
+  #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+  @testset "PartitionIterator" begin
+    t = rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0])
+    partitions = collect(PartitionIterator(t))
+    forests = map(first, partitions)
+    skeletons = map(last, partitions)
+    for forest in forests
+      for tree in forest
+        RootedTrees.normalize_root!(tree)
+      end
+      sort!(forest)
+    end
+    sort!(forests)
+    for tree in skeletons
+      RootedTrees.normalize_root!(tree)
+    end
+    sort!(skeletons)
+
+    reference_forests = [
+      [rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),],
+      [rootedtree([1], Bool[1]), rootedtree([1, 2, 2], Bool[0, 1, 0])],
+      [rootedtree([1], Bool[1]), rootedtree([1, 2, 3], Bool[1, 0, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1, 2, 3], Bool[1, 0, 1]),],
+      [rootedtree([1], Bool[1]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[0, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[1, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[0, 1])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1], Bool[1])],
+    ]
+    reference_skeletons = [
+      rootedtree([1], Bool[1]),
+      rootedtree([1, 2], Bool[1, 0]),
+      rootedtree([1, 2], Bool[1, 0]),
+      rootedtree([1, 2], Bool[1, 1]),
+      rootedtree([1, 2, 2], Bool[1, 1, 0]),
+      rootedtree([1, 2, 3], Bool[1, 0, 0]),
+      rootedtree([1, 2, 3], Bool[1, 0, 1]),
+      rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),
+    ]
+    for forest in reference_forests
+      sort!(forest)
+    end
+    sort!(reference_forests)
+    sort!(reference_skeletons)
+
+    @test forests == reference_forests
+    @test skeletons == reference_skeletons
+
+    level_sequence = zeros(Int, RootedTrees.BUFFER_LENGTH + 1)
+    level_sequence[1] -= 1
+    color_sequence = rand(Bool, length(level_sequence))
+    t = rootedtree(level_sequence, color_sequence)
+    @inferred PartitionIterator(t)
+    t = @inferred rootedtree!(view(level_sequence, :), view(color_sequence, :))
+    @inferred PartitionIterator(t)
+  end
 end # @testset "ColoredRootedTree"
 
 

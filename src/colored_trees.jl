@@ -82,6 +82,7 @@ iscanonical(t::ColoredRootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
 Base.copy(t::ColoredRootedTree) = ColoredRootedTree(copy(t.level_sequence), copy(t.color_sequence), t.iscanonical)
+Base.similar(t::ColoredRootedTree) = ColoredRootedTree(similar(t.level_sequence), similar(t.color_sequence), true)
 Base.isempty(t::ColoredRootedTree) = isempty(t.level_sequence)
 Base.empty(t::ColoredRootedTree) = ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
 
@@ -309,7 +310,9 @@ end
 Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::ColoredRootedTree)
-  subtr = typeof(t)[]
+  subtr = ColoredRootedTree{eltype(t.level_sequence),
+                            Vector{eltype(t.level_sequence)},
+                            Vector{eltype(t.color_sequence)}}[]
 
   if length(t.level_sequence) < 2
     return subtr
@@ -330,9 +333,39 @@ end
 
 
 # TODO: ColoredRootedTree. partitions
-# The partition skeleton is implemented generically.
-# PartitionForestIterator
-# PartitionIterator
+# We only need to specialize this performance enhancement. The remaining parts
+# are implemented generically.
+# function PartitionIterator(t::RootedTree{Int, Vector{Int}})
+#   order_t = order(t)
+
+#   if order_t <= BUFFER_LENGTH
+#     id = Threads.threadid()
+
+#     buffer_forest_t = PARTITION_ITERATOR_BUFFER_FOREST_T[id]
+#     resize!(buffer_forest_t, order_t)
+#     level_sequence  = PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE[id]
+#     resize!(level_sequence, order_t)
+#     buffer_skeleton = PARTITION_ITERATOR_BUFFER_SKELETON[id]
+#     resize!(buffer_skeleton, order_t)
+#     edge_set        = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
+#     resize!(edge_set, order_t - 1)
+#     edge_set_tmp    = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
+#     resize!(edge_set_tmp, order_t - 1)
+#   else
+#     buffer_forest_t = Vector{Int}(undef, order_t)
+#     level_sequence  = similar(buffer_forest_t)
+#     buffer_skeleton = similar(buffer_forest_t)
+#     edge_set        = Vector{Bool}(undef, order_t - 1)
+#     edge_set_tmp    = similar(edge_set)
+#   end
+
+#   skeleton = RootedTree(buffer_skeleton, true)
+#   t_forest = RootedTree(buffer_forest_t, true)
+#   t_temp_forest = RootedTree(level_sequence, true)
+#   forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
+#   PartitionIterator{Int, RootedTree{Int, Vector{Int}}}(
+#     t, forest, skeleton, edge_set, edge_set_tmp)
+# end
 
 
 

@@ -88,6 +88,7 @@ iscanonical(t::RootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
 Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
+Base.similar(t::RootedTree) = RootedTree(similar(t.level_sequence), true)
 Base.isempty(t::RootedTree) = isempty(t.level_sequence)
 Base.empty(t::RootedTree) = RootedTree(empty(t.level_sequence), iscanonical(t))
 
@@ -843,7 +844,7 @@ end
 
 
 """
-    PartitionIterator(t::RootedTree)
+    PartitionIterator(t::AbstractRootedTree)
 
 Iterator over all partition forests and skeletons of the rooted tree `t`.
 This is basically a pure iterator version of [`all_partitions`](@ref).
@@ -863,23 +864,23 @@ Section 2.3 of
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-struct PartitionIterator{T, Tree<:RootedTree{T}}
-  t::Tree
-  forest::PartitionForestIterator{RootedTree{T, Vector{T}}}
-  skeleton::RootedTree{T, Vector{T}}
+struct PartitionIterator{TreeInput<:AbstractRootedTree, TreeOutput<:AbstractRootedTree}
+  t::TreeInput
+  forest::PartitionForestIterator{TreeOutput}
+  skeleton::TreeOutput
   edge_set::Vector{Bool}
   edge_set_tmp::Vector{Bool}
 end
 
-function PartitionIterator(t::Tree) where {T, Tree<:RootedTree{T}}
-  skeleton = RootedTree(Vector{T}(undef, order(t)), true)
+function PartitionIterator(t::AbstractRootedTree)
+  skeleton = similar(t)
   edge_set = Vector{Bool}(undef, order(t) - 1)
   edge_set_tmp = similar(edge_set)
 
-  t_forest = RootedTree(Vector{T}(undef, order(t)), true)
-  t_temp_forest = RootedTree(similar(t_forest.level_sequence), true)
+  t_forest = similar(t)
+  t_temp_forest = similar(t)
   forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
-  PartitionIterator{T, Tree}(t, forest, skeleton, edge_set, edge_set_tmp)
+  PartitionIterator{typeof(t), typeof(skeleton)}(t, forest, skeleton, edge_set, edge_set_tmp)
 end
 
 # Allocate global buffer for `PartitionIterator` for each thread
@@ -917,14 +918,14 @@ function PartitionIterator(t::RootedTree{Int, Vector{Int}})
   t_forest = RootedTree(buffer_forest_t, true)
   t_temp_forest = RootedTree(level_sequence, true)
   forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
-  PartitionIterator{Int, RootedTree{Int, Vector{Int}}}(
+  PartitionIterator{typeof(t), RootedTree{Int, Vector{Int}}}(
     t, forest, skeleton, edge_set, edge_set_tmp)
 end
 
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
-Base.eltype(::Type{PartitionIterator{T, Tree}}) where {T, Tree} = Tuple{Vector{RootedTree{T, Vector{T}}}, RootedTree{T, Vector{T}}}
+Base.eltype(::Type{PartitionIterator{TreeInput, TreeOutput}}) where {TreeInput, TreeOutput} = Tuple{PartitionForestIterator{TreeOutput}, TreeOutput}
 
 @inline function Base.iterate(partitions::PartitionIterator)
   edge_set_value = 0
@@ -966,8 +967,8 @@ end
 end
 
 # necessary for simple and convenient use since the iterates may be modified
-function Base.collect(partitions::PartitionIterator)
-  iterates = Vector{eltype(partitions)}()
+function Base.collect(partitions::PartitionIterator{TreeInput, TreeOutput}) where {TreeInput, TreeOutput}
+  iterates = Vector{Tuple{Vector{TreeOutput}, TreeOutput}}()
   sizehint!(iterates, length(partitions))
   for (forest, skeleton) in partitions
     push!(iterates, (collect(forest), copy(skeleton)))
