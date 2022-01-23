@@ -14,7 +14,7 @@ RecipesBase.@recipe function plot(t::ColoredRootedTree)
   # Series properties
   linecolor --> :black
   markercolor --> reshape(colors, 1, :)
-  background_color --> "light gray"
+  background_color --> "LightGray"
   markershape --> :circle
   markersize  --> 6
   linewidth   --> 2
