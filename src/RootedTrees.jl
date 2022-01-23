@@ -447,6 +447,26 @@ end
 
 
 """
+    check_canonical(t::AbstractRootedTree)
+
+Check whether `t` is in canonical representation.
+
+!!! warn "Internal interface"
+    This function is considered to be an internal implementation detail and
+    will not necessarily be stable.
+"""
+function check_canonical(t::AbstractRootedTree)
+  for subtree in SubtreeIterator(t)
+    if !check_canonical(subtree)
+      return false
+    end
+  end
+
+  return issorted(SubtreeIterator(t), rev=true)
+end
+
+
+"""
     normalize_root!(t::AbstractRootedTree, root=one(eltype(t.level_sequence)))
 
 Normalize the level sequence of the rooted tree `t` such that the root is
