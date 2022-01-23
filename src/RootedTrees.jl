@@ -91,6 +91,22 @@ Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 Base.isempty(t::RootedTree) = isempty(t.level_sequence)
 Base.empty(t::RootedTree) = RootedTree(empty(t.level_sequence), iscanonical(t))
 
+"""
+    unsafe_deleteat!(t::AbstractRootedTree, i)
+
+Delete the node `i` from the rooted tree `t`. This is an unsafe operation
+since the rooted tree will not necessarily be in canonical representation
+afterwards, even if the corresponding flag of `t` is set. Use with caution!
+
+!!! warn "Internal interface"
+    This function is considered to be an internal implementation detail and
+    will not necessarily be stable.
+"""
+@inline function unsafe_deleteat!(t::RootedTree, i)
+  deleteat!(t.level_sequence, i)
+  return t
+end
+
 
 #  #function RootedTree(sequence::Vector{T}, valid::Bool)
 #  function RootedTree(sequence::Array{T,1})
@@ -674,7 +690,7 @@ end
 
 
 """
-    partition_skeleton(t::RootedTree, edge_set)
+    partition_skeleton(t::AbstractRootedTree, edge_set)
 
 Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree
 obtained by contracting each tree of the partition forest to a single vertex
@@ -684,24 +700,26 @@ See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
 
 # References
 
-Section 2.3 of
+Section 2.3 (and Section 6.1 for colored trees) of
 - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
   Algebraic Structures of B-series.
   Foundations of Computational Mathematics
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
-function partition_skeleton(t::RootedTree, edge_set)
+function partition_skeleton(t::AbstractRootedTree, edge_set)
   @boundscheck begin
-    @assert length(t.level_sequence) == length(edge_set) + 1
+    @assert order(t) == length(edge_set) + 1
   end
 
   edge_set_copy = copy(edge_set)
-  skeleton = RootedTree(copy(t.level_sequence), true)
-  return partition_skeleton!(skeleton.level_sequence, edge_set_copy)
+  skeleton = copy(t)
+  return partition_skeleton!(skeleton, edge_set_copy)
 end
 
 # internal in-place version of partition_skeleton modifying the inputs
-function partition_skeleton!(level_sequence, edge_set)
+function partition_skeleton!(skeleton::AbstractRootedTree, edge_set)
+  level_sequence = skeleton.level_sequence
+
   # Iterate over all edges that shall be kept/contracted.
   # We start the iteration at the end since this will result in less memory
   # moves because we have already reduced the size of the vectors when reaching
@@ -723,7 +741,7 @@ function partition_skeleton!(level_sequence, edge_set)
     end
 
     # Remove the root node
-    deleteat!(level_sequence, subtree_root_index)
+    unsafe_deleteat!(skeleton, subtree_root_index)
     deleteat!(edge_set, edge_to_contract)
 
     edge_to_contract = findprev(edge_set, edge_to_contract - 1)
@@ -731,7 +749,7 @@ function partition_skeleton!(level_sequence, edge_set)
 
   # The level sequence `level_sequence` will not automatically be a canonical
   # representation.
-  return rootedtree!(level_sequence)
+  canonical_representation!(skeleton)
 end
 
 
@@ -887,7 +905,7 @@ end
   copy!(edge_set_tmp, edge_set)
   resize!(skeleton.level_sequence, order(t))
   copy!(skeleton.level_sequence, t.level_sequence)
-  partition_skeleton!(skeleton.level_sequence, edge_set_tmp)
+  partition_skeleton!(skeleton, edge_set_tmp)
 
   # Compute the partition forest.
   # The following is a more efficient version of

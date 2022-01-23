@@ -85,6 +85,12 @@ Base.copy(t::ColoredRootedTree) = ColoredRootedTree(copy(t.level_sequence), copy
 Base.isempty(t::ColoredRootedTree) = isempty(t.level_sequence)
 Base.empty(t::ColoredRootedTree) = ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
 
+@inline function unsafe_deleteat!(t::ColoredRootedTree, i)
+  deleteat!(t.level_sequence, i)
+  deleteat!(t.color_sequence, i)
+  return t
+end
+
 
 function Base.show(io::IO, t::ColoredRootedTree{T}) where {T}
   # print(io, "ColoredRootedTree{", T, "}: [")
@@ -302,74 +308,7 @@ end
 
 
 # TODO: ColoredRootedTree. partitions
-"""
-    partition_skeleton(t::ColoredRootedTree, edge_set)
-
-Form the partition skeleton of the colored rooted tree `t`, i.e., the
-colored rooted tree obtained by contracting each tree of the partition forest
-to a single vertex and re-establishing the edges removed to obtain the
-partition forest.
-
-See also [`PartitionIterator`](@ref).
-
-# References
-
-Sections 2.3 and 6.1 of
-- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
-  Algebraic Structures of B-series.
-  Foundations of Computational Mathematics
-  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
-"""
-function partition_skeleton(t::ColoredRootedTree, edge_set)
-  @boundscheck begin
-    @assert order(t) == length(edge_set) + 1
-  end
-
-  edge_set_copy = copy(edge_set)
-  skeleton = ColoredRootedTree(
-    copy(t.level_sequence), copy(t.color_sequence), true)
-  return partition_skeleton!(skeleton, edge_set_copy)
-end
-
-# internal in-place version of partition_skeleton modifying the inputs
-function partition_skeleton!(skeleton::ColoredRootedTree, edge_set)
-  level_sequence = skeleton.level_sequence
-  color_sequence = skeleton.color_sequence
-
-  # Iterate over all edges that shall be kept/contracted.
-  # We start the iteration at the end since this will result in less memory
-  # moves because we have already reduced the size of the vectors when reaching
-  # the beginning.
-  edge_to_contract = findlast(edge_set)
-  while edge_to_contract !== nothing
-    # Contract the corresponding edge by removing the subtree root and promoting
-    # the rest of the subtree.
-    # Remember the convention node = edge + 1
-    subtree_root_index = edge_to_contract + 1
-    subtree_last_index = subtree_root_index + 1
-    while subtree_last_index <= length(level_sequence)
-      if level_sequence[subtree_last_index] > level_sequence[subtree_root_index]
-        level_sequence[subtree_last_index] -= 1
-        subtree_last_index += 1
-      else
-        break
-      end
-    end
-
-    # Remove the root node
-    deleteat!(level_sequence, subtree_root_index)
-    deleteat!(color_sequence, subtree_root_index)
-    deleteat!(edge_set, edge_to_contract)
-
-    edge_to_contract = findprev(edge_set, edge_to_contract - 1)
-  end
-
-  # The level sequence `level_sequence` will not automatically be a canonical
-  # representation.
-  canonical_representation!(skeleton)
-  return skeleton
-end
-
+# The partition skeleton is implemented generically.
 # PartitionForestIterator
 # PartitionIterator
 
