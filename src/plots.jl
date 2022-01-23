@@ -4,7 +4,11 @@ RecipesBase.@recipe function plot(t::ColoredRootedTree)
   width = 2.0
   height = 1.0
   color_idx = unique(t.color_sequence)
-  color_val = Plots.distinguishable_colors(length(color_idx))
+  if eltype(t.color_sequence) == Bool
+    color_val = [:white, :black]
+  else
+    color_val = Plots.distinguishable_colors(length(color_idx))
+  end
   colormap = Dict{eltype(color_idx), eltype(color_val)}()
   for (idx, val) in zip(color_idx, color_val)
     colormap[idx] = val
