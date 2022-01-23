@@ -85,10 +85,32 @@ Base.copy(t::ColoredRootedTree) = ColoredRootedTree(copy(t.level_sequence), copy
 Base.isempty(t::ColoredRootedTree) = isempty(t.level_sequence)
 Base.empty(t::ColoredRootedTree) = ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
 
+@inline function Base.copy!(t_dst::ColoredRootedTree, t_src::ColoredRootedTree)
+  copy!(t_dst.level_sequence, t_src.level_sequence)
+  copy!(t_dst.color_sequence, t_src.color_sequence)
+  return t_dst
+end
+
+# Internal interface
 @inline function unsafe_deleteat!(t::ColoredRootedTree, i)
   deleteat!(t.level_sequence, i)
   deleteat!(t.color_sequence, i)
   return t
+end
+
+# Internal interface
+@inline function unsafe_resize!(t::ColoredRootedTree, n::Integer)
+  resize!(t.level_sequence, n)
+  resize!(t.color_sequence, n)
+  return t
+end
+
+# Internal interface
+@inline function unsafe_copyto!(t_dst::ColoredRootedTree, dst_offset,
+                                t_src::ColoredRootedTree, src_offset, N)
+  copyto!(t_dst.level_sequence, dst_offset, t_src.level_sequence, src_offset, N)
+  copyto!(t_dst.color_sequence, dst_offset, t_src.color_sequence, src_offset, N)
+  return t_dst
 end
 
 
