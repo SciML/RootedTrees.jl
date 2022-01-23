@@ -885,8 +885,11 @@ end
 
 # Allocate global buffer for `PartitionIterator` for each thread
 const PARTITION_ITERATOR_BUFFER_FOREST_T = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS = Vector{Vector{Bool}}()
 const PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE = Vector{Vector{Bool}}()
 const PARTITION_ITERATOR_BUFFER_SKELETON = Vector{Vector{Int}}()
+const PARTITION_ITERATOR_BUFFER_SKELETON_COLORS = Vector{Vector{Bool}}()
 const PARTITION_ITERATOR_BUFFER_EDGE_SET = Vector{Vector{Bool}}()
 const PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP = Vector{Vector{Bool}}()
 
@@ -1350,10 +1353,16 @@ function __init__()
   # PartitionIterator
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
                            Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS,
+                           Vector{Int}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
                            Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
                            Vector{Int}(undef, BUFFER_LENGTH))
+  Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON_COLORS,
+                           Vector{Bool}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
                            Vector{Bool}(undef, BUFFER_LENGTH))
   Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,

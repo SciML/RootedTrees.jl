@@ -332,40 +332,49 @@ end
 
 
 
-# TODO: ColoredRootedTree. partitions
+# partitions
 # We only need to specialize this performance enhancement. The remaining parts
 # are implemented generically.
-# function PartitionIterator(t::RootedTree{Int, Vector{Int}})
-#   order_t = order(t)
+function PartitionIterator(t::ColoredRootedTree{Int, Vector{Int}, Vector{Bool}})
+  order_t = order(t)
 
-#   if order_t <= BUFFER_LENGTH
-#     id = Threads.threadid()
+  if order_t <= BUFFER_LENGTH
+    id = Threads.threadid()
 
-#     buffer_forest_t = PARTITION_ITERATOR_BUFFER_FOREST_T[id]
-#     resize!(buffer_forest_t, order_t)
-#     level_sequence  = PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE[id]
-#     resize!(level_sequence, order_t)
-#     buffer_skeleton = PARTITION_ITERATOR_BUFFER_SKELETON[id]
-#     resize!(buffer_skeleton, order_t)
-#     edge_set        = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
-#     resize!(edge_set, order_t - 1)
-#     edge_set_tmp    = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
-#     resize!(edge_set_tmp, order_t - 1)
-#   else
-#     buffer_forest_t = Vector{Int}(undef, order_t)
-#     level_sequence  = similar(buffer_forest_t)
-#     buffer_skeleton = similar(buffer_forest_t)
-#     edge_set        = Vector{Bool}(undef, order_t - 1)
-#     edge_set_tmp    = similar(edge_set)
-#   end
+    buffer_forest_t        = PARTITION_ITERATOR_BUFFER_FOREST_T[id]
+    resize!(buffer_forest_t, order_t)
+    buffer_forest_t_colors = PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS[id]
+    resize!(buffer_forest_t_colors, order_t)
+    level_sequence         = PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE[id]
+    resize!(level_sequence, order_t)
+    color_sequence         = PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE[id]
+    resize!(color_sequence, order_t)
+    buffer_skeleton        = PARTITION_ITERATOR_BUFFER_SKELETON[id]
+    resize!(buffer_skeleton, order_t)
+    buffer_skeleton_colors = PARTITION_ITERATOR_BUFFER_SKELETON_COLORS[id]
+    resize!(buffer_skeleton_colors, order_t)
+    edge_set                = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
+    resize!(edge_set, order_t - 1)
+    edge_set_tmp            = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
+    resize!(edge_set_tmp, order_t - 1)
+  else
+    buffer_forest_t        = Vector{Int}(undef, order_t)
+    buffer_forest_t_colors = Vector{Bool}(undef, order_t)
+    level_sequence         = similar(buffer_forest_t)
+    color_sequence         = similar(buffer_forest_t_colors)
+    buffer_skeleton        = similar(buffer_forest_t)
+    buffer_skeleton_colors = similar(buffer_forest_t_colors)
+    edge_set               = Vector{Bool}(undef, order_t - 1)
+    edge_set_tmp           = similar(edge_set)
+  end
 
-#   skeleton = RootedTree(buffer_skeleton, true)
-#   t_forest = RootedTree(buffer_forest_t, true)
-#   t_temp_forest = RootedTree(level_sequence, true)
-#   forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
-#   PartitionIterator{Int, RootedTree{Int, Vector{Int}}}(
-#     t, forest, skeleton, edge_set, edge_set_tmp)
-# end
+  skeleton = ColoredRootedTree(buffer_skeleton, buffer_skeleton_colors, true)
+  t_forest = ColoredRootedTree(buffer_forest_t, buffer_forest_t_colors, true)
+  t_temp_forest = ColoredRootedTree(level_sequence, color_sequence, true)
+  forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
+  PartitionIterator{typeof(t), ColoredRootedTree{Int, Vector{Int}, Vector{Bool}}}(
+    t, forest, skeleton, edge_set, edge_set_tmp)
+end
 
 
 
