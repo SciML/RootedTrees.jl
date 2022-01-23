@@ -333,7 +333,7 @@ end
 # general when comparing the complexity with quicksort etc., it will be faster
 # here since we can avoid allocations.
 """
-    canonical_representation!(t::RootedTree)
+    canonical_representation!(t::AbstractRootedTree)
 
 Change the representation of the rooted tree `t` to the canonical one, i.e., the
 one with lexicographically biggest level sequence.
