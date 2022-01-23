@@ -635,7 +635,13 @@ end # @testset "RootedTree"
       println(devnull, t8)
     end
 
+    @test rootedtree([1, 2]            ) > rootedtree([1]         )
+    @test rootedtree([1, 2], Bool[0, 1]) > rootedtree([1], Bool[1])
+
     # more tests of the canonical representation
+    t = rootedtree([1, 2, 3, 4, 3], Bool[1, 1, 0, 1, 1])
+    @test t.level_sequence == [1, 2, 3, 4, 3]
+
     t = rootedtree([1, 2, 3, 2, 3, 3, 2], Bool[1, 0, 1, 1, 0, 0, 0])
     @test t.level_sequence == [1, 2, 3, 3, 2, 3, 2]
     @test !isempty(t)
@@ -764,7 +770,7 @@ end # @testset "RootedTree"
       @test σ(t) == 1
       @test γ(t) == 3
       @test_nowarn println(devnull, t)
-      @test butcher_representation(t) == "[τ₁τ₂]₂"
+      @test butcher_representation(t) == "[τ₂τ₁]₂"
     end
 
     let t = rootedtree([1, 2, 3], [3, 2, 1])
@@ -788,6 +794,208 @@ end # @testset "RootedTree"
       # number of plain rooted trees times number of possible color sequences
       @test num == number_of_rooted_trees[order] * 2^order
     end
+  end
+
+  # See Sections 2.3 & 6.1 and Table 2 of
+  # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  #   Algebraic Structures of B-series.
+  #   Foundations of Computational Mathematics
+  #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+  @testset "partitions" begin
+    # Example in Section 6.1
+    let t = rootedtree([1, 2, 3, 3], Bool[0, 1, 0, 0])
+      edge_set = [false, true, false]
+      reference_forest = [rootedtree([3], Bool[0]),
+                          rootedtree([2, 3], Bool[1, 0]),
+                          rootedtree([1], Bool[0])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3], Bool[0, 1, 0])
+      @test reference_skeleton == partition_skeleton(t, edge_set)
+    end
+
+    # Other examples for single-colored trees
+    let t = rootedtree([1, 2, 3, 4, 3], Bool[1, 1, 0, 1, 1])
+      edge_set = [true, true, false, false]
+      reference_forest = [rootedtree([1, 2, 3], Bool[1, 1, 0]),
+                          rootedtree([4], Bool[1]),
+                          rootedtree([3], Bool[1])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 2])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 4, 3], rand(Bool, 5))
+      edge_set = [false, true, true, false]
+      reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                          rootedtree([2, 3, 4], t.color_sequence[2:4]),
+                          rootedtree([1], t.color_sequence[1:1])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 4, 3], rand(Bool, 5))
+      edge_set = [false, true, false, false]
+      reference_forest = [rootedtree([4], t.color_sequence[4:4]),
+                          rootedtree([3], t.color_sequence[5:5]),
+                          rootedtree([2, 3], t.color_sequence[2:3]),
+                          rootedtree([1], t.color_sequence[1:1])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3, 3])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 2, 2, 2], rand(Bool, 5))
+      edge_set = [false, false, true, true]
+      reference_forest = [rootedtree([2], t.color_sequence[2:2]),
+                          rootedtree([2], t.color_sequence[3:3]),
+                          rootedtree([1, 2, 2], t.color_sequence[[1,4,5]])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 2])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 2, 2], rand(Bool, 5))
+      edge_set = [false, false, false, true]
+      reference_forest = [rootedtree([3], t.color_sequence[3:3]),
+                          rootedtree([2], t.color_sequence[2:2]),
+                          rootedtree([2], t.color_sequence[4:4]),
+                          rootedtree([1, 2], t.color_sequence[[1, 5]])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3, 2])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 2, 2], rand(Bool, 5))
+      edge_set = [true, true, true, true]
+      reference_forest = [rootedtree([1, 2, 3, 2, 2], t.color_sequence[:])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 2, 3], rand(Bool, 5))
+      edge_set = [true, true, false, false]
+      reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                          rootedtree([2], t.color_sequence[4:4]),
+                          rootedtree([1, 2, 3], t.color_sequence[1:3])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 2, 3], rand(Bool, 5))
+      edge_set = [false, true, false, false]
+      reference_forest = [rootedtree([2, 3], t.color_sequence[2:3]),
+                          rootedtree([3], t.color_sequence[5:5]),
+                          rootedtree([2], t.color_sequence[4:4]),
+                          rootedtree([1], t.color_sequence[1:1])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 2, 3])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    let t = rootedtree([1, 2, 3, 3, 3], rand(Bool, 5))
+      edge_set = [false, true, true, false]
+      reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                          rootedtree([2, 3, 3], t.color_sequence[2:4]),
+                          rootedtree([1], t.color_sequence[1:1])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2, 3])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+
+    # additional tests not included in the examples of the paper
+    let t = rootedtree([1, 2, 3, 2, 3], rand(Bool, 5))
+      edge_set = [true, false, true, true]
+      reference_forest = [rootedtree([1, 2, 3, 2], t.color_sequence[[1, 4, 5, 2]]),
+                          rootedtree([3], t.color_sequence[3:3])]
+      sort!(reference_forest)
+      @test sort!(collect(PartitionForestIterator(t, edge_set))) == reference_forest
+
+      reference_skeleton = rootedtree([1, 2])
+      @test reference_skeleton.level_sequence == partition_skeleton(t, edge_set).level_sequence
+    end
+  end
+
+  # See Table 3 of
+  # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  #   Algebraic Structures of B-series.
+  #   Foundations of Computational Mathematics
+  #   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+  @testset "PartitionIterator" begin
+    t = rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0])
+    partitions = collect(PartitionIterator(t))
+    forests = map(first, partitions)
+    skeletons = map(last, partitions)
+    for forest in forests
+      for tree in forest
+        RootedTrees.normalize_root!(tree)
+      end
+      sort!(forest)
+    end
+    sort!(forests)
+    for tree in skeletons
+      RootedTrees.normalize_root!(tree)
+    end
+    sort!(skeletons)
+
+    reference_forests = [
+      [rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),],
+      [rootedtree([1], Bool[1]), rootedtree([1, 2, 2], Bool[0, 1, 0])],
+      [rootedtree([1], Bool[1]), rootedtree([1, 2, 3], Bool[1, 0, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1, 2, 3], Bool[1, 0, 1]),],
+      [rootedtree([1], Bool[1]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[0, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[1, 0])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1, 2], Bool[0, 1])],
+      [rootedtree([1], Bool[0]), rootedtree([1], Bool[0]), rootedtree([1], Bool[1]), rootedtree([1], Bool[1])],
+    ]
+    reference_skeletons = [
+      rootedtree([1], Bool[1]),
+      rootedtree([1, 2], Bool[1, 0]),
+      rootedtree([1, 2], Bool[1, 0]),
+      rootedtree([1, 2], Bool[1, 1]),
+      rootedtree([1, 2, 2], Bool[1, 1, 0]),
+      rootedtree([1, 2, 3], Bool[1, 0, 0]),
+      rootedtree([1, 2, 3], Bool[1, 0, 1]),
+      rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),
+    ]
+    for forest in reference_forests
+      sort!(forest)
+    end
+    sort!(reference_forests)
+    sort!(reference_skeletons)
+
+    @test forests == reference_forests
+    @test skeletons == reference_skeletons
+
+    level_sequence = zeros(Int, RootedTrees.BUFFER_LENGTH + 1)
+    level_sequence[1] -= 1
+    color_sequence = rand(Bool, length(level_sequence))
+    t = rootedtree(level_sequence, color_sequence)
+    @inferred PartitionIterator(t)
+    t = @inferred rootedtree!(view(level_sequence, :), view(color_sequence, :))
+    @inferred PartitionIterator(t)
   end
 end # @testset "ColoredRootedTree"
 

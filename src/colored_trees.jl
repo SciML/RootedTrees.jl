@@ -82,8 +82,37 @@ iscanonical(t::ColoredRootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
 Base.copy(t::ColoredRootedTree) = ColoredRootedTree(copy(t.level_sequence), copy(t.color_sequence), t.iscanonical)
+Base.similar(t::ColoredRootedTree) = ColoredRootedTree(similar(t.level_sequence), similar(t.color_sequence), true)
 Base.isempty(t::ColoredRootedTree) = isempty(t.level_sequence)
 Base.empty(t::ColoredRootedTree) = ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
+
+@inline function Base.copy!(t_dst::ColoredRootedTree, t_src::ColoredRootedTree)
+  copy!(t_dst.level_sequence, t_src.level_sequence)
+  copy!(t_dst.color_sequence, t_src.color_sequence)
+  return t_dst
+end
+
+# Internal interface
+@inline function unsafe_deleteat!(t::ColoredRootedTree, i)
+  deleteat!(t.level_sequence, i)
+  deleteat!(t.color_sequence, i)
+  return t
+end
+
+# Internal interface
+@inline function unsafe_resize!(t::ColoredRootedTree, n::Integer)
+  resize!(t.level_sequence, n)
+  resize!(t.color_sequence, n)
+  return t
+end
+
+# Internal interface
+@inline function unsafe_copyto!(t_dst::ColoredRootedTree, dst_offset,
+                                t_src::ColoredRootedTree, src_offset, N)
+  copyto!(t_dst.level_sequence, dst_offset, t_src.level_sequence, src_offset, N)
+  copyto!(t_dst.color_sequence, dst_offset, t_src.color_sequence, src_offset, N)
+  return t_dst
+end
 
 
 function Base.show(io::IO, t::ColoredRootedTree{T}) where {T}
@@ -128,6 +157,9 @@ function Base.isless(t1::ColoredRootedTree, t2::ColoredRootedTree)
     v1 = e1
     v2 = e2 + root1_minus_root2
     (v1 == v2) || return isless(v1, v2)
+  end
+  if length(t1.level_sequence) != length(t2.level_sequence)
+    return isless(length(t1.level_sequence), length(t2.level_sequence))
   end
   return isless(t1.color_sequence, t2.color_sequence)
 end
@@ -183,6 +215,7 @@ function canonical_representation!(t::ColoredRootedTree)
   i = 2
   for τ in subtr
     t.level_sequence[i:i+order(τ)-1] = τ.level_sequence
+    t.color_sequence[i:i+order(τ)-1] = τ.color_sequence
     i += order(τ)
   end
 
@@ -277,7 +310,9 @@ end
 Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::ColoredRootedTree)
-  subtr = typeof(t)[]
+  subtr = ColoredRootedTree{eltype(t.level_sequence),
+                            Vector{eltype(t.level_sequence)},
+                            Vector{eltype(t.color_sequence)}}[]
 
   if length(t.level_sequence) < 2
     return subtr
@@ -294,6 +329,59 @@ function subtrees(t::ColoredRootedTree)
   end
   push!(subtr, ColoredRootedTree(t.level_sequence[start:end], t.color_sequence[start:end]))
 end
+
+
+
+# partitions
+# We only need to specialize this performance enhancement. The remaining parts
+# are implemented generically.
+function PartitionIterator(t::ColoredRootedTree{Int, Vector{Int}, Vector{Bool}})
+  order_t = order(t)
+
+  if order_t <= BUFFER_LENGTH
+    id = Threads.threadid()
+
+    buffer_forest_t        = PARTITION_ITERATOR_BUFFER_FOREST_T[id]
+    resize!(buffer_forest_t, order_t)
+    buffer_forest_t_colors = PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS[id]
+    resize!(buffer_forest_t_colors, order_t)
+    level_sequence         = PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE[id]
+    resize!(level_sequence, order_t)
+    color_sequence         = PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE[id]
+    resize!(color_sequence, order_t)
+    buffer_skeleton        = PARTITION_ITERATOR_BUFFER_SKELETON[id]
+    resize!(buffer_skeleton, order_t)
+    buffer_skeleton_colors = PARTITION_ITERATOR_BUFFER_SKELETON_COLORS[id]
+    resize!(buffer_skeleton_colors, order_t)
+    edge_set                = PARTITION_ITERATOR_BUFFER_EDGE_SET[id]
+    resize!(edge_set, order_t - 1)
+    edge_set_tmp            = PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP[id]
+    resize!(edge_set_tmp, order_t - 1)
+  else
+    buffer_forest_t        = Vector{Int}(undef, order_t)
+    buffer_forest_t_colors = Vector{Bool}(undef, order_t)
+    level_sequence         = similar(buffer_forest_t)
+    color_sequence         = similar(buffer_forest_t_colors)
+    buffer_skeleton        = similar(buffer_forest_t)
+    buffer_skeleton_colors = similar(buffer_forest_t_colors)
+    edge_set               = Vector{Bool}(undef, order_t - 1)
+    edge_set_tmp           = similar(edge_set)
+  end
+
+  skeleton = ColoredRootedTree(buffer_skeleton, buffer_skeleton_colors, true)
+  t_forest = ColoredRootedTree(buffer_forest_t, buffer_forest_t_colors, true)
+  t_temp_forest = ColoredRootedTree(level_sequence, color_sequence, true)
+  forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
+  PartitionIterator{typeof(t), ColoredRootedTree{Int, Vector{Int}, Vector{Bool}}}(
+    t, forest, skeleton, edge_set, edge_set_tmp)
+end
+
+
+
+# TODO: ColoredRootedTree. splittings
+# SplittingIterator
+
+
 
 
 # additional representation and construction methods
