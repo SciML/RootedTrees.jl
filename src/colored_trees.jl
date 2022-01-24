@@ -92,6 +92,13 @@ Base.empty(t::ColoredRootedTree) = ColoredRootedTree(empty(t.level_sequence), em
   return t_dst
 end
 
+"""
+    root_color(t::ColoredRootedTree)
+
+Return the color of the root of `t`.
+"""
+root_color(t::ColoredRootedTree) = first(t.color_sequence)
+
 # Internal interface
 @inline function unsafe_deleteat!(t::ColoredRootedTree, i)
   deleteat!(t.level_sequence, i)
@@ -548,14 +555,14 @@ function butcher_representation(t::ColoredRootedTree, normalize::Bool=true;
   if order(t) == 0
     return "∅"
   elseif order(t) == 1
-    return "τ" * colormap[first(t.color_sequence)]
+    return "τ" * colormap[root_color(t)]
   end
 
   result = ""
   for subtree in SubtreeIterator(t)
     result = result * butcher_representation(subtree, normalize, colormap=colormap)
   end
-  result = "[" * result * "]" * colormap[first(t.color_sequence)]
+  result = "[" * result * "]" * colormap[root_color(t)]
 
   if normalize
     # normalize the result by grouping repeated occurrences of τ

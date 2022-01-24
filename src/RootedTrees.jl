@@ -15,7 +15,7 @@ export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
 
 export butcher_representation
 
-export α, β, γ, density, σ, symmetry, order
+export α, β, γ, density, σ, symmetry, order, root_color
 
 export residual_order_condition, elementary_weight, derivative_weight
 

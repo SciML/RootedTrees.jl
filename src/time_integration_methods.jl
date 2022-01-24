@@ -194,6 +194,8 @@ end
 # Colored trees are used for order conditions of additive Runge-Kutta methods.
 # The function `color_to_index` maps a color to a one-based index of ARK
 # coefficients.
+# This is considered to be an internal interface but stable across minor/patch
+# releases.
 color_to_index(color::Integer) = Int(color)
 color_to_index(color::Bool) = 1 + color
 
