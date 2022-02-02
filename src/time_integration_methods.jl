@@ -151,9 +151,9 @@ has the form
 In particular, additive Runge-Kutta methods are a superset of partitioned RK
 methods, which are applied to partitioned problems of the form
 ```math
-  u^1'(t) = f^1(t, u^1, u^2),
+  (u^1)'(t) = f^1(t, u^1, u^2),
   \\quad
-  u^2'(t) = f^2(t, u^1, u^2).
+  (u^2)'(t) = f^2(t, u^1, u^2).
 ```
 
 # References
