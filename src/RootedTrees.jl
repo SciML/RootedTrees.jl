@@ -104,7 +104,7 @@ Delete the node `i` from the rooted tree `t`. This is an unsafe operation
 since the rooted tree will not necessarily be in canonical representation
 afterwards, even if the corresponding flag of `t` is set. Use with caution!
 
-!!! warn "Internal interface"
+!!! warning "Internal interface"
     This function is considered to be an internal implementation detail and
     will not necessarily be stable.
 """
@@ -133,7 +133,7 @@ end
     unsafe_copyto!(t_dst::AbstractRootedTree, dst_offset,
                    t_src::AbstractRootedTree, src_offset, N)
 
-Copy `N`` nodes from `t_src` starting at offset `src_offset` to `t_dst`
+Copy `N` nodes from `t_src` starting at offset `src_offset` to `t_dst`
 starting at offset `dst_offset`. The types of the rooted trees must match.
 For example, you cannot copy a [`ColoredRootedTree`](@ref) to a
 [`RootedTree`](@ref).
@@ -142,7 +142,7 @@ This is an unsafe operation since the rooted tree `t_dst` will not necessarily
 be in canonical representation afterwards, even if the corresponding flag
 of `t_dst` is set. Use with caution!
 
-!!! warn "Internal interface"
+!!! warning "Internal interface"
     This function is considered to be an internal implementation detail and
     will not necessarily be stable.
 """
@@ -451,7 +451,7 @@ end
 
 Check whether `t` is in canonical representation.
 
-!!! warn "Internal interface"
+!!! warning "Internal interface"
     This function is considered to be an internal implementation detail and
     will not necessarily be stable.
 """
