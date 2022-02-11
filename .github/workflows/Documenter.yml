@@ -46,6 +46,28 @@ jobs:
         run: julia --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
         env:
           PYTHON: ""
+      - name: Fix weird Conda.jl/PyCall.jl/SymPy.jl build error
+        env:
+          PYTHON: ""
+        shell: julia --color=yes {0}
+        run: |
+          using Pkg
+          Pkg.activate("docs")
+          println("Try instantiating the docs environment")
+          try
+            Pkg.instantiate()
+            println("Successfully instantiated the docs environment")
+          catch e
+            display(e)
+          end
+          println("Try building SymPy")
+          try
+            Pkg.build("SymPy")
+            import SymPy
+            println("Successfully built SymPy")
+          catch e
+            display(e)
+          end
       - name: Build and deploy documentation
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # For authentication with GitHub Actions token
