@@ -500,7 +500,7 @@ Base.eltype(::Type{RootedTreeIterator{T}}) where T = RootedTree{T,Vector{T}}
 
 @inline function Base.iterate(iter::RootedTreeIterator{T}) where {T}
   iter.t.level_sequence[:] = one(T):iter.order
-  (iter.t, false)
+  (iter.t, iter.order <= 0)
 end
 
 @inline function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
@@ -537,7 +537,7 @@ end
 Counts all rooted trees of `order`.
 """
 function count_trees(order)
-  order < 1 && throw(ArgumentError("The `order` must be at least one."))
+  order < 0 && throw(ArgumentError("The `order` must be at least zero."))
 
   num = 0
   for _ in RootedTreeIterator(order)

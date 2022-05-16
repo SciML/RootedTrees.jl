@@ -289,13 +289,13 @@ Plots.unicodeplots()
 
   # see butcher2008numerical, Table 302(I)
   @testset "number of trees" begin
-    number_of_rooted_trees = [1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
-    for order in 1:10
+    number_of_rooted_trees = [1, 1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
+    for order in 0:10
       num = 0
       for t in RootedTreeIterator(order)
         num += 1
       end
-      @test num == number_of_rooted_trees[order] == count_trees(order)
+      @test num == number_of_rooted_trees[order + 1] == count_trees(order)
     end
   end
 
@@ -785,15 +785,15 @@ end # @testset "RootedTree"
 
   # see butcher2008numerical, Table 302(I)
   @testset "number of trees" begin
-    number_of_rooted_trees = [1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
-    for order in 1:10
+    number_of_rooted_trees = [1, 1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
+    for order in 0:10
       num = 0
       for t in BicoloredRootedTreeIterator(order)
         num += 1
       end
       # number of plain rooted trees times number of possible color sequences
       # <= since not all possible color sequences are in canonical representation
-      @test num <= number_of_rooted_trees[order] * 2^order
+      @test num <= number_of_rooted_trees[order + 1] * 2^order
     end
   end
 
