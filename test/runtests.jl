@@ -7,6 +7,8 @@ using RootedTrees.Latexify: latexify
 using Plots: Plots, plot
 Plots.unicodeplots()
 
+using Aqua: Aqua
+
 @testset "RootedTrees" begin
 
 @testset "RootedTree" begin
@@ -1297,6 +1299,13 @@ end # @testset "Order conditions"
     end
   end
 end # @testset "plots"
+
+
+@testset "Aqua" begin
+  Aqua.test_all(RootedTrees;
+    ambiguities=(; exclude=[getindex]) # https://github.com/stevengj/LaTeXStrings.jl/issues/61
+  )
+end # @testset "Aqua"
 
 
 end # @testset "RootedTrees"
