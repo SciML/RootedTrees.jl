@@ -59,6 +59,7 @@ makedocs(modules = [RootedTrees],
              "Contributing" => "contributing.md",
              "License" => "license.md",
          ],
+         # to make the GitHub action fail when doctests fail
          strict = true)
 
 deploydocs(repo = "github.com/SciML/RootedTrees.jl",

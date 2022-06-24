@@ -525,44 +525,22 @@ using Aqua: Aqua
             forests_and_subtrees = sort!(collect(zip(splittings.forests,
                                                      splittings.subtrees)))
 
-            reference_forests_and_subtrees = sort!([
-                                                       (empty([rootedtree([1])]),
-                                                        rootedtree([1, 2, 3, 2, 2])),
-                                                       ([rootedtree([1])],
-                                                        rootedtree([1, 2, 3, 2])),
-                                                       ([rootedtree([1])],
-                                                        rootedtree([1, 2, 3, 2])),
-                                                       ([rootedtree([1, 2])],
-                                                        rootedtree([1, 2, 2])),
-                                                       ([rootedtree([1])],
-                                                        rootedtree([1, 2, 2, 2])),
-                                                       ([
-                                                            rootedtree([1, 2]),
-                                                            rootedtree([1]),
-                                                        ], rootedtree([1, 2])),
-                                                       ([
-                                                            rootedtree([1, 2]),
-                                                            rootedtree([1]),
-                                                        ], rootedtree([1, 2])),
-                                                       ([rootedtree([1]), rootedtree([1])],
-                                                        rootedtree([1, 2, 3])),
-                                                       ([rootedtree([1]), rootedtree([1])],
-                                                        rootedtree([1, 2, 2])),
-                                                       ([rootedtree([1]), rootedtree([1])],
-                                                        rootedtree([1, 2, 2])),
-                                                       ([
-                                                            rootedtree([1]),
-                                                            rootedtree([1]),
-                                                            rootedtree([1]),
-                                                        ], rootedtree([1, 2])),
-                                                       ([
-                                                            rootedtree([1, 2]),
-                                                            rootedtree([1]),
-                                                            rootedtree([1]),
-                                                        ], rootedtree([1])),
-                                                       ([rootedtree([1, 2, 3, 2, 2])],
-                                                        rootedtree(Int[])),
-                                                   ])
+            reference_forests_and_subtrees = [
+                (empty([rootedtree([1])]),                               rootedtree([1, 2, 3, 2, 2])),
+                ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+                ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
+                ([rootedtree([1, 2])],                                   rootedtree([1, 2, 2])),
+                ([rootedtree([1])],                                      rootedtree([1, 2, 2, 2])),
+                ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+                ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
+                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 3])),
+                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
+                ([rootedtree([1]),    rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
+                ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
+                ([rootedtree([1, 2, 3, 2, 2])],                          rootedtree(Int[])),
+            ]
+            sort!(reference_forests_and_subtrees)
 
             @test forests_and_subtrees == reference_forests_and_subtrees
 
@@ -1354,5 +1332,5 @@ using Aqua: Aqua
     end # @testset "plots"
 
     @testset "Aqua" begin Aqua.test_all(RootedTrees;
-                                        ambiguities = (; exclude = [getindex])) end # @testset "Aqua"
+                                        ambiguities = (; exclude = [getindex])) end
 end # @testset "RootedTrees"
