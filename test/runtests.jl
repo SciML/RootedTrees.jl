@@ -526,19 +526,19 @@ using Aqua: Aqua
                                                      splittings.subtrees)))
 
             reference_forests_and_subtrees = [
-                (empty([rootedtree([1])]),                               rootedtree([1, 2, 3, 2, 2])),
-                ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
-                ([rootedtree([1])],                                      rootedtree([1, 2, 3, 2])),
-                ([rootedtree([1, 2])],                                   rootedtree([1, 2, 2])),
-                ([rootedtree([1])],                                      rootedtree([1, 2, 2, 2])),
-                ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
-                ([rootedtree([1, 2]), rootedtree([1])],                  rootedtree([1, 2])),
-                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 3])),
-                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
-                ([rootedtree([1]),    rootedtree([1])],                  rootedtree([1, 2, 2])),
-                ([rootedtree([1]),    rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
+                (empty([rootedtree([1])]), rootedtree([1, 2, 3, 2, 2])),
+                ([rootedtree([1])], rootedtree([1, 2, 3, 2])),
+                ([rootedtree([1])], rootedtree([1, 2, 3, 2])),
+                ([rootedtree([1, 2])], rootedtree([1, 2, 2])),
+                ([rootedtree([1])], rootedtree([1, 2, 2, 2])),
+                ([rootedtree([1, 2]), rootedtree([1])], rootedtree([1, 2])),
+                ([rootedtree([1, 2]), rootedtree([1])], rootedtree([1, 2])),
+                ([rootedtree([1]), rootedtree([1])], rootedtree([1, 2, 3])),
+                ([rootedtree([1]), rootedtree([1])], rootedtree([1, 2, 2])),
+                ([rootedtree([1]), rootedtree([1])], rootedtree([1, 2, 2])),
+                ([rootedtree([1]), rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
                 ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
-                ([rootedtree([1, 2, 3, 2, 2])],                          rootedtree(Int[])),
+                ([rootedtree([1, 2, 3, 2, 2])], rootedtree(Int[])),
             ]
             sort!(reference_forests_and_subtrees)
 
