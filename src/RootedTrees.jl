@@ -19,6 +19,8 @@ export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
 
+export subtrees, SubtreeIterator
+
 export partition_forest, PartitionForestIterator,
        partition_skeleton,
        all_partitions, PartitionIterator
@@ -547,6 +549,15 @@ function count_trees(order)
 end
 
 # subtrees
+"""
+    SubtreeIterator(t::AbstractRootedTree)
+
+Lazy iterator representation of the [`subtrees`](@ref) of the rooted
+tree `t`.
+Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
+if you want to store or modify them during the iteration since they may be
+views to internal caches.
+"""
 struct SubtreeIterator{Tree <: AbstractRootedTree}
     t::Tree
 end
@@ -581,6 +592,8 @@ end
     subtrees(t::RootedTree)
 
 Returns a vector of all subtrees of `t`.
+
+See also [`SubtreeIterator`](@ref).
 """
 function subtrees(t::RootedTree)
     subtr = typeof(t)[]
