@@ -124,7 +124,7 @@ Resize the rooted tree `t` to `n` nodes. This is an unsafe operation
 since the rooted tree will not necessarily be in canonical representation
 afterwards, even if the corresponding flag of `t` is set. Use with caution!
 
-!!! warn "Internal interface"
+!!! warning "Internal interface"
     This function is considered to be an internal implementation detail and
     will not necessarily be stable.
 """
