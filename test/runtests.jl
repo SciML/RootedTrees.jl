@@ -1275,6 +1275,46 @@ using Aqua: Aqua
                 @test abs(residual_order_condition(t, ark)) > 10 * eps()
             end
         end
+
+        @testset "RosenbrockMethod, original Rosenbrock" begin
+            γ = [1-sqrt(2)/2 0;
+                 0 1-sqrt(2)/2]
+            A = [0 0;
+                 (sqrt(2)-1)/2 0]
+            b = [0, 1]
+            ros = @inferred RosenbrockMethod(γ, A, b)
+
+            # second-order accurate
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[]), ros))) < 10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1]), ros))) < 10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2]), ros))) < 10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 3]), ros))) > 0.04
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 2]), ros))) > 0.14
+        end
+
+        @testset "RosenbrockMethod, GRK4A (Kaps and Rentrop, 1979)" begin
+            # Kaps, Rentrop (1979)
+            # Generalized Runge-Kutta methods of order four with stepsize control
+            # for stiff ordinary differential equations
+            # https://doi.org/10.1007/BF01396495
+            γ = [0.395 0 0 0;
+                 -0.767672395484 0.395 0 0;
+                 -0.851675323742 0.522967289188 0.395 0;
+                 0.288463109545 0.880214273381e-1 -.337389840627 0.395]
+            A = [0 0 0 0;
+                 0.438 0 0 0;
+                 0.796920457938 0.730795420615e-1 0 0;
+                 0.796920457938 0.730795420615e-1 0 0]
+            b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
+            ros = @inferred RosenbrockMethod(γ, A, b)
+
+            for o in 0:4
+                for t in RootedTreeIterator(o)
+                    val = @inferred residual_order_condition(t, ros)
+                    @test abs(val) < 3000 * eps()
+                end
+            end
+        end
     end # @testset "Order conditions"
 
     @testset "plots" begin

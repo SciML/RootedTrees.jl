@@ -27,7 +27,7 @@ export partition_forest, PartitionForestIterator,
 
 export all_splittings, SplittingIterator
 
-export RungeKuttaMethod, AdditiveRungeKuttaMethod
+export RungeKuttaMethod, AdditiveRungeKuttaMethod, RosenbrockMethod
 
 abstract type AbstractRootedTree end
 
