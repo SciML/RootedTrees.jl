@@ -188,7 +188,6 @@ end
 
 Compares two rooted trees based on their level (first) and color (second)
 sequences while considering equivalence classes given by different root indices.
-```
 """
 function Base.:(==)(t1::ColoredRootedTree, t2::ColoredRootedTree)
     length(t1.level_sequence) == length(t2.level_sequence) || return false
