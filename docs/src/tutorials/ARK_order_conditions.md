@@ -37,7 +37,7 @@ ARK methods are represented as
 The order conditions of RK methods can be derived using colored rooted trees.
 In [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl), this
 functionality is implemented in [`residual_order_condition`](@ref).
-Thus, a [`RungeKuttaMethod`](@ref) is of order ``p`` if the
+Thus, an [`AdditiveRungeKuttaMethod`](@ref) is of order ``p`` if the
 [`residual_order_condition`](@ref) vanishes for all colored rooted trees
 with [`order`](@ref) up to ``p`` and ``N`` colors. The most important case
 is ``N = 2``, i.e., [`BicoloredRootedTree`](@ref)s as special case of

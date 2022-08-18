@@ -1308,12 +1308,20 @@ using Aqua: Aqua
             b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
+            # fourth-order accurate
             for o in 0:4
                 for t in RootedTreeIterator(o)
                     val = @inferred residual_order_condition(t, ros)
                     @test abs(val) < 3000 * eps()
                 end
             end
+
+            # not fifth-order accurate
+            s = 0.0
+            for t in RootedTreeIterator(5)
+                s += abs(residual_order_condition(t, ros))
+            end
+            @test s > 0.06
         end
     end # @testset "Order conditions"
 
