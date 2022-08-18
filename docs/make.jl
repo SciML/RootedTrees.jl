@@ -53,6 +53,7 @@ makedocs(modules = [RootedTrees],
              "Tutorials" => [
                  "tutorials/RK_order_conditions.md",
                  "tutorials/ARK_order_conditions.md",
+                 "tutorials/Rosenbrock_order_conditions.md",
              ],
              # "Benchmarks" => "benchmarks.md",
              "API reference" => "api_reference.md",

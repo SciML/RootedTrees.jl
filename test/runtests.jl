@@ -1313,6 +1313,9 @@ using Aqua: Aqua
             b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
+            @test_nowarn show(ros)
+            @test_nowarn show(IOContext(stdout, :compact => true), ros)
+
             # fourth-order accurate
             for o in 0:4
                 for t in RootedTreeIterator(o)
