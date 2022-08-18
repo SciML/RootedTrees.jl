@@ -291,7 +291,8 @@ end
 """
     RosenbrockMethod(γ, A, b, c=vec(sum(A, dims=2)))
 
-Represent a Rosenbrock method with Butcher coefficients `γ`, `A`, `b`, and `c`.
+Represent a Rosenbrock (or Rosenbrock-Wanner, ROW) method with
+coefficients `γ`, `A`, `b`, and `c`.
 If `c` is not provided, the usual "row sum" requirement of consistency with
 autonomous problems is applied.
 
