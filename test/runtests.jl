@@ -1277,19 +1277,24 @@ using Aqua: Aqua
         end
 
         @testset "RosenbrockMethod, original Rosenbrock" begin
-            γ = [1-sqrt(2)/2 0;
-                 0 1-sqrt(2)/2]
+            γ = [1-sqrt(2) / 2 0;
+                 0 1-sqrt(2) / 2]
             A = [0 0;
-                 (sqrt(2)-1)/2 0]
+                 (sqrt(2) - 1)/2 0]
             b = [0, 1]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
             # second-order accurate
-            @test abs(@inferred(residual_order_condition(rootedtree(Int[]), ros))) < 10 * eps()
-            @test abs(@inferred(residual_order_condition(rootedtree(Int[1]), ros))) < 10 * eps()
-            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2]), ros))) < 10 * eps()
-            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 3]), ros))) > 0.04
-            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 2]), ros))) > 0.14
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[]), ros))) <
+                  10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1]), ros))) <
+                  10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2]), ros))) <
+                  10 * eps()
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 3]), ros))) >
+                  0.04
+            @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 2]), ros))) >
+                  0.14
         end
 
         @testset "RosenbrockMethod, GRK4A (Kaps and Rentrop, 1979)" begin
@@ -1300,7 +1305,7 @@ using Aqua: Aqua
             γ = [0.395 0 0 0;
                  -0.767672395484 0.395 0 0;
                  -0.851675323742 0.522967289188 0.395 0;
-                 0.288463109545 0.880214273381e-1 -.337389840627 0.395]
+                 0.288463109545 0.880214273381e-1 -0.337389840627 0.395]
             A = [0 0 0 0;
                  0.438 0 0 0;
                  0.796920457938 0.730795420615e-1 0 0;

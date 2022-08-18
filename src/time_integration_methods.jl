@@ -288,7 +288,6 @@ function residual_order_condition(t::ColoredRootedTree, ark::AdditiveRungeKuttaM
     (ew - one(T) / γ(t)) / σ(t)
 end
 
-
 """
     RosenbrockMethod(γ, A, b, c=vec(sum(A, dims=2)))
 
@@ -376,12 +375,12 @@ function derivative_weight(t::RootedTree, ros::RosenbrockMethod)
     # Count the number of subtrees to decide which matrix to use for multiplications
     num_subtrees = 0
     for subtree in SubtreeIterator(t)
-      num_subtrees += 1
+        num_subtrees += 1
     end
     if num_subtrees == 1
-      matrix = A + γ
+        matrix = A + γ
     else
-      matrix = A
+        matrix = A
     end
 
     # Iterate over all subtrees and update the `result` using recursion
