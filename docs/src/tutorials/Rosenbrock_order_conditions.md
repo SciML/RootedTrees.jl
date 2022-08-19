@@ -22,7 +22,7 @@ is assumed, which reduces all analysis to autonomous problems.
 The step from ``u^{n}`` to ``u^{n+1}`` is given by
 ```math
 \begin{aligned}
-  k^i &= \Delta t f\bigl(u^n + \sum_j a_{i,j} k^j \bigr) + \Delta t J \sum_j \gamma_{ij} k_j, \\
+  k^i &= \Delta t f\bigbl(u^n + \sum_j a_{i,j} k^j \bibgr) + \Delta t J \sum_j \gamma_{ij} k_j, \\
   u^{n+1} &= u^n + \sum_i b_{i} k^i.
 \end{aligned}
 ```
@@ -34,7 +34,7 @@ ROW methods are represented as
 
 ## Order conditions
 
-The order conditions of RK methods can be derived using rooted trees.
+The order conditions of ROW methods can be derived using rooted trees.
 In [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl), this
 functionality is again implemented in [`residual_order_condition`](@ref).
 Thus, a [`RosenbrockMethod`](@ref) is of order ``p`` if the
@@ -49,13 +49,13 @@ written as follows.
 using RootedTrees
 
 γ = [0.395 0 0 0;
-      -0.767672395484 0.395 0 0;
-      -0.851675323742 0.522967289188 0.395 0;
-      0.288463109545 0.880214273381e-1 -.337389840627 0.395]
+     -0.767672395484 0.395 0 0;
+     -0.851675323742 0.522967289188 0.395 0;
+     0.288463109545 0.880214273381e-1 -.337389840627 0.395]
 A = [0 0 0 0;
-      0.438 0 0 0;
-      0.796920457938 0.730795420615e-1 0 0;
-      0.796920457938 0.730795420615e-1 0 0]
+     0.438 0 0 0;
+     0.796920457938 0.730795420615e-1 0 0;
+     0.796920457938 0.730795420615e-1 0 0]
 b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
 ros = RosenbrockMethod(γ, A, b)
 ```
