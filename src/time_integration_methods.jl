@@ -287,3 +287,131 @@ function residual_order_condition(t::ColoredRootedTree, ark::AdditiveRungeKuttaM
 
     (ew - one(T) / γ(t)) / σ(t)
 end
+
+"""
+    RosenbrockMethod(γ, A, b, c=vec(sum(A, dims=2)))
+
+Represent a Rosenbrock (or Rosenbrock-Wanner, ROW) method with
+coefficients `γ`, `A`, `b`, and `c`.
+If `c` is not provided, the usual "row sum" requirement of consistency with
+autonomous problems is applied.
+
+# Reference
+
+- Ernst Hairer, Gerhard Wanner.
+  Solving ordinary differential equations II: Stiff and differential-algebraic problems.
+  Springer, 2010.
+  Section IV.7
+"""
+struct RosenbrockMethod{T, MatT <: AbstractMatrix{T}, VecT <: AbstractVector{T}} <:
+       AbstractTimeIntegrationMethod
+    γ::MatT
+    A::MatT
+    b::VecT
+    c::VecT
+end
+
+function RosenbrockMethod(γ::AbstractMatrix, A::AbstractMatrix,
+                          b::AbstractVector,
+                          c::AbstractVector = vec(sum(A, dims = 2)))
+    T = promote_type(eltype(γ), eltype(A), eltype(b), eltype(c))
+    _γ = T.(γ)
+    _A = T.(A)
+    _b = T.(b)
+    _c = T.(c)
+    return RosenbrockMethod(_γ, _A, _b, _c)
+end
+
+Base.eltype(ros::RosenbrockMethod{T}) where {T} = T
+
+function Base.show(io::IO, ros::RosenbrockMethod)
+    print(io, "RosenbrockMethod{", eltype(ros), "}")
+    if get(io, :compact, false)
+        print(io, "(")
+        show(io, ros.γ)
+        print(io, ", ")
+        show(io, ros.A)
+        print(io, ", ")
+        show(io, ros.b)
+        print(io, ", ")
+        show(io, ros.c)
+        print(io, ")")
+    else
+        print(io, " with\nγ: ")
+        show(io, MIME"text/plain"(), ros.γ)
+        print(io, "\nA: ")
+        show(io, MIME"text/plain"(), ros.A)
+        print(io, "\nb: ")
+        show(io, MIME"text/plain"(), ros.b)
+        print(io, "\nc: ")
+        show(io, MIME"text/plain"(), ros.c)
+        print(io, "\n")
+    end
+end
+
+"""
+    elementary_weight(t::RootedTree, ros::RosenbrockMethod)
+
+Compute the elementary weight Φ(`t`) of the [`RosenbrockMethod`](@ref) `ros`
+for a rooted tree `t``.
+"""
+function elementary_weight(t::RootedTree, ros::RosenbrockMethod)
+    dot(ros.b, derivative_weight(t, ros))
+end
+
+"""
+    derivative_weight(t::RootedTree, ros::RosenbrockMethod)
+
+Compute the derivative weight (ΦᵢD)(`t`) of the [`RosenbrockMethod`](@ref) `ros`
+for the rooted tree `t`.
+"""
+function derivative_weight(t::RootedTree, ros::RosenbrockMethod)
+    γ = ros.γ
+    A = ros.A
+    c = ros.c
+
+    # Initialize `result` with the identity element of pointwise multiplication `.*`
+    result = zero(c) .+ one(eltype(c))
+
+    # Count the number of subtrees to decide which matrix to use for multiplications
+    num_subtrees = 0
+    for subtree in SubtreeIterator(t)
+        num_subtrees += 1
+    end
+    if num_subtrees == 1
+        matrix = A + γ
+    else
+        matrix = A
+    end
+
+    # Iterate over all subtrees and update the `result` using recursion
+    for subtree in SubtreeIterator(t)
+        tmp = matrix * derivative_weight(subtree, ros)
+        result = result .* tmp
+    end
+
+    return result
+end
+
+"""
+    residual_order_condition(t::RootedTree, ros::RosenbrockMethod)
+
+The residual of the order condition
+  `(Φ(t) - 1/γ(t)) / σ(t)`
+with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
+[`symmetry`](@ref) `σ(t)` of the [`RosenbrockMethod`](@ref) `ros`
+for the rooted tree `t`.
+
+# Reference
+
+- Ernst Hairer, Gerhard Wanner.
+  Solving ordinary differential equations II: Stiff and differential-algebraic problems.
+  Springer, 2010.
+  Section IV.7
+"""
+function residual_order_condition(t::RootedTree, ros::RosenbrockMethod)
+    ew = elementary_weight(t, ros)
+    T = typeof(ew)
+
+    (ew - one(T) / γ(t)) / σ(t)
+end
