@@ -5,6 +5,7 @@ module RootedTrees
 using LinearAlgebra: dot
 
 using Latexify: Latexify
+using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
 using Requires: @require
 
@@ -182,8 +183,31 @@ end
 #RootedTree{T<:Integer}(sequence::Vector{T}) = RootedTree{T}(sequence, false)
 
 function Base.show(io::IO, t::RootedTree{T}) where {T}
-    print(io, "RootedTree{", T, "}: ")
-    show(io, t.level_sequence)
+    printing_style = @load_preference("printing_style")
+    if printing_style == "butcher"
+        print(io, butcher_representation(t))
+    else
+        print(io, "RootedTree{", T, "}: ")
+        show(io, t.level_sequence)
+    end
+end
+
+"""
+    RootedTrees.set_printing_style(style::String)
+
+Set the printing style of rooted trees. Possible options are
+
+- "butcher": print the [`butcher_representation`](@ref) of rooted trees
+- "sequence": print the level sequence representation
+
+This system is based on [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl).
+"""
+function set_printing_style(style::String)
+    if !(style in ("butcher", "sequence"))
+        throw(ArgumentError("Invalid printing style: \"$(style)\""))
+    end
+
+    @set_preferences!("printing_style" => style)
 end
 
 # comparison

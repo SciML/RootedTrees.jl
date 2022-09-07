@@ -101,6 +101,42 @@ using Aqua: Aqua
             @test !(new_hash in hashes)
         end
 
+        @testset "printing" begin
+            io = IOBuffer();
+
+            @testset "butcher" begin
+                @test_nowarn RootedTrees.set_printing_style("butcher")
+
+                let t = rootedtree([1])
+                    show(io, t)
+                    @test String(take!(io)) == "τ"
+                    @test butcher_representation(t) == "τ"
+                end
+
+                let t = rootedtree([1, 2, 2, 2, 3])
+                    show(io, t)
+                    @test String(take!(io)) == "[[τ]τ²]"
+                    @test butcher_representation(t) == "[[τ]τ²]"
+                end
+            end
+
+            @testset "sequence" begin
+                @test_nowarn RootedTrees.set_printing_style("sequence")
+
+                let t = rootedtree([1])
+                    show(io, t)
+                    @test String(take!(io)) != "τ"
+                    @test butcher_representation(t) == "τ"
+                end
+
+                let t = rootedtree([1, 2, 2, 2, 3])
+                    show(io, t)
+                    @test String(take!(io)) != "[[τ]τ²]"
+                    @test butcher_representation(t) == "[[τ]τ²]"
+                end
+            end
+        end
+
         # see Table 301(I) etc. in butcher2016numerical
         @testset "functions on trees" begin
             t1 = rootedtree([1])
