@@ -102,7 +102,7 @@ using Aqua: Aqua
         end
 
         @testset "printing" begin
-            io = IOBuffer();
+            io = IOBuffer()
 
             @testset "butcher" begin
                 @test_nowarn RootedTrees.set_printing_style("butcher")

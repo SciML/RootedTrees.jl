@@ -207,7 +207,7 @@ function set_printing_style(style::String)
         throw(ArgumentError("Invalid printing style: \"$(style)\""))
     end
 
-    @set_preferences!("printing_style" => style)
+    @set_preferences!("printing_style"=>style)
 end
 
 # comparison
