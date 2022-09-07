@@ -138,6 +138,7 @@ using Aqua: Aqua
 
             @testset "nonsense" begin
                 @test_throws ArgumentError RootedTrees.set_printing_style("nonsense_style")
+                @test_throws ArgumentError RootedTrees.set_printing_style("even_more_nonsense")
             end
         end
 
