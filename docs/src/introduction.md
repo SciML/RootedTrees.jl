@@ -50,6 +50,17 @@ julia> butcher_representation(t)
 "[[[τ]τ²]τ⁵]"
 ```
 
+You can use the function [`RootedTrees.set_printing_style`](@ref) to change the
+printing style globally. For example,
+```@repl
+using RootedTrees
+t = rootedtree([1, 2, 3, 4, 3, 3, 2, 2, 2, 2, 2])
+RootedTrees.set_printing_style("butcher")
+t
+RootedTrees.set_printing_style("sequence")
+t
+```
+
 There are also some simple plot recipes for [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 Thus, you can visualize a rooted tree `t` using `plot(t)` when `using Plots`.
 
