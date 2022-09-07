@@ -135,6 +135,10 @@ using Aqua: Aqua
                     @test butcher_representation(t) == "[[τ]τ²]"
                 end
             end
+
+            @testset "nonsense" begin
+                @test_throws ArgumentError RootedTrees.set_printing_style("nonsense_style")
+            end
         end
 
         # see Table 301(I) etc. in butcher2016numerical
