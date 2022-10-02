@@ -1411,4 +1411,9 @@ function __init__()
     return nothing
 end
 
+# explicit precompilation on Julia v1.8 and newer
+@static if VERSION >= v"1.8"
+    include("precompile.jl")
+end
+
 end # module
