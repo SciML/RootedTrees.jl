@@ -1,4 +1,4 @@
-# Introduction
+# [Introduction](@id introduction)
 
 [`RootedTree`](@ref)s are useful to analyze properties of time integration
 methods such as Runge-Kutta methods. Some common references introducing them
