@@ -91,7 +91,8 @@ We can also visualize the exponential growth.
 ```@example basics
 using Plots
 orders = 1:15
-scatter(orders, count_trees.(orders), yscale=:log10)
+scatter(orders, count_trees.(orders), yscale=:log10,
+        xguide="Order", yguide="Number of Trees")
 savefig("basics_count_trees.png"); nothing # hide
 ```
 
