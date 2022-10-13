@@ -206,7 +206,7 @@ color_to_index(color::Bool) = 1 + color
     elementary_weight(t::ColoredRootedTree, ark::AdditiveRungeKuttaMethod)
 
 Compute the elementary weight Φ(`t`) of the [`AdditiveRungeKuttaMethod`](@ref)
-`ark` for a colored rooted tree `t``.
+`ark` for a colored rooted tree `t`.
 
 # References
 
@@ -353,7 +353,7 @@ end
     elementary_weight(t::RootedTree, ros::RosenbrockMethod)
 
 Compute the elementary weight Φ(`t`) of the [`RosenbrockMethod`](@ref) `ros`
-for a rooted tree `t``.
+for a rooted tree `t`.
 """
 function elementary_weight(t::RootedTree, ros::RosenbrockMethod)
     dot(ros.b, derivative_weight(t, ros))
