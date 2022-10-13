@@ -51,6 +51,7 @@ makedocs(modules = [RootedTrees],
              "Home" => "index.md",
              "Introduction" => "introduction.md",
              "Tutorials" => [
+                 "tutorials/basics.md",
                  "tutorials/RK_order_conditions.md",
                  "tutorials/ARK_order_conditions.md",
                  "tutorials/Rosenbrock_order_conditions.md",

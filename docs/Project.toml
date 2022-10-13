@@ -1,11 +1,15 @@
 [deps]
 Documenter = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
 ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
+Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
+PrettyTables = "08abe8d2-0d0c-5749-adfa-8a2ac140af0d"
 SymPy = "24249f21-da20-56a4-8eb1-6a02cf4ae2e6"
 Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
 
 [compat]
 Documenter = "0.27"
 ForwardDiff = "0.10"
+Plots = "1"
+PrettyTables = "2"
 SymPy = "1"
 Zygote = "0.6"
