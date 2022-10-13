@@ -60,7 +60,7 @@ are reasonably efficient, but an exponential growth will always win in the end.
 
 The function `count_trees`(@ref) iterates over rooted trees explicitly. Thus,
 it provides a lower bound on the computational complexity of operations on all
-trees.
+trees. For example,
 
 ```@repl
 using RootedTrees
@@ -68,7 +68,25 @@ using RootedTrees
 @time count_trees(20)
 ```
 
-We can also visualize the exponential growth this way.
+A nice way to create and print tables of properties of trees is by using
+the Julia package [PrettyTables.jl](https://github.com/ronisbr/PrettyTables.jl).
+
+```@repl
+using RootedTrees, PrettyTables
+orders = 1:10
+pretty_table(hcat(orders, count_trees.(orders)), header=["Order", "# Trees"])
+```
+
+To get the corresponding number of Runge-Kutta (RK) order conditions, we must
+sum up the number of trees, i.e.,
+
+```@repl
+using RootedTrees, PrettyTables
+orders = 1:10
+pretty_table(hcat(orders, cumsum(count_trees.(orders))), header=["Order", "# RK Order Conditions"])
+```
+
+We can also visualize the exponential growth.
 
 ```@example basics
 using Plots
@@ -95,7 +113,7 @@ end
 to
 
 ```@example basics
-for t in BicloredRootedTreeIterator(3)
+for t in BicoloredRootedTreeIterator(3)
     println(t)
 end
 ```
