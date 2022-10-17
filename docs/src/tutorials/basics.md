@@ -38,6 +38,10 @@ for t in RootedTreeIterator(4)
 end
 ```
 
+This results in the following LaTeX output:
+
+
+
 If you want to visualize individual trees, you can also use our plot recipes
 for [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
@@ -58,7 +62,7 @@ iterating over some set of rooted trees. The implementations in
 [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl)
 are reasonably efficient, but an exponential growth will always win in the end.
 
-The function `count_trees`(@ref) iterates over rooted trees explicitly. Thus,
+The function [`count_trees`](@ref) iterates over rooted trees explicitly. Thus,
 it provides a lower bound on the computational complexity of operations on all
 trees. For example,
 
