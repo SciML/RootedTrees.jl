@@ -40,7 +40,7 @@ end
 
 This results in the following LaTeX output:
 
-
+![latex-trees](https://user-images.githubusercontent.com/12693098/196148917-6e3cf000-5bc3-4798-8a82-d6e939bb6a8f.png)
 
 If you want to visualize individual trees, you can also use our plot recipes
 for [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
