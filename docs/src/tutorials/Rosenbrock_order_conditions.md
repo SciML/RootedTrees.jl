@@ -22,7 +22,7 @@ is assumed, which reduces all analysis to autonomous problems.
 The step from ``u^{n}`` to ``u^{n+1}`` is given by
 ```math
 \begin{aligned}
-  k^i &= \Delta t f\bigbl(u^n + \sum_j a_{i,j} k^j \bibgr) + \Delta t J \sum_j \gamma_{ij} k_j, \\
+  k^i &= \Delta t f\bigl(u^n + \sum_j a_{i,j} k^j \bigr) + \Delta t J \sum_j \gamma_{ij} k_j, \\
   u^{n+1} &= u^n + \sum_i b_{i} k^i.
 \end{aligned}
 ```
