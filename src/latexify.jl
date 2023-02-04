@@ -7,55 +7,41 @@ LaTeX package [forest](https://ctan.org/pkg/forest) and assumes that you use
 the following LaTeX code in the preamble.
 
 ```
-% Butcher trees, cf. https://tex.stackexchange.com/questions/283343/butcher-trees-in-tikz
+% Classical and colored Butcher trees based on
+% https://tex.stackexchange.com/a/673436
 \\usepackage{forest}
 \\forestset{
-  */.style={
-    delay+={append={[]},}
-  },
-  rooted tree/.style={
-    for tree={
-      grow'=90,
-      parent anchor=center,
-      child anchor=center,
-      s sep=2.5pt,
-      if level=0{
-        baseline
-      }{},
-      delay={
-        if content={*}{
-          content=,
-          append={[]}
-        }{}
+    whitenode/.style={draw,             circle, minimum size=0.5ex, inner sep=0pt},
+    blacknode/.style={draw, fill=black, circle, minimum size=0.5ex, inner sep=0pt},
+    colornode/.style={draw, fill=#1,    circle, minimum size=0.5ex, inner sep=0pt},
+    colornode/.default={red}
+}
+\\newcommand{\\blankforrootedtree}{\\rule{0pt}{0pt}}
+\\NewDocumentCommand\\rootedtree{o}{\\begin{forest}
+    for tree={grow'=90, thick, edge=thick, l sep=0.5ex, l=0pt, s sep=0.5ex},
+    delay={
+      where content={}{
+        for children={no edge, before drawing tree={for tree={y-=5pt}}}
       }
-    },
-    before typesetting nodes={
-      for tree={
-        circle,
-        fill,
-        minimum width=3pt,
-        inner sep=0pt,
-        child anchor=center,
-      },
-    },
-    before computing xy={
-      for tree={
-        l=5pt,
+      {
+        where content={o}{content={\blankforrootedtree}, whitenode}{
+          where content={.}{content={\blankforrootedtree}, blacknode}{}
+        }
       }
     }
-  }
-}
-\\DeclareDocumentCommand\\rootedtree{o}{\\Forest{rooted tree [#1]}}
+    [#1]
+\\end{forest}}
+
 ```
 
 # Examples
 
 ```jldoctest
 julia> rootedtree([1, 2, 2]) |> RootedTrees.latexify |> println
-\\rootedtree[[][]]
+\\rootedtree[.[.][.]]
 
 julia> rootedtree([1, 2, 3, 3, 2]) |> RootedTrees.latexify |> println
-\\rootedtree[[[][]][]]
+\\rootedtree[.[.[.][.]][.]]
 ```
 """
 function latexify(t::RootedTree)
@@ -63,7 +49,8 @@ function latexify(t::RootedTree)
         return "\\varnothing"
     end
     list_representation = butcher_representation(t, false)
-    "\\rootedtree" * replace(list_representation, "τ" => "[]")
+    s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+    return replace(s, "[" => "[.")
 end
 
 Latexify.@latexrecipe function _(t::RootedTree)

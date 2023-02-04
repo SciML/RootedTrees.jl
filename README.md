@@ -103,6 +103,9 @@ Additionally, functions on trees connected to Runge-Kutta methods are implemente
 
 ## Brief Changelog
 
+- v2.16: The LaTeX printing of rooted trees changed to allow representing
+  colored rooted trees. Please update your LaTeX preamble as described in
+  the docstring of `RootedTrees.latexify`.
 - v2.0: Rooted trees are considered up to isomorphisms introduced by shifting
   each coefficient of their level sequence by the same number.
 
