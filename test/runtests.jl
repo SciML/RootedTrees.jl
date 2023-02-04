@@ -866,7 +866,8 @@ using Aqua: Aqua
                 @test latexify(t) == latex_string
             end
 
-            let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2], Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+            let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
+                               Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                 latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                 @test latexify(t) == latex_string
             end

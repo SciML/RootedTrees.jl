@@ -54,24 +54,24 @@ function latexify(t::RootedTree)
 end
 
 function latexify(t::BicoloredRootedTree)
-  if isempty(t)
-      return "\\varnothing"
-  end
-  list_representation = butcher_representation(rootedtree(t.level_sequence), false)
-  s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
-  # The first entry of `substrings` is "\\rootedtree".
-  substrings = split(s, "[")
-  strings = String[]
-  for (color, substring) in zip(t.color_sequence, substrings)
-    if color == false
-      push!(strings, substring * "[.")
-    elseif color == true
-      push!(strings, substring * "[o")
+    if isempty(t)
+        return "\\varnothing"
     end
-  end
-  # We still need to add the last part dropped by `zip`.
-  push!(strings, last(substrings))
-  return join(strings)
+    list_representation = butcher_representation(rootedtree(t.level_sequence), false)
+    s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+    # The first entry of `substrings` is "\\rootedtree".
+    substrings = split(s, "[")
+    strings = String[]
+    for (color, substring) in zip(t.color_sequence, substrings)
+        if color == false
+            push!(strings, substring * "[.")
+        elseif color == true
+            push!(strings, substring * "[o")
+        end
+    end
+    # We still need to add the last part dropped by `zip`.
+    push!(strings, last(substrings))
+    return join(strings)
 end
 
 Latexify.@latexrecipe function _(t::Union{RootedTree, BicoloredRootedTree})
