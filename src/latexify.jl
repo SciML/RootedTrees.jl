@@ -1,6 +1,6 @@
 
 """
-    latexify(t::RootedTree)
+    latexify(t::Union{RootedTree, BicoloredRootedTree})
 
 Return a LaTeX representation of the rooted tree `t`. This makes use of the
 LaTeX package [forest](https://ctan.org/pkg/forest) and assumes that you use
@@ -53,6 +53,27 @@ function latexify(t::RootedTree)
     return replace(s, "[" => "[.")
 end
 
-Latexify.@latexrecipe function _(t::RootedTree)
+function latexify(t::BicoloredRootedTree)
+  if isempty(t)
+      return "\\varnothing"
+  end
+  list_representation = butcher_representation(rootedtree(t.level_sequence), false)
+  s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+  # The first entry of `substrings` is "\\rootedtree".
+  substrings = split(s, "[")
+  strings = String[]
+  for (color, substring) in zip(t.color_sequence, substrings)
+    if color == false
+      push!(strings, substring * "[.")
+    elseif color == true
+      push!(strings, substring * "[o")
+    end
+  end
+  # We still need to add the last part dropped by `zip`.
+  push!(strings, last(substrings))
+  return join(strings)
+end
+
+Latexify.@latexrecipe function _(t::Union{RootedTree, BicoloredRootedTree})
     return Latexify.LaTeXString(RootedTrees.latexify(t))
 end

@@ -830,6 +830,48 @@ using Aqua: Aqua
             end
         end
 
+        @testset "latexify" begin
+            let t = rootedtree(Int[], Bool[])
+                latex_string = "\\varnothing"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1], Bool[0])
+                latex_string = "\\rootedtree[.]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1], Bool[1])
+                latex_string = "\\rootedtree[o]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[0, 0])
+                latex_string = "\\rootedtree[.[.]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[1, 0])
+                latex_string = "\\rootedtree[o[.]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[0, 1])
+                latex_string = "\\rootedtree[.[o]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[1, 1])
+                latex_string = "\\rootedtree[o[o]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2], Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
+                @test latexify(t) == latex_string
+            end
+        end
+
         # see butcher2008numerical, Table 302(I)
         @testset "number of trees" begin
             number_of_rooted_trees = [1, 1, 1, 2, 4, 9, 20, 48, 115, 286, 719]
