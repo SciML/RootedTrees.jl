@@ -123,6 +123,14 @@ for t in BicoloredRootedTreeIterator(3)
 end
 ```
 
+[`RootedTrees.latexify`](@ref) also supports bicolored rooted trees:
+
+```@example basics
+for t in BicoloredRootedTreeIterator(3)
+    println(RootedTrees.latexify(t))
+end
+```
+
 ```@example basics
 using Plots
 t = rootedtree([1, 2, 3, 3, 2, 2], Bool[0, 0, 1, 0, 1, 0])

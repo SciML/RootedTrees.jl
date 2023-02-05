@@ -151,7 +151,7 @@ using Aqua: Aqua
             @test α(t1) == 1
             @test β(t1) == α(t1) * γ(t1)
             @test butcher_representation(t1) == "τ"
-            latex_string = "\\rootedtree[]"
+            latex_string = "\\rootedtree[.]"
             @test RootedTrees.latexify(t1) == latex_string
             @test latexify(t1) == latex_string
             @test isempty(RootedTrees.subtrees(t1))
@@ -173,7 +173,7 @@ using Aqua: Aqua
             @test β(t2) == α(t2) * γ(t2)
             @test t2 == t1 ∘ t1
             @test butcher_representation(t2) == "[τ]"
-            latex_string = "\\rootedtree[[]]"
+            latex_string = "\\rootedtree[.[.]]"
             @test RootedTrees.latexify(t2) == latex_string
             @test latexify(t2) == latex_string
             @test RootedTrees.subtrees(t2) == [rootedtree([2])]
@@ -186,7 +186,7 @@ using Aqua: Aqua
             @test β(t3) == α(t3) * γ(t3)
             @test t3 == t2 ∘ t1
             @test butcher_representation(t3) == "[τ²]"
-            latex_string = "\\rootedtree[[][]]"
+            latex_string = "\\rootedtree[.[.][.]]"
             @test RootedTrees.latexify(t3) == latex_string
             @test latexify(t3) == latex_string
             @test RootedTrees.subtrees(t3) == [rootedtree([2]), rootedtree([2])]
@@ -199,7 +199,7 @@ using Aqua: Aqua
             @test β(t4) == α(t4) * γ(t4)
             @test t4 == t1 ∘ t2
             @test butcher_representation(t4) == "[[τ]]"
-            latex_string = "\\rootedtree[[[]]]"
+            latex_string = "\\rootedtree[.[.[.]]]"
             @test RootedTrees.latexify(t4) == latex_string
             @test latexify(t4) == latex_string
             @test RootedTrees.subtrees(t4) == [rootedtree([2, 3])]
@@ -827,6 +827,49 @@ using Aqua: Aqua
                 @test γ(t) == 6
                 @test_nowarn println(devnull, t)
                 @test butcher_representation(t) == "[[τ₁]₂]₃"
+            end
+        end
+
+        @testset "latexify" begin
+            let t = rootedtree(Int[], Bool[])
+                latex_string = "\\varnothing"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1], Bool[0])
+                latex_string = "\\rootedtree[.]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1], Bool[1])
+                latex_string = "\\rootedtree[o]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[0, 0])
+                latex_string = "\\rootedtree[.[.]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[1, 0])
+                latex_string = "\\rootedtree[o[.]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[0, 1])
+                latex_string = "\\rootedtree[.[o]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2], Bool[1, 1])
+                latex_string = "\\rootedtree[o[o]]"
+                @test latexify(t) == latex_string
+            end
+
+            let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
+                               Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
+                @test latexify(t) == latex_string
             end
         end
 
