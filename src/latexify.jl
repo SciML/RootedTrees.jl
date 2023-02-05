@@ -24,8 +24,8 @@ the following LaTeX code in the preamble.
         for children={no edge, before drawing tree={for tree={y-=5pt}}}
       }
       {
-        where content={o}{content={\blankforrootedtree}, whitenode}{
-          where content={.}{content={\blankforrootedtree}, blacknode}{}
+        where content={o}{content={\\blankforrootedtree}, whitenode}{
+          where content={.}{content={\\blankforrootedtree}, blacknode}{}
         }
       }
     }
