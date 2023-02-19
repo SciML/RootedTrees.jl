@@ -34,6 +34,9 @@ the following LaTeX code in the preamble.
 
 ```
 
+To change the style of `latexify` to a human-readable Butcher-representation,
+you can use [`RootedTrees.set_latexify_style`](@ref).
+
 # Examples
 
 ```jldoctest
@@ -48,32 +51,61 @@ function latexify(t::RootedTree)
     if isempty(t)
         return "\\varnothing"
     end
-    list_representation = butcher_representation(t, false)
-    s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
-    return replace(s, "[" => "[.")
+    latexify_style = @load_preference("latexify_style", "forest")
+    if latexify_style == "butcher"
+      return butcher_representation(t)
+    else # forest
+      list_representation = butcher_representation(t, false)
+      s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+      return replace(s, "[" => "[.")
+    end
 end
 
 function latexify(t::BicoloredRootedTree)
     if isempty(t)
         return "\\varnothing"
     end
-    list_representation = butcher_representation(rootedtree(t.level_sequence), false)
-    s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
-    # The first entry of `substrings` is "\\rootedtree".
-    substrings = split(s, "[")
-    strings = String[]
-    for (color, substring) in zip(t.color_sequence, substrings)
-        if color == false
-            push!(strings, substring * "[.")
-        elseif color == true
-            push!(strings, substring * "[o")
-        end
+    latexify_style = @load_preference("latexify_style", "forest")
+    if latexify_style == "butcher"
+      return butcher_representation(t)
+    else # forest
+      list_representation = butcher_representation(rootedtree(t.level_sequence), false)
+      s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+      # The first entry of `substrings` is "\\rootedtree".
+      substrings = split(s, "[")
+      strings = String[]
+      for (color, substring) in zip(t.color_sequence, substrings)
+          if color == false
+              push!(strings, substring * "[.")
+          elseif color == true
+              push!(strings, substring * "[o")
+          end
+      end
+      # We still need to add the last part dropped by `zip`.
+      push!(strings, last(substrings))
+      return join(strings)
     end
-    # We still need to add the last part dropped by `zip`.
-    push!(strings, last(substrings))
-    return join(strings)
 end
 
 Latexify.@latexrecipe function _(t::Union{RootedTree, BicoloredRootedTree})
     return Latexify.LaTeXString(RootedTrees.latexify(t))
+end
+
+"""
+    RootedTrees.set_latexify_style(style::String)
+
+Set the style of rooted trees when using [`latexify`](@ref). Possible options are
+
+- "butcher": print the [`butcher_representation`](@ref) of rooted trees
+- "forest": use the LaTeX macro `\\rootedtree` described in the docstring of
+  [`latexify`](@ref)
+
+This system is based on [Preferences.jl](https://github.com/JuliaPackaging/Preferences.jl).
+"""
+function set_latexify_style(style::String)
+    if !(style in ("butcher", "forest"))
+        throw(ArgumentError("Invalid printing style: \"$(style)\""))
+    end
+
+    @set_preferences!("latexify_style" => style)
 end
