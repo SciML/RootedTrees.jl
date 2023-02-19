@@ -1004,7 +1004,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end
@@ -1049,7 +1049,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "[[[τ₁τ₀]₀[τ₀]₁τ₁τ₀]₁τ₁]₀"
                     @test latexify(t) == latex_string
                 end
@@ -1094,7 +1094,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end

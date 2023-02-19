@@ -53,11 +53,11 @@ function latexify(t::RootedTree)
     end
     latexify_style = @load_preference("latexify_style", "forest")
     if latexify_style == "butcher"
-      return butcher_representation(t)
+        return butcher_representation(t)
     else # forest
-      list_representation = butcher_representation(t, false)
-      s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
-      return replace(s, "[" => "[.")
+        list_representation = butcher_representation(t, false)
+        s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+        return replace(s, "[" => "[.")
     end
 end
 
@@ -67,23 +67,23 @@ function latexify(t::BicoloredRootedTree)
     end
     latexify_style = @load_preference("latexify_style", "forest")
     if latexify_style == "butcher"
-      return butcher_representation(t)
+        return butcher_representation(t)
     else # forest
-      list_representation = butcher_representation(rootedtree(t.level_sequence), false)
-      s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
-      # The first entry of `substrings` is "\\rootedtree".
-      substrings = split(s, "[")
-      strings = String[]
-      for (color, substring) in zip(t.color_sequence, substrings)
-          if color == false
-              push!(strings, substring * "[.")
-          elseif color == true
-              push!(strings, substring * "[o")
-          end
-      end
-      # We still need to add the last part dropped by `zip`.
-      push!(strings, last(substrings))
-      return join(strings)
+        list_representation = butcher_representation(rootedtree(t.level_sequence), false)
+        s = "\\rootedtree" * replace(list_representation, "τ" => "[]")
+        # The first entry of `substrings` is "\\rootedtree".
+        substrings = split(s, "[")
+        strings = String[]
+        for (color, substring) in zip(t.color_sequence, substrings)
+            if color == false
+                push!(strings, substring * "[.")
+            elseif color == true
+                push!(strings, substring * "[o")
+            end
+        end
+        # We still need to add the last part dropped by `zip`.
+        push!(strings, last(substrings))
+        return join(strings)
     end
 end
 
@@ -107,5 +107,5 @@ function set_latexify_style(style::String)
         throw(ArgumentError("Invalid printing style: \"$(style)\""))
     end
 
-    @set_preferences!("latexify_style" => style)
+    @set_preferences!("latexify_style"=>style)
 end
