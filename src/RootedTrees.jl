@@ -183,7 +183,7 @@ end
 #RootedTree{T<:Integer}(sequence::Vector{T}) = RootedTree{T}(sequence, false)
 
 function Base.show(io::IO, t::RootedTree{T}) where {T}
-    printing_style = @load_preference("printing_style")
+    printing_style = @load_preference("printing_style", "sequence")
     if printing_style == "butcher"
         print(io, butcher_representation(t))
     else
