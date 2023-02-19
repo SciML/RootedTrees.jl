@@ -35,7 +35,9 @@ abstract type AbstractRootedTree end
 """
     RootedTree(level_sequence, is_canonical::Bool=false)
 
-Represents a rooted tree using its level sequence.
+Represents a rooted tree using its level sequence. This is a low-overhead and
+unsafe constructor. Please consider calling [`rootedtree`](@ref) or the in-place
+version [`rootedtree!`](@ref) instead.
 
 # References
 
@@ -51,6 +53,14 @@ struct RootedTree{T <: Integer, V <: AbstractVector{T}} <: AbstractRootedTree
     function RootedTree(level_sequence::V,
                         iscanonical::Bool = false) where {T <: Integer,
                                                           V <: AbstractVector{T}}
+        root = first(level_sequence)
+        prev = root
+        for level in view(level_sequence, (firstindex(level_sequence) + 1):lastindex(level_sequence))
+            if (level <= root) || (level > prev + 1)
+                throw(ArgumentError("The level sequence $level_sequence does not represent a rooted tree."))
+            end
+            prev = level
+        end
         new{T, V}(level_sequence, iscanonical)
     end
 end
@@ -90,7 +100,6 @@ function rootedtree!(level_sequence::AbstractVector)
 end
 
 iscanonical(t::RootedTree) = t.iscanonical
-#TODO: Validate rooted tree in constructor?
 
 Base.copy(t::RootedTree) = RootedTree(copy(t.level_sequence), t.iscanonical)
 Base.similar(t::RootedTree) = RootedTree(similar(t.level_sequence), true)

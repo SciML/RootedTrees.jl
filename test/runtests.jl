@@ -11,6 +11,14 @@ using Aqua: Aqua
 
 @testset "RootedTrees" begin
     @testset "RootedTree" begin
+        @testset "validate level sequence in constructor" begin
+            @test_nowarn rootedtree([1, 2, 3, 4])
+            @test_throws ArgumentError t = rootedtree([1, 2, 3, 4, 5, 1])
+            @test_throws ArgumentError t = rootedtree([1, 1])
+            @test_throws ArgumentError t = rootedtree([1, 3])
+            @test_throws ArgumentError t = rootedtree([1, 0])
+        end
+
         @testset "comparisons etc." begin
             trees = (rootedtree([1, 2, 3]),
                      rootedtree([1, 2, 3]),
