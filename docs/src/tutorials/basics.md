@@ -42,6 +42,25 @@ This results in the following LaTeX output:
 
 ![latex-trees](https://user-images.githubusercontent.com/12693098/196148917-6e3cf000-5bc3-4798-8a82-d6e939bb6a8f.png)
 
+To get a human-readable output, you can use
+[`RootedTrees.set_latexify_style`](@ref). This can be particularly helpful when
+working in Jupyter notebooks, e.g., by passing the output of `latexify` to
+`IPython.display.Latex`.
+
+```@example basics
+RootedTrees.set_latexify_style("butcher")
+
+for t in RootedTreeIterator(4)
+    println(RootedTrees.latexify(t))
+end
+
+RootedTrees.set_latexify_style("forest")
+
+for t in RootedTreeIterator(4)
+    println(RootedTrees.latexify(t))
+end
+```
+
 If you want to visualize individual trees, you can also use our plot recipes
 for [Plots.jl](https://github.com/JuliaPlots/Plots.jl).
 
@@ -130,6 +149,24 @@ for t in BicoloredRootedTreeIterator(3)
     println(RootedTrees.latexify(t))
 end
 ```
+
+The style can be adapted as well via [`RootedTrees.set_latexify_style`](@ref).
+
+```@example basics
+RootedTrees.set_latexify_style("butcher")
+
+for t in BicoloredRootedTreeIterator(3)
+    println(RootedTrees.latexify(t))
+end
+
+RootedTrees.set_latexify_style("forest")
+
+for t in BicoloredRootedTreeIterator(3)
+    println(RootedTrees.latexify(t))
+end
+```
+
+Plotting is of course also implemented for colored rooted trees.
 
 ```@example basics
 using Plots
