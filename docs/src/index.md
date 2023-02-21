@@ -15,6 +15,8 @@ is a registered Julia package. Thus, you can install it from the Julia REPL via
 ```julia
 julia> using Pkg; Pkg.add("RootedTrees")
 ```
+[RootedTrees.jl](https://github.com/SciML/RootedTrees.jl) works with
+Julia version 1.6 and newer.
 
 If you want to update RootedTrees.jl, you can use
 ```julia
