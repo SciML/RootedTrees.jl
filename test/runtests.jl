@@ -748,7 +748,8 @@ using Aqua: Aqua
         @testset "validate level sequence in constructor" begin
             @test_nowarn rootedtree([1, 2, 3, 4], Bool[0, 0, 0, 0])
             @test_throws DimensionMismatch rootedtree([1, 2, 3, 4, 5, 1], Bool[0, 0])
-            @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1], Bool[0, 0, 0, 0, 0, 0])
+            @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1],
+                                                  Bool[0, 0, 0, 0, 0, 0])
             @test_throws ArgumentError rootedtree([1, 1], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 3], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 0], Bool[0, 0])

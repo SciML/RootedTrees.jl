@@ -88,7 +88,8 @@ end
 
     root = first(level_sequence)
     prev = root
-    for level in view(level_sequence, (firstindex(level_sequence) + 1):lastindex(level_sequence))
+    for level in view(level_sequence,
+                      (firstindex(level_sequence) + 1):lastindex(level_sequence))
         if (level <= root) || (level > prev + 1)
             return false
         end
