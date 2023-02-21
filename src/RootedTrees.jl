@@ -35,9 +35,11 @@ abstract type AbstractRootedTree end
 """
     RootedTree(level_sequence, is_canonical::Bool=false)
 
-Represents a rooted tree using its level sequence. This is a low-overhead and
-unsafe constructor. Please consider calling [`rootedtree`](@ref) or the in-place
-version [`rootedtree!`](@ref) instead.
+Represents a rooted tree using its level sequence.
+
+!!! warning
+    This is a low-overhead and unsafe constructor. Please consider calling
+    [`rootedtree`](@ref) instead.
 
 # References
 
@@ -53,14 +55,6 @@ struct RootedTree{T <: Integer, V <: AbstractVector{T}} <: AbstractRootedTree
     function RootedTree(level_sequence::V,
                         iscanonical::Bool = false) where {T <: Integer,
                                                           V <: AbstractVector{T}}
-        root = first(level_sequence)
-        prev = root
-        for level in view(level_sequence, (firstindex(level_sequence) + 1):lastindex(level_sequence))
-            if (level <= root) || (level > prev + 1)
-                throw(ArgumentError("The level sequence $level_sequence does not represent a rooted tree."))
-            end
-            prev = level
-        end
         new{T, V}(level_sequence, iscanonical)
     end
 end
@@ -79,14 +73,41 @@ a vector of integers representing the levels of each node of the tree.
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
 function rootedtree(level_sequence::AbstractVector)
+    if !(level_sequence_is_valid(level_sequence))
+        throw(ArgumentError("The level sequence $level_sequence does not represent a rooted tree."))
+    end
+
     canonical_representation(RootedTree(level_sequence))
+end
+
+# check whether the level sequence represents a rooted tree
+@inline function level_sequence_is_valid(level_sequence)
+    if isempty(level_sequence)
+        return true
+    end
+
+    root = first(level_sequence)
+    prev = root
+    for level in view(level_sequence, (firstindex(level_sequence) + 1):lastindex(level_sequence))
+        if (level <= root) || (level > prev + 1)
+            return false
+        end
+        prev = level
+    end
+
+    return true
 end
 
 """
     rootedtree!(level_sequence)
 
-Construct a canonical `RootedTree` object from a `level_sequence` which may be
-modified in this process. See also [`rootedtree`](@ref).
+Construct a canonical [`RootedTree`](@ref) object from a `level_sequence` which
+may be modified in this process. See also [`rootedtree`](@ref).
+
+!!! warning
+    This may modify the `level_sequence` and further modifications of the
+    `level_sequence` may invalidate the rooted tree returned by this function.
+    Please consider calling [`rootedtree`](@ref) instead.
 
 # References
 
@@ -698,7 +719,7 @@ function partition_forest!(forest, level_sequence, edge_set)
 
         edge_to_remove = findlast(==(false), edge_set)
     end
-    push!(forest, rootedtree(level_sequence))
+    push!(forest, rootedtree!(copy(level_sequence)))
 end
 
 """
