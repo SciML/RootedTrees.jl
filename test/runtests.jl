@@ -11,6 +11,14 @@ using Aqua: Aqua
 
 @testset "RootedTrees" begin
     @testset "RootedTree" begin
+        @testset "validate level sequence in constructor" begin
+            @test_nowarn rootedtree([1, 2, 3, 4])
+            @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1])
+            @test_throws ArgumentError rootedtree([1, 1])
+            @test_throws ArgumentError rootedtree([1, 3])
+            @test_throws ArgumentError rootedtree([1, 0])
+        end
+
         @testset "comparisons etc." begin
             trees = (rootedtree([1, 2, 3]),
                      rootedtree([1, 2, 3]),
@@ -737,6 +745,16 @@ using Aqua: Aqua
     end # @testset "RootedTree"
 
     @testset "ColoredRootedTree" begin
+        @testset "validate level sequence in constructor" begin
+            @test_nowarn rootedtree([1, 2, 3, 4], Bool[0, 0, 0, 0])
+            @test_throws DimensionMismatch rootedtree([1, 2, 3, 4, 5, 1], Bool[0, 0])
+            @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1],
+                                                  Bool[0, 0, 0, 0, 0, 0])
+            @test_throws ArgumentError rootedtree([1, 1], Bool[0, 0])
+            @test_throws ArgumentError rootedtree([1, 3], Bool[0, 0])
+            @test_throws ArgumentError rootedtree([1, 0], Bool[0, 0])
+        end
+
         @testset "comparisons etc." begin
             trees = (rootedtree([1, 2, 3], [1, 1, 1]),
                      rootedtree([1, 2, 3], [1, 1, 1]),

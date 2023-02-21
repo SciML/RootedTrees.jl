@@ -7,6 +7,10 @@ version is [`RootedTree`](@ref).
 
 See also [`BicoloredRootedTree`](@ref), [`rootedtree`](@ref).
 
+!!! warning
+    This is a low-overhead and unsafe constructor. Please consider calling
+    [`rootedtree`](@ref) instead.
+
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
@@ -63,6 +67,9 @@ each node of the tree and a vector of associated colors (e.g., `Bool`s or
 function rootedtree(level_sequence::AbstractVector, color_sequence::AbstractVector)
     if axes(level_sequence) != axes(color_sequence)
         throw(DimensionMismatch("The axes of the `level_sequence` ($level_sequence) and the `color_sequence` ($color_sequence) do not match."))
+    end
+    if !(level_sequence_is_valid(level_sequence))
+        throw(ArgumentError("The level sequence $level_sequence does not represent a rooted tree."))
     end
 
     canonical_representation(ColoredRootedTree(level_sequence, color_sequence))
