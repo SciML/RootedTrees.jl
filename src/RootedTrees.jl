@@ -7,7 +7,9 @@ using LinearAlgebra: dot
 using Latexify: Latexify
 using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
-using Requires: @require
+if !isdefined(Base, :get_extension)
+    using Requires: @require
+end
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
@@ -1438,9 +1440,10 @@ function __init__()
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
                              Vector{Bool}(undef, BUFFER_LENGTH))
 
-    @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-        using .Plots: Plots
-        include("plots.jl")
+    @static if !isdefined(Base, :get_extension)
+        @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
+            include("../ext/PlotsExt.jl")
+        end
     end
 
     return nothing
