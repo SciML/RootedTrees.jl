@@ -281,7 +281,9 @@ using Aqua: Aqua
                 end
             end
 
-            @testset "nonsense style" begin @test_throws ArgumentError RootedTrees.set_latexify_style("nonsense") end
+            @testset "nonsense style" begin
+                @test_throws ArgumentError RootedTrees.set_latexify_style("nonsense")
+            end
         end
 
         # see Table 301(I) etc. in butcher2016numerical
