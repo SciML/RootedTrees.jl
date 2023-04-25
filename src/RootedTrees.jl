@@ -691,9 +691,7 @@ Section 2.3 of
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
 function partition_forest(t::RootedTree, edge_set)
-    @boundscheck begin
-        @assert length(t.level_sequence) == length(edge_set) + 1
-    end
+    @boundscheck begin @assert length(t.level_sequence) == length(edge_set) + 1 end
 
     level_sequence = copy(t.level_sequence)
     edge_set_copy = copy(edge_set)
@@ -835,9 +833,7 @@ Section 2.3 (and Section 6.1 for colored trees) of
   [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
 """
 function partition_skeleton(t::AbstractRootedTree, edge_set)
-    @boundscheck begin
-        @assert order(t) == length(edge_set) + 1
-    end
+    @boundscheck begin @assert order(t) == length(edge_set) + 1 end
 
     edge_set_copy = copy(edge_set)
     skeleton = copy(t)
@@ -1441,9 +1437,7 @@ function __init__()
                              Vector{Bool}(undef, BUFFER_LENGTH))
 
     @static if !isdefined(Base, :get_extension)
-        @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-            include("../ext/PlotsExt.jl")
-        end
+        @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin include("../ext/PlotsExt.jl") end
     end
 
     return nothing

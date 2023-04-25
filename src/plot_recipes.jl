@@ -81,7 +81,6 @@ function _plot_coordinates(t::AbstractRootedTree,
     return x, y
 end
 
-
 # We load Plots.distinguishable_colors via Requires.jl for older versions
 # of Julia and as a package extension (weak dependency) on newer versions
 # of Julia.
