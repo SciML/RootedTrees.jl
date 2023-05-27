@@ -1717,6 +1717,14 @@ using Aqua: Aqua
         end
     end # @testset "plots"
 
-    @testset "Aqua" begin Aqua.test_all(RootedTrees;
-                                        ambiguities = (; exclude = [getindex])) end
+    @testset "Aqua" begin
+        Aqua.test_all(RootedTrees;
+                      ambiguities = (; exclude = [getindex]),
+                      # New Project.toml tests fail on old versions of Julia
+                      project_toml_formatting = false)
+
+        if VERSION >= v"1.9.0"
+            Aqua.test_project_toml_formatting(RootedTrees)
+        end
+    end
 end # @testset "RootedTrees"
