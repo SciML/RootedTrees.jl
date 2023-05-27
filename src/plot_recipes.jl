@@ -168,7 +168,7 @@ function _plot_coordinates(t::ColoredRootedTree,
     # ┌ Warning: Indices Base.OneTo(9) of attribute `seriescolor` does not match data indices 3:9.
     # └ @ Plots ~/.julia/packages/Plots/AJMX6/src/utils.jl:132
     # ┌ Info: Data contains NaNs or missing values, and indices of `seriescolor` vector do not match data indices.
-    # │ If you intend elements of `seriescolor` to apply to individual NaN-separated segements in the data,
+    # │ If you intend elements of `seriescolor` to apply to individual NaN-separated segments in the data,
     # │ pass each segment in a separate vector instead, and use a row vector for `seriescolor`. Legend entries
     # │ may be suppressed by passing an empty label.
     # │ For example,
@@ -176,7 +176,7 @@ function _plot_coordinates(t::ColoredRootedTree,
     # ┌ Warning: Indices Base.OneTo(9) of attribute `linecolor` does not match data indices 3:9.
     # └ @ Plots ~/.julia/packages/Plots/AJMX6/src/utils.jl:132
     # ┌ Info: Data contains NaNs or missing values, and indices of `linecolor` vector do not match data indices.
-    # │ If you intend elements of `linecolor` to apply to individual NaN-separated segements in the data,
+    # │ If you intend elements of `linecolor` to apply to individual NaN-separated segments in the data,
     # │ pass each segment in a separate vector instead, and use a row vector for `linecolor`. Legend entries
     # │ may be suppressed by passing an empty label.
     # │ For example,
@@ -184,7 +184,7 @@ function _plot_coordinates(t::ColoredRootedTree,
     # ┌ Warning: Indices Base.OneTo(9) of attribute `fillcolor` does not match data indices 3:9.
     # └ @ Plots ~/.julia/packages/Plots/AJMX6/src/utils.jl:132
     # ┌ Info: Data contains NaNs or missing values, and indices of `fillcolor` vector do not match data indices.
-    # │ If you intend elements of `fillcolor` to apply to individual NaN-separated segements in the data,
+    # │ If you intend elements of `fillcolor` to apply to individual NaN-separated segments in the data,
     # │ pass each segment in a separate vector instead, and use a row vector for `fillcolor`. Legend entries
     # │ may be suppressed by passing an empty label.
     # │ For example,
@@ -192,7 +192,7 @@ function _plot_coordinates(t::ColoredRootedTree,
     # ┌ Warning: Indices Base.OneTo(9) of attribute `markercolor` does not match data indices 3:9.
     # └ @ Plots ~/.julia/packages/Plots/AJMX6/src/utils.jl:132
     # ┌ Info: Data contains NaNs or missing values, and indices of `markercolor` vector do not match data indices.
-    # │ If you intend elements of `markercolor` to apply to individual NaN-separated segements in the data,
+    # │ If you intend elements of `markercolor` to apply to individual NaN-separated segments in the data,
     # │ pass each segment in a separate vector instead, and use a row vector for `markercolor`. Legend entries
     # │ may be suppressed by passing an empty label.
     # │ For example,
