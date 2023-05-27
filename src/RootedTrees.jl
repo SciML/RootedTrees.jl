@@ -915,7 +915,7 @@ function all_partitions(t::RootedTree)
     return (; forests, skeletons)
 end
 
-# A helper function to comute the binary representation of an integer `n` as
+# A helper function to compute the binary representation of an integer `n` as
 # a vector of `Bool`s. This is a more efficient version of
 #   binary_digits!(digits, n) = digits!(digits, n, base=2)
 function binary_digits!(digits::Vector{Bool}, n::Int)
@@ -1359,7 +1359,7 @@ Thus, the rooted tree consisting whose only vertex is the root itself is
 represented as `τ`. The representation of other trees is defined recursively;
 if `t₁, t₂, ... tₙ` are the [`subtrees`](@ref) of the rooted tree `t`, it is
 represented as `t = [t₁ t₂ ... tₙ]`. If multiple subtrees are the same, their
-number of occurences is written as a power.
+number of occurrences is written as a power.
 
 # Examples
 
