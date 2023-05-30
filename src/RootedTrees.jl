@@ -1442,11 +1442,7 @@ function __init__()
                              Vector{Bool}(undef, BUFFER_LENGTH))
 
     @static if !isdefined(Base, :get_extension)
-        @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
-            # This is backward-compatible with Requires.jl on older Julia
-            # versions (pre v1.9)
-            include("../ext/PlotsExt.jl")
-        end
+        @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin include("../ext/PlotsExt.jl") end
     end
 
     return nothing
