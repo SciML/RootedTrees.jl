@@ -1134,12 +1134,14 @@ using Aqua: Aqua
         end
 
         # https://github.com/SciML/RootedTrees.jl/issues/72
-        @testset "BicoloredRootedTreeIterator is canonical" begin for o in 1:10
-            for t_iterator in BicoloredRootedTreeIterator(o)
-                t_canonical = RootedTrees.canonical_representation(t_iterator)
-                @test t_iterator == t_canonical
+        @testset "BicoloredRootedTreeIterator is canonical" begin
+            for o in 1:10
+                for t_iterator in BicoloredRootedTreeIterator(o)
+                    t_canonical = RootedTrees.canonical_representation(t_iterator)
+                    @test t_iterator == t_canonical
+                end
             end
-        end end
+        end
 
         # See Sections 2.3 & 6.1 and Table 2 of
         # - Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
