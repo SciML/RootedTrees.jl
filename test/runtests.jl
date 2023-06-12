@@ -1722,6 +1722,8 @@ using Aqua: Aqua
     @testset "Aqua" begin
         Aqua.test_all(RootedTrees;
                       ambiguities = (; exclude = [getindex]),
+                      # Requires.jl is not loaded on new versions of Julia
+                      stale_deps = (; ignore = [:Requires]),
                       # New Project.toml tests fail on old versions of Julia
                       project_toml_formatting = false)
 
