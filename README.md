@@ -116,12 +116,14 @@ If you use
 [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl)
 for your research, please cite the paper
 ```bibtex
-@article{ketcheson2022computing,
+@article{ketcheson2023computing,
   title={Computing with {B}-series},
   author={Ketcheson, David I and Ranocha, Hendrik},
   journal={ACM Transactions on Mathematical Software},
-  year={2022},
-  month={12},
+  volume={49},
+  number={2},
+  year={2023},
+  month={06},
   doi={10.1145/3573384},
   eprint={2111.11680},
   eprinttype={arXiv},
