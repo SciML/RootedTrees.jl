@@ -4,6 +4,8 @@ module RootedTrees
 
 using LinearAlgebra: dot
 
+using LaTeXStrings
+
 using Latexify: Latexify
 using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
@@ -15,7 +17,7 @@ end
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
-export butcher_representation
+export butcher_representation, elementary_differential
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
@@ -1411,6 +1413,35 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     end
 
     return result
+end
+
+function elementary_differential(t::RootedTree)
+    return latexstring(rec_elementary_differential(t))
+end
+
+"""
+"""
+function rec_elementary_differential(t::RootedTree)
+    subtree_strings = []
+    for subtree in SubtreeIterator(t)
+        push!(subtree_strings,rec_elementary_differential(subtree))
+    end
+    k = length(subtree_strings)
+    if k == 0 # Special-Case: No Subtree
+        return "f"
+    elseif k == 1 # Special-Case: Just 1 Subtree. No () needed
+        return "f^{'}" * subtree_strings[1]
+    end
+    if k in [2,3]
+        el_diff = "f^{$("'"^k)}(" 
+    else
+        el_diff = "f^{($(k))}(" 
+    end
+    for s in subtree_strings[1:end-1]
+        el_diff *= s * ","
+    end
+    el_diff *= subtree_strings[end] * ")"
+    return el_diff
 end
 
 include("colored_trees.jl")
