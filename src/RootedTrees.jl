@@ -1415,11 +1415,18 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     return result
 end
 
+"""
+    elementary_differential(t::RootedTree)
+
+Returns the elementary differential as a LaTeXString.
+
+"""
 function elementary_differential(t::RootedTree)
     return latexstring(rec_elementary_differential(t))
 end
 
 """
+Function used to go recursively through the RootedTree to generate the elementary differential of the tree.
 """
 function rec_elementary_differential(t::RootedTree)
     subtree_strings = []
@@ -1430,10 +1437,10 @@ function rec_elementary_differential(t::RootedTree)
     if k == 0 # Special-Case: No Subtree
         return "f"
     elseif k == 1 # Special-Case: Just 1 Subtree. No () needed
-        return "f^{'}" * subtree_strings[1]
+        return "f^{\\prime}" * subtree_strings[1]
     end
-    if k in [2,3]
-        el_diff = "f^{$("'"^k)}(" 
+    if k in [2,3] # For first, second and third derivative \prime is used. For the rest just the number of the derivative
+        el_diff = "f^{$("\\prime "^k)}(" 
     else
         el_diff = "f^{($(k))}(" 
     end
