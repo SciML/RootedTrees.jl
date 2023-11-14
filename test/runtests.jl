@@ -7,6 +7,8 @@ using RootedTrees.Latexify: latexify
 using Plots: Plots, plot
 Plots.unicodeplots()
 
+using LaTeXStrings: @L_str
+
 using Aqua: Aqua
 
 @testset "RootedTrees" begin
@@ -21,15 +23,15 @@ using Aqua: Aqua
 
         @testset "comparisons etc." begin
             trees = (rootedtree([1, 2, 3]),
-                     rootedtree([1, 2, 3]),
-                     rootedtree([1, 2, 2]),
-                     rootedtree([1, 2, 3, 3]),
-                     rootedtree(Int[]))
+                rootedtree([1, 2, 3]),
+                rootedtree([1, 2, 2]),
+                rootedtree([1, 2, 3, 3]),
+                rootedtree(Int[]))
             trees_shifted = (rootedtree([1, 2, 3]),
-                             rootedtree([2, 3, 4]),
-                             rootedtree([1, 2, 2]),
-                             rootedtree([1, 2, 3, 3]),
-                             rootedtree(Int[]))
+                rootedtree([2, 3, 4]),
+                rootedtree([1, 2, 2]),
+                rootedtree([1, 2, 3, 3]),
+                rootedtree(Int[]))
 
             for (t1, t2, t3, t4, t5) in (trees, trees_shifted)
                 @test t1 == t1
@@ -301,6 +303,7 @@ using Aqua: Aqua
             @test isempty(RootedTrees.subtrees(t1))
             @test butcher_representation(empty(t1)) == "∅"
             @test RootedTrees.latexify(empty(t1)) == "\\varnothing"
+            @test elementary_differential(t1) == L"$f$"
 
             @inferred order(t1)
             @inferred σ(t1)
@@ -321,6 +324,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t2) == latex_string
             @test latexify(t2) == latex_string
             @test RootedTrees.subtrees(t2) == [rootedtree([2])]
+            @test elementary_differential(t2) == L"$f^{\prime}f$"
 
             t3 = rootedtree([1, 2, 2])
             @test order(t3) == 3
@@ -334,6 +338,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t3) == latex_string
             @test latexify(t3) == latex_string
             @test RootedTrees.subtrees(t3) == [rootedtree([2]), rootedtree([2])]
+            @test elementary_differential(t3) == L"$f^{\prime\prime}(f,f)$"
 
             t4 = rootedtree([1, 2, 3])
             @test order(t4) == 3
@@ -347,6 +352,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t4) == latex_string
             @test latexify(t4) == latex_string
             @test RootedTrees.subtrees(t4) == [rootedtree([2, 3])]
+            @test elementary_differential(t4) == L"$f^{\prime}f^{\prime}f$"
 
             t5 = rootedtree([1, 2, 2, 2])
             @test order(t5) == 4
@@ -358,6 +364,7 @@ using Aqua: Aqua
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
                   [rootedtree([2]), rootedtree([2]), rootedtree([2])]
+            @test elementary_differential(t5) == L"$f^{\prime\prime\prime}(f,f,f)$"
 
             t6 = rootedtree([1, 2, 2, 3])
             @inferred RootedTrees.subtrees(t6)
@@ -369,6 +376,7 @@ using Aqua: Aqua
             @test t6 == t2 ∘ t2 == t4 ∘ t1
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
+            @test elementary_differential(t6) == L"$f^{\prime\prime}(f^{\prime}f,f)$"
 
             t7 = rootedtree([1, 2, 3, 3])
             @test order(t7) == 4
@@ -377,6 +385,7 @@ using Aqua: Aqua
             @test β(t7) == α(t7) * γ(t7)
             @test t7 == t1 ∘ t3
             @test butcher_representation(t7) == "[[τ²]]"
+            @test elementary_differential(t7) == L"$f^{\prime}f^{\prime\prime}(f,f)$"
 
             t8 = rootedtree([1, 2, 3, 4])
             @test order(t8) == 4
@@ -385,6 +394,7 @@ using Aqua: Aqua
             @test α(t8) == 1
             @test t8 == t1 ∘ t4
             @test butcher_representation(t8) == "[[[τ]]]"
+            @test elementary_differential(t8) == L"$f^{\prime}f^{\prime}f^{\prime}f$"
 
             t9 = rootedtree([1, 2, 2, 2, 2])
             @test order(t9) == 5
@@ -394,6 +404,7 @@ using Aqua: Aqua
             @test β(t9) == α(t9) * γ(t9)
             @test t9 == t5 ∘ t1
             @test butcher_representation(t9) == "[τ⁴]"
+            @test elementary_differential(t9) == L"$f^{(4)}(f,f,f,f)$"
 
             t10 = rootedtree([1, 2, 2, 2, 3])
             @test order(t10) == 5
@@ -403,6 +414,8 @@ using Aqua: Aqua
             @test β(t10) == α(t10) * γ(t10)
             @test t10 == t3 ∘ t2 == t6 ∘ t1
             @test butcher_representation(t10) == "[[τ]τ²]"
+            @test elementary_differential(t10) ==
+                  L"$f^{\prime\prime\prime}(f^{\prime}f,f,f)$"
 
             t11 = rootedtree([1, 2, 2, 3, 3])
             @test order(t11) == 5
@@ -411,6 +424,8 @@ using Aqua: Aqua
             @test α(t11) == 4
             @test t11 == t2 ∘ t3 == t7 ∘ t1
             @test butcher_representation(t11) == "[[τ²]τ]"
+            @test elementary_differential(t11) ==
+                  L"$f^{\prime\prime}(f^{\prime\prime}(f,f),f)$"
 
             t12 = rootedtree([1, 2, 2, 3, 4])
             @test order(t12) == 5
@@ -420,6 +435,8 @@ using Aqua: Aqua
             @test β(t12) == α(t12) * γ(t12)
             @test t12 == t2 ∘ t4 == t8 ∘ t1
             @test butcher_representation(t12) == "[[[τ]]τ]"
+            @test elementary_differential(t12) ==
+                  L"$f^{\prime\prime}(f^{\prime}f^{\prime}f,f)$"
 
             t13 = rootedtree([1, 2, 3, 2, 3])
             @test order(t13) == 5
@@ -429,6 +446,8 @@ using Aqua: Aqua
             @test β(t13) == α(t13) * γ(t13)
             @test t13 == t4 ∘ t2
             @test butcher_representation(t13) == "[[τ][τ]]"
+            @test elementary_differential(t13) ==
+                  L"$f^{\prime\prime}(f^{\prime}f,f^{\prime}f)$"
 
             t14 = rootedtree([1, 2, 3, 3, 3])
             @test order(t14) == 5
@@ -438,6 +457,8 @@ using Aqua: Aqua
             @test β(t14) == α(t14) * γ(t14)
             @test t14 == t1 ∘ t5
             @test butcher_representation(t14) == "[[τ³]]"
+            @test elementary_differential(t14) ==
+                  L"$f^{\prime}f^{\prime\prime\prime}(f,f,f)$"
 
             t15 = rootedtree([1, 2, 3, 3, 4])
             @test order(t15) == 5
@@ -447,6 +468,8 @@ using Aqua: Aqua
             @test β(t15) == α(t15) * γ(t15)
             @test t15 == t1 ∘ t6
             @test butcher_representation(t15) == "[[[τ]τ]]"
+            @test elementary_differential(t15) ==
+                  L"$f^{\prime}f^{\prime\prime}(f^{\prime}f,f)$"
 
             t16 = rootedtree([1, 2, 3, 4, 4])
             @test order(t16) == 5
@@ -456,6 +479,8 @@ using Aqua: Aqua
             @test β(t16) == α(t16) * γ(t16)
             @test t16 == t1 ∘ t7
             @test butcher_representation(t16) == "[[[τ²]]]"
+            @test elementary_differential(t16) ==
+                  L"$f^{\prime}f^{\prime}f^{\prime\prime}(f,f)$"
 
             t17 = rootedtree([1, 2, 3, 4, 5])
             @test order(t17) == 5
@@ -465,6 +490,8 @@ using Aqua: Aqua
             @test β(t17) == α(t17) * γ(t17)
             @test t17 == t1 ∘ t8
             @test butcher_representation(t17) == "[[[[τ]]]]"
+            @test elementary_differential(t17) ==
+                  L"$f^{\prime}f^{\prime}f^{\prime}f^{\prime}f$"
 
             # test non-canonical representation
             level_sequence = [1, 2, 3, 2, 3, 4, 2, 3, 2, 3, 4, 5, 6, 2, 3, 4]
@@ -708,7 +735,7 @@ using Aqua: Aqua
             t = rootedtree([1, 2, 3, 2, 2])
             splittings = all_splittings(t)
             forests_and_subtrees = sort!(collect(zip(splittings.forests,
-                                                     splittings.subtrees)))
+                splittings.subtrees)))
 
             reference_forests_and_subtrees = [
                 (empty([rootedtree([1])]), rootedtree([1, 2, 3, 2, 2])),
@@ -749,7 +776,7 @@ using Aqua: Aqua
             @test_nowarn rootedtree([1, 2, 3, 4], Bool[0, 0, 0, 0])
             @test_throws DimensionMismatch rootedtree([1, 2, 3, 4, 5, 1], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1],
-                                                  Bool[0, 0, 0, 0, 0, 0])
+                Bool[0, 0, 0, 0, 0, 0])
             @test_throws ArgumentError rootedtree([1, 1], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 3], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 0], Bool[0, 0])
@@ -757,23 +784,23 @@ using Aqua: Aqua
 
         @testset "comparisons etc." begin
             trees = (rootedtree([1, 2, 3], [1, 1, 1]),
-                     rootedtree([1, 2, 3], [1, 1, 1]),
-                     rootedtree([1, 2, 2], [1, 1, 1]),
-                     rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
-                     rootedtree(Int[], Int[]),
-                     rootedtree([1, 2, 3], [1, 1, 2]),
-                     rootedtree([1, 2, 3], [1, 2, 1]),
-                     rootedtree([1, 2, 3], [1, 2, 2]),
-                     rootedtree([1, 2, 2], [2, 2, 2]))
+                rootedtree([1, 2, 3], [1, 1, 1]),
+                rootedtree([1, 2, 2], [1, 1, 1]),
+                rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+                rootedtree(Int[], Int[]),
+                rootedtree([1, 2, 3], [1, 1, 2]),
+                rootedtree([1, 2, 3], [1, 2, 1]),
+                rootedtree([1, 2, 3], [1, 2, 2]),
+                rootedtree([1, 2, 2], [2, 2, 2]))
             trees_shifted = (rootedtree([1, 2, 3], [1, 1, 1]),
-                             rootedtree([2, 3, 4], [1, 1, 1]),
-                             rootedtree([1, 2, 2], [1, 1, 1]),
-                             rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
-                             rootedtree(Int[], Int[]),
-                             rootedtree([1, 2, 3], [1, 1, 2]),
-                             rootedtree([0, 1, 2], [1, 2, 1]),
-                             rootedtree([2, 3, 4], [1, 2, 2]),
-                             rootedtree([1, 2, 2], [2, 2, 2]))
+                rootedtree([2, 3, 4], [1, 1, 1]),
+                rootedtree([1, 2, 2], [1, 1, 1]),
+                rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+                rootedtree(Int[], Int[]),
+                rootedtree([1, 2, 3], [1, 1, 2]),
+                rootedtree([0, 1, 2], [1, 2, 1]),
+                rootedtree([2, 3, 4], [1, 2, 2]),
+                rootedtree([1, 2, 2], [2, 2, 2]))
 
             for (t1, t2, t3, t4, t5, t6, t7, t8, t9) in (trees, trees_shifted)
                 @test t1 == t1
@@ -874,7 +901,7 @@ using Aqua: Aqua
                 end
             end
             t = rootedtree([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2],
-                           Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
+                Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
             new_hash = @inferred hash(t)
             @test !(new_hash in hashes)
         end
@@ -1022,7 +1049,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end
@@ -1067,7 +1094,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "[[[τ₁τ₀]₀[τ₀]₁τ₁τ₀]₁τ₁]₀"
                     @test latexify(t) == latex_string
                 end
@@ -1112,7 +1139,7 @@ using Aqua: Aqua
                 end
 
                 let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end
@@ -1553,9 +1580,9 @@ using Aqua: Aqua
             # Applied Numerical Mathematics 44, no. 1-2 (2003): 139-181.
             # https://doi.org/10.1016/S0168-9274(02)00138-1
             A_explicit = @SArray [0 0 0 0
-                                  1767732205903/2027836641118 0 0 0
-                                  5535828885825/10492691773637 788022342437/10882634858940 0 0
-                                  6485989280629/16251701735622 -4246266847089/9704473918619 10755448449292/10357097424841 0]
+                1767732205903/2027836641118 0 0 0
+                5535828885825/10492691773637 788022342437/10882634858940 0 0
+                6485989280629/16251701735622 -4246266847089/9704473918619 10755448449292/10357097424841 0]
             b_explicit = @SArray [
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
@@ -1564,9 +1591,9 @@ using Aqua: Aqua
             ]
             rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
             A_implicit = @SArray [0 0 0 0
-                                  1767732205903/4055673282236 1767732205903/4055673282236 0 0
-                                  2746238789719/10658868560708 -640167445237/6845629431997 1767732205903/4055673282236 0
-                                  1471266399579/7840856788654 -4482444167858/7529755066697 11266239266428/11593286722821 1767732205903/4055673282236]
+                1767732205903/4055673282236 1767732205903/4055673282236 0 0
+                2746238789719/10658868560708 -640167445237/6845629431997 1767732205903/4055673282236 0
+                1471266399579/7840856788654 -4482444167858/7529755066697 11266239266428/11593286722821 1767732205903/4055673282236]
             b_implicit = @SArray [
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
@@ -1610,9 +1637,9 @@ using Aqua: Aqua
 
         @testset "RosenbrockMethod, original Rosenbrock" begin
             γ = [1-sqrt(2) / 2 0;
-                 0 1-sqrt(2) / 2]
+                0 1-sqrt(2) / 2]
             A = [0 0;
-                 (sqrt(2) - 1)/2 0]
+                (sqrt(2) - 1)/2 0]
             b = [0, 1]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
@@ -1635,13 +1662,13 @@ using Aqua: Aqua
             # for stiff ordinary differential equations
             # https://doi.org/10.1007/BF01396495
             γ = [0.395 0 0 0;
-                 -0.767672395484 0.395 0 0;
-                 -0.851675323742 0.522967289188 0.395 0;
-                 0.288463109545 0.880214273381e-1 -0.337389840627 0.395]
+                -0.767672395484 0.395 0 0;
+                -0.851675323742 0.522967289188 0.395 0;
+                0.288463109545 0.880214273381e-1 -0.337389840627 0.395]
             A = [0 0 0 0;
-                 0.438 0 0 0;
-                 0.796920457938 0.730795420615e-1 0 0;
-                 0.796920457938 0.730795420615e-1 0 0]
+                0.438 0 0 0;
+                0.796920457938 0.730795420615e-1 0 0;
+                0.796920457938 0.730795420615e-1 0 0]
             b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
@@ -1721,11 +1748,11 @@ using Aqua: Aqua
 
     @testset "Aqua" begin
         Aqua.test_all(RootedTrees;
-                      ambiguities = (; exclude = [getindex]),
-                      # Requires.jl is not loaded on new versions of Julia
-                      stale_deps = (; ignore = [:Requires]),
-                      # New Project.toml tests fail on old versions of Julia
-                      project_toml_formatting = false)
+            ambiguities = (; exclude = [getindex]),
+            # Requires.jl is not loaded on new versions of Julia
+            stale_deps = (; ignore = [:Requires]),
+            # New Project.toml tests fail on old versions of Julia
+            project_toml_formatting = false)
 
         if VERSION >= v"1.9.0"
             Aqua.test_project_toml_formatting(RootedTrees)
