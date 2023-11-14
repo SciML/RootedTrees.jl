@@ -82,7 +82,7 @@ end
 ```
 In LaTeX this results in the following output:
 
-![]()
+![latex-elementary_differentials](https://user-images.githubusercontent.com/125130707/282897199-4967fe07-a370-4d64-b671-84f578a52391.png)
 
 
 ## Number of trees

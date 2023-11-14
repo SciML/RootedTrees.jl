@@ -15,7 +15,7 @@ if !isdefined(Base, :get_extension)
 end
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
-    ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
+       ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
 export butcher_representation, elementary_differential
 
@@ -28,9 +28,9 @@ export count_trees
 export subtrees, SubtreeIterator
 
 export partition_forest,
-    PartitionForestIterator,
-    partition_skeleton,
-    all_partitions, PartitionIterator
+       PartitionForestIterator,
+       partition_skeleton,
+       all_partitions, PartitionIterator
 
 export all_splittings, SplittingIterator
 
@@ -59,8 +59,8 @@ struct RootedTree{T <: Integer, V <: AbstractVector{T}} <: AbstractRootedTree
     iscanonical::Bool
 
     function RootedTree(level_sequence::V,
-            iscanonical::Bool = false) where {T <: Integer,
-            V <: AbstractVector{T}}
+                        iscanonical::Bool = false) where {T <: Integer,
+                                                          V <: AbstractVector{T}}
         new{T, V}(level_sequence, iscanonical)
     end
 end
@@ -95,7 +95,7 @@ end
     root = first(level_sequence)
     prev = root
     for level in view(level_sequence,
-        (firstindex(level_sequence) + 1):lastindex(level_sequence))
+                      (firstindex(level_sequence) + 1):lastindex(level_sequence))
         if (level <= root) || (level > prev + 1)
             return false
         end
@@ -189,7 +189,7 @@ of `t_dst` is set. Use with caution!
     will not necessarily be stable.
 """
 @inline function unsafe_copyto!(t_dst::RootedTree, dst_offset,
-        t_src::RootedTree, src_offset, N)
+                                t_src::RootedTree, src_offset, N)
     copyto!(t_dst.level_sequence, dst_offset, t_src.level_sequence, src_offset, N)
     return t_dst
 end
@@ -420,7 +420,7 @@ function canonical_representation!(t::RootedTree, buffer = similar(t.level_seque
         # We found a complete subtree
         subtree = RootedTree(view(t.level_sequence, subtree_root_index:subtree_last_index))
         canonical_representation!(subtree,
-            view(buffer, subtree_root_index:subtree_last_index))
+                                  view(buffer, subtree_root_index:subtree_last_index))
 
         subtree_root_index = subtree_last_index + 1
         number_of_subtrees += 1
@@ -444,7 +444,7 @@ function canonical_representation!(t::RootedTree, buffer = similar(t.level_seque
             subtree2_last_index = 0
             while subtree1_root_index <= subtree_last_index_to_sort
                 subtree1_last_index = _subtree_last_index(subtree1_root_index,
-                    t.level_sequence)
+                                                          t.level_sequence)
                 subtree2_last_index = subtree1_last_index
 
                 # Search the next complete subtree
@@ -452,20 +452,20 @@ function canonical_representation!(t::RootedTree, buffer = similar(t.level_seque
 
                 subtree2_root_index = subtree1_last_index + 1
                 subtree2_last_index = _subtree_last_index(subtree2_root_index,
-                    t.level_sequence)
+                                                          t.level_sequence)
 
                 # Swap the subtrees if they are not sorted correctly
                 subtree1 = RootedTree(view(t.level_sequence,
-                    subtree1_root_index:subtree1_last_index))
+                                           subtree1_root_index:subtree1_last_index))
                 subtree2 = RootedTree(view(t.level_sequence,
-                    subtree2_root_index:subtree2_last_index))
+                                           subtree2_root_index:subtree2_last_index))
                 if isless(subtree1, subtree2)
                     copyto!(buffer, 1, t.level_sequence, subtree1_root_index,
-                        order(subtree1) + order(subtree2))
+                            order(subtree1) + order(subtree2))
                     copyto!(t.level_sequence, subtree1_root_index, buffer,
-                        order(subtree1) + 1, order(subtree2))
+                            order(subtree1) + 1, order(subtree2))
                     copyto!(t.level_sequence, subtree1_root_index + order(subtree2), buffer,
-                        1, order(subtree1))
+                            1, order(subtree1))
                     # `subtree1_root_index` will be updated below using `subtree1_last_index`.
                     # Thus, we need to adapt this variable here.
                     subtree1_last_index = subtree1_root_index + order(subtree2) - 1
@@ -643,8 +643,8 @@ end
     # find the next complete subtree
     subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
     subtree = RootedTree(view(level_sequence, subtree_root_index:subtree_last_index),
-        # if t is in canonical representation, its subtrees are, too
-        iscanonical(subtrees.t))
+                         # if t is in canonical representation, its subtrees are, too
+                         iscanonical(subtrees.t))
 
     return (subtree, subtree_last_index + 1)
 end
@@ -965,7 +965,7 @@ function PartitionIterator(t::AbstractRootedTree)
     t_temp_forest = similar(t)
     forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
     PartitionIterator{typeof(t), typeof(skeleton)}(t, forest, skeleton, edge_set,
-        edge_set_tmp)
+                                                   edge_set_tmp)
 end
 
 # Allocate global buffer for `PartitionIterator` for each thread
@@ -1007,15 +1007,15 @@ function PartitionIterator(t::RootedTree{Int, Vector{Int}})
     t_temp_forest = RootedTree(level_sequence, true)
     forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
     PartitionIterator{typeof(t), RootedTree{Int, Vector{Int}}}(t, forest, skeleton,
-        edge_set, edge_set_tmp)
+                                                               edge_set, edge_set_tmp)
 end
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
 function Base.eltype(::Type{
-        PartitionIterator{TreeInput, TreeOutput},
-    }) where {TreeInput,
-        TreeOutput}
+                            PartitionIterator{TreeInput, TreeOutput}
+                            }) where {TreeInput,
+                                      TreeOutput}
     Tuple{PartitionForestIterator{TreeOutput}, TreeOutput}
 end
 
@@ -1059,12 +1059,12 @@ end
 
 # necessary for simple and convenient use since the iterates may be modified
 function Base.collect(partitions::PartitionIterator{
-        TreeInput,
-        TreeOutput,
-    }) where {
-        TreeInput,
-        TreeOutput,
-    }
+                                                    TreeInput,
+                                                    TreeOutput
+                                                    }) where {
+                                                              TreeInput,
+                                                              TreeOutput
+                                                              }
     iterates = Vector{Tuple{Vector{TreeOutput}, TreeOutput}}()
     sizehint!(iterates, length(partitions))
     for (forest, skeleton) in partitions
@@ -1451,7 +1451,7 @@ function rec_elementary_differential(t::RootedTree)
         el_diff = "f^{($(k))}("
     end
     for s in subtree_strings[1:(end - 1)]
-        el_diff *= s * ","
+        el_diff *= s * ", "
     end
     el_diff *= subtree_strings[end] * ")"
     return el_diff
@@ -1465,25 +1465,25 @@ include("time_integration_methods.jl")
 function __init__()
     # canonical_representation!
     Threads.resize_nthreads!(CANONICAL_REPRESENTATION_BUFFER,
-        Vector{Int}(undef, BUFFER_LENGTH))
+                             Vector{Int}(undef, BUFFER_LENGTH))
 
     # PartitionIterator
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T,
-        Vector{Int}(undef, BUFFER_LENGTH))
+                             Vector{Int}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS,
-        Vector{Bool}(undef, BUFFER_LENGTH))
+                             Vector{Bool}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
-        Vector{Int}(undef, BUFFER_LENGTH))
+                             Vector{Int}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE,
-        Vector{Bool}(undef, BUFFER_LENGTH))
+                             Vector{Bool}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON,
-        Vector{Int}(undef, BUFFER_LENGTH))
+                             Vector{Int}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_SKELETON_COLORS,
-        Vector{Bool}(undef, BUFFER_LENGTH))
+                             Vector{Bool}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET,
-        Vector{Bool}(undef, BUFFER_LENGTH))
+                             Vector{Bool}(undef, BUFFER_LENGTH))
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
-        Vector{Bool}(undef, BUFFER_LENGTH))
+                             Vector{Bool}(undef, BUFFER_LENGTH))
 
     @static if !isdefined(Base, :get_extension)
         @require Plots="91a5bcdd-55d7-5caf-9e0b-520d859cae80" begin
