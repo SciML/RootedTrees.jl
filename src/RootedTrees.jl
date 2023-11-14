@@ -1424,7 +1424,8 @@ end
 """
     elementary_differential(t::RootedTree)
 
-Returns the elementary differential as a LaTeXString.
+Returns the elementary differential as a `LaTeXString`
+from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
 
 """
 function elementary_differential(t::RootedTree)
