@@ -7,7 +7,7 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 UnicodePlots = "b8865327-cd53-5732-bb35-84acbb429228"
 
 [compat]
-Aqua = "0.6.1"
+Aqua = "0.8"
 LaTeXStrings = "1"
 Plots = "1"
 StaticArrays = "1.3"

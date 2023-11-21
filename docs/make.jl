@@ -1,5 +1,13 @@
 using Documenter
 import Pkg
+
+# Fix for https://github.com/trixi-framework/Trixi.jl/issues/668
+# to allow building the docs locally
+if (get(ENV, "CI", nothing) != "true") &&
+   (get(ENV, "JULIA_DOC_DEFAULT_ENVIRONMENT", nothing) != "true")
+    push!(LOAD_PATH, dirname(@__DIR__))
+end
+
 using RootedTrees
 
 # Define module-wide setups such that the respective modules are available in doctests
@@ -62,9 +70,7 @@ makedocs(modules = [RootedTrees],
              "API reference" => "api_reference.md",
              "Contributing" => "contributing.md",
              "License" => "license.md",
-         ],
-         # to make the GitHub action fail when doctests fail
-         strict = true)
+         ])
 
 deploydocs(repo = "github.com/SciML/RootedTrees.jl",
            devbranch = "main",
