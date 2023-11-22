@@ -7,6 +7,8 @@ using RootedTrees.Latexify: latexify
 using Plots: Plots, plot
 Plots.unicodeplots()
 
+using LaTeXStrings: @L_str
+
 using Aqua: Aqua
 
 @testset "RootedTrees" begin
@@ -301,6 +303,7 @@ using Aqua: Aqua
             @test isempty(RootedTrees.subtrees(t1))
             @test butcher_representation(empty(t1)) == "∅"
             @test RootedTrees.latexify(empty(t1)) == "\\varnothing"
+            @test elementary_differential(t1) == L"$f$"
 
             @inferred order(t1)
             @inferred σ(t1)
@@ -321,6 +324,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t2) == latex_string
             @test latexify(t2) == latex_string
             @test RootedTrees.subtrees(t2) == [rootedtree([2])]
+            @test elementary_differential(t2) == L"$f^{\prime}f$"
 
             t3 = rootedtree([1, 2, 2])
             @test order(t3) == 3
@@ -334,6 +338,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t3) == latex_string
             @test latexify(t3) == latex_string
             @test RootedTrees.subtrees(t3) == [rootedtree([2]), rootedtree([2])]
+            @test elementary_differential(t3) == L"$f^{\prime\prime}(f, f)$"
 
             t4 = rootedtree([1, 2, 3])
             @test order(t4) == 3
@@ -347,6 +352,7 @@ using Aqua: Aqua
             @test RootedTrees.latexify(t4) == latex_string
             @test latexify(t4) == latex_string
             @test RootedTrees.subtrees(t4) == [rootedtree([2, 3])]
+            @test elementary_differential(t4) == L"$f^{\prime}f^{\prime}f$"
 
             t5 = rootedtree([1, 2, 2, 2])
             @test order(t5) == 4
@@ -358,6 +364,7 @@ using Aqua: Aqua
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
                   [rootedtree([2]), rootedtree([2]), rootedtree([2])]
+            @test elementary_differential(t5) == L"$f^{\prime\prime\prime}(f, f, f)$"
 
             t6 = rootedtree([1, 2, 2, 3])
             @inferred RootedTrees.subtrees(t6)
@@ -369,6 +376,7 @@ using Aqua: Aqua
             @test t6 == t2 ∘ t2 == t4 ∘ t1
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
+            @test elementary_differential(t6) == L"$f^{\prime\prime}(f^{\prime}f, f)$"
 
             t7 = rootedtree([1, 2, 3, 3])
             @test order(t7) == 4
@@ -377,6 +385,7 @@ using Aqua: Aqua
             @test β(t7) == α(t7) * γ(t7)
             @test t7 == t1 ∘ t3
             @test butcher_representation(t7) == "[[τ²]]"
+            @test elementary_differential(t7) == L"$f^{\prime}f^{\prime\prime}(f, f)$"
 
             t8 = rootedtree([1, 2, 3, 4])
             @test order(t8) == 4
@@ -385,6 +394,7 @@ using Aqua: Aqua
             @test α(t8) == 1
             @test t8 == t1 ∘ t4
             @test butcher_representation(t8) == "[[[τ]]]"
+            @test elementary_differential(t8) == L"$f^{\prime}f^{\prime}f^{\prime}f$"
 
             t9 = rootedtree([1, 2, 2, 2, 2])
             @test order(t9) == 5
@@ -394,6 +404,7 @@ using Aqua: Aqua
             @test β(t9) == α(t9) * γ(t9)
             @test t9 == t5 ∘ t1
             @test butcher_representation(t9) == "[τ⁴]"
+            @test elementary_differential(t9) == L"$f^{(4)}(f, f, f, f)$"
 
             t10 = rootedtree([1, 2, 2, 2, 3])
             @test order(t10) == 5
@@ -403,6 +414,8 @@ using Aqua: Aqua
             @test β(t10) == α(t10) * γ(t10)
             @test t10 == t3 ∘ t2 == t6 ∘ t1
             @test butcher_representation(t10) == "[[τ]τ²]"
+            @test elementary_differential(t10) ==
+                  L"$f^{\prime\prime\prime}(f^{\prime}f, f, f)$"
 
             t11 = rootedtree([1, 2, 2, 3, 3])
             @test order(t11) == 5
@@ -411,6 +424,8 @@ using Aqua: Aqua
             @test α(t11) == 4
             @test t11 == t2 ∘ t3 == t7 ∘ t1
             @test butcher_representation(t11) == "[[τ²]τ]"
+            @test elementary_differential(t11) ==
+                  L"$f^{\prime\prime}(f^{\prime\prime}(f, f), f)$"
 
             t12 = rootedtree([1, 2, 2, 3, 4])
             @test order(t12) == 5
@@ -420,6 +435,8 @@ using Aqua: Aqua
             @test β(t12) == α(t12) * γ(t12)
             @test t12 == t2 ∘ t4 == t8 ∘ t1
             @test butcher_representation(t12) == "[[[τ]]τ]"
+            @test elementary_differential(t12) ==
+                  L"$f^{\prime\prime}(f^{\prime}f^{\prime}f, f)$"
 
             t13 = rootedtree([1, 2, 3, 2, 3])
             @test order(t13) == 5
@@ -429,6 +446,8 @@ using Aqua: Aqua
             @test β(t13) == α(t13) * γ(t13)
             @test t13 == t4 ∘ t2
             @test butcher_representation(t13) == "[[τ][τ]]"
+            @test elementary_differential(t13) ==
+                  L"$f^{\prime\prime}(f^{\prime}f, f^{\prime}f)$"
 
             t14 = rootedtree([1, 2, 3, 3, 3])
             @test order(t14) == 5
@@ -438,6 +457,8 @@ using Aqua: Aqua
             @test β(t14) == α(t14) * γ(t14)
             @test t14 == t1 ∘ t5
             @test butcher_representation(t14) == "[[τ³]]"
+            @test elementary_differential(t14) ==
+                  L"$f^{\prime}f^{\prime\prime\prime}(f, f, f)$"
 
             t15 = rootedtree([1, 2, 3, 3, 4])
             @test order(t15) == 5
@@ -447,6 +468,8 @@ using Aqua: Aqua
             @test β(t15) == α(t15) * γ(t15)
             @test t15 == t1 ∘ t6
             @test butcher_representation(t15) == "[[[τ]τ]]"
+            @test elementary_differential(t15) ==
+                  L"$f^{\prime}f^{\prime\prime}(f^{\prime}f, f)$"
 
             t16 = rootedtree([1, 2, 3, 4, 4])
             @test order(t16) == 5
@@ -456,6 +479,8 @@ using Aqua: Aqua
             @test β(t16) == α(t16) * γ(t16)
             @test t16 == t1 ∘ t7
             @test butcher_representation(t16) == "[[[τ²]]]"
+            @test elementary_differential(t16) ==
+                  L"$f^{\prime}f^{\prime}f^{\prime\prime}(f, f)$"
 
             t17 = rootedtree([1, 2, 3, 4, 5])
             @test order(t17) == 5
@@ -465,6 +490,8 @@ using Aqua: Aqua
             @test β(t17) == α(t17) * γ(t17)
             @test t17 == t1 ∘ t8
             @test butcher_representation(t17) == "[[[[τ]]]]"
+            @test elementary_differential(t17) ==
+                  L"$f^{\prime}f^{\prime}f^{\prime}f^{\prime}f$"
 
             # test non-canonical representation
             level_sequence = [1, 2, 3, 2, 3, 4, 2, 3, 2, 3, 4, 5, 6, 2, 3, 4]

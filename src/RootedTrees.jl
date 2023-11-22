@@ -4,6 +4,8 @@ module RootedTrees
 
 using LinearAlgebra: dot
 
+using LaTeXStrings: latexstring
+
 using Latexify: Latexify
 using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
@@ -15,7 +17,7 @@ end
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
-export butcher_representation
+export butcher_representation, elementary_differential
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
@@ -25,7 +27,8 @@ export count_trees
 
 export subtrees, SubtreeIterator
 
-export partition_forest, PartitionForestIterator,
+export partition_forest,
+       PartitionForestIterator,
        partition_skeleton,
        all_partitions, PartitionIterator
 
@@ -1009,8 +1012,10 @@ end
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
-function Base.eltype(::Type{PartitionIterator{TreeInput, TreeOutput}}) where {TreeInput,
-                                                                              TreeOutput}
+function Base.eltype(::Type{
+                            PartitionIterator{TreeInput, TreeOutput}
+                            }) where {TreeInput,
+                                      TreeOutput}
     Tuple{PartitionForestIterator{TreeOutput}, TreeOutput}
 end
 
@@ -1053,10 +1058,13 @@ end
 end
 
 # necessary for simple and convenient use since the iterates may be modified
-function Base.collect(partitions::PartitionIterator{TreeInput, TreeOutput}) where {
-                                                                                   TreeInput,
-                                                                                   TreeOutput
-                                                                                   }
+function Base.collect(partitions::PartitionIterator{
+                                                    TreeInput,
+                                                    TreeOutput
+                                                    }) where {
+                                                              TreeInput,
+                                                              TreeOutput
+                                                              }
     iterates = Vector{Tuple{Vector{TreeOutput}, TreeOutput}}()
     sizehint!(iterates, length(partitions))
     for (forest, skeleton) in partitions
@@ -1411,6 +1419,42 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     end
 
     return result
+end
+
+"""
+    elementary_differential(t::RootedTree)
+
+Returns the elementary differential as a `LaTeXString`
+from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
+
+"""
+function elementary_differential(t::RootedTree)
+    return latexstring(rec_elementary_differential(t))
+end
+
+# Function used to go recursively through the RootedTree 
+# to generate the elementary differential of the tree.
+function rec_elementary_differential(t::RootedTree)
+    subtree_strings = String[]
+    for subtree in SubtreeIterator(t)
+        push!(subtree_strings, rec_elementary_differential(subtree))
+    end
+    k = length(subtree_strings)
+    if k == 0 # Special-Case: No Subtree
+        return "f"
+    elseif k == 1 # Special-Case: Just 1 Subtree. No () needed
+        return "f^{\\prime}" * subtree_strings[1]
+    end
+    if k in (2, 3) # For first, second and third derivative \prime is used. For the rest just the number of the derivative
+        el_diff = "f^{$("\\prime"^k)}("
+    else
+        el_diff = "f^{($(k))}("
+    end
+    for s in subtree_strings[1:(end - 1)]
+        el_diff *= s * ", "
+    end
+    el_diff *= subtree_strings[end] * ")"
+    return el_diff
 end
 
 include("colored_trees.jl")

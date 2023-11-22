@@ -18,7 +18,8 @@ DocMeta.setdocmeta!(RootedTrees,
 # as necessary
 open(joinpath(@__DIR__, "src", "license.md"), "w") do io
     # Point to source license file
-    println(io, """
+    println(io,
+            """
     ```@meta
     EditURL = "https://github.com/SciML/RootedTrees.jl/blob/main/LICENSE.md"
     ```
@@ -34,7 +35,8 @@ end
 
 open(joinpath(@__DIR__, "src", "contributing.md"), "w") do io
     # Point to source license file
-    println(io, """
+    println(io,
+            """
     ```@meta
     EditURL = "https://github.com/SciML/RootedTrees.jl/blob/main/CONTRIBUTING.md"
     ```
