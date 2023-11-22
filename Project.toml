@@ -1,9 +1,10 @@
 name = "RootedTrees"
 uuid = "47965b36-3f3e-11e9-0dcf-4570dfd42a8c"
 authors = ["Hendrik Ranocha <mail@ranocha.de> and contributors"]
-version = "2.19.2"
+version = "2.20.0"
 
 [deps]
+LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
 Latexify = "23fbe1c1-3f47-55db-b15f-69d7ec21a316"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
 Preferences = "21216c6a-2e73-6563-6e65-726566657250"
@@ -17,6 +18,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlotsExt = "Plots"
 
 [compat]
+LaTeXStrings = "1"
 Latexify = "0.15, 0.16"
 LinearAlgebra = "1"
 Plots = "1"

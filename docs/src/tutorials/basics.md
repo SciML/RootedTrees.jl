@@ -73,6 +73,17 @@ savefig("basics_tree.png"); nothing # hide
 
 ![](basics_tree.png)
 
+To get the elementary differential, corresponding to a `RootedTree`, as a [`LaTeXString`](https://github.com/JuliaStrings/LaTeXStrings.jl), you can use [`elementary_differential`](@ref).
+
+```@example basics
+for t in RootedTreeIterator(4)
+    println(elementary_differential(t))
+end
+```
+In LaTeX this results in the following output:
+
+![latex-elementary_differentials](https://user-images.githubusercontent.com/125130707/282897199-4967fe07-a370-4d64-b671-84f578a52391.png)
+
 
 ## Number of trees
 
