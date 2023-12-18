@@ -1012,10 +1012,8 @@ end
 
 Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
-function Base.eltype(::Type{
-                            PartitionIterator{TreeInput, TreeOutput}
-                            }) where {TreeInput,
-                                      TreeOutput}
+function Base.eltype(::Type{PartitionIterator{TreeInput, TreeOutput}}) where {TreeInput,
+                                                                              TreeOutput}
     Tuple{PartitionForestIterator{TreeOutput}, TreeOutput}
 end
 
@@ -1058,13 +1056,11 @@ end
 end
 
 # necessary for simple and convenient use since the iterates may be modified
-function Base.collect(partitions::PartitionIterator{
-                                                    TreeInput,
-                                                    TreeOutput
-                                                    }) where {
-                                                              TreeInput,
-                                                              TreeOutput
-                                                              }
+function Base.collect(partitions::PartitionIterator{TreeInput,
+                                                    TreeOutput}) where {
+                                                                        TreeInput,
+                                                                        TreeOutput
+                                                                        }
     iterates = Vector{Tuple{Vector{TreeOutput}, TreeOutput}}()
     sizehint!(iterates, length(partitions))
     for (forest, skeleton) in partitions
