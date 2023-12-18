@@ -126,18 +126,9 @@ function _precompile_()
     Base.precompile(Tuple{typeof(residual_order_condition),
                           BicoloredRootedTree{Int64, Vector{Int64}, Vector{Bool}},
                           AdditiveRungeKuttaMethod{Rational{Int64},
-                                                   Vector{
-                                                          RungeKuttaMethod{Rational{Int64},
-                                                                           Matrix{
-                                                                                  Rational{
-                                                                                           Int64
-                                                                                           }
-                                                                                  },
-                                                                           Vector{
-                                                                                  Rational{
-                                                                                           Int64
-                                                                                           }
-                                                                                  }}}}})   # time: 0.16824293
+                                                   Vector{RungeKuttaMethod{Rational{Int64},
+                                                                           Matrix{Rational{Int64}},
+                                                                           Vector{Rational{Int64}}}}}})   # time: 0.16824293
     Base.precompile(Tuple{typeof(rootedtree), Vector{Int64}})   # time: 0.087751105
     Base.precompile(Tuple{typeof(residual_order_condition),
                           RootedTree{Int64, Vector{Int64}},
