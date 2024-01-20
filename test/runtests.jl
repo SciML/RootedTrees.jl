@@ -526,6 +526,10 @@ using Aqua: Aqua
             @test elementary_weight_latexstring(t18) ==
                   L"$\sum_{d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, d2}b_{d1}a_{d1,e1}a_{e1,f1}a_{f1,g1}a_{g1,h1}a_{h1,i1}a_{i1,j1}a_{j1,k1}a_{k1,l1}a_{l1,m1}a_{m1,n1}a_{n1,o1}a_{o1,p1}a_{p1,q1}a_{q1,r1}a_{r1,s1}a_{s1,t1}a_{t1,u1}a_{u1,v1}a_{v1,w1}a_{w1,x1}a_{x1,y1}a_{y1,z1}a_{z1,d2}c_{d2}$"
 
+            t19 = rootedtree([1, 2, 2, 3, 2, 3])
+            @test elementary_weight_latexstring(t19) ==
+                  L"$\sum_{d, e}b_{d}(a_{d,e}c_{e})^{2}c_{d}$"
+
             # test non-canonical representation
             level_sequence = [1, 2, 3, 2, 3, 4, 2, 3, 2, 3, 4, 5, 6, 2, 3, 4]
             @test σ(rootedtree(level_sequence)) == σ(RootedTrees.RootedTree(level_sequence))
