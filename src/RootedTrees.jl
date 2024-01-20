@@ -17,7 +17,7 @@ end
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
-export butcher_representation, elementary_differential
+export butcher_representation, elementary_differential, elementary_weight_latexstring
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
@@ -1451,6 +1451,90 @@ function rec_elementary_differential(t::RootedTree)
     end
     el_diff *= subtree_strings[end] * ")"
     return el_diff
+end
+
+"""
+    elementary_weight_latexstring(t::RootedTree)
+
+Returns the elementary_weight as a `LaTeXString`
+from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
+"""
+function elementary_weight_latexstring(t::RootedTree)
+    # Creating the alphabet for the indices
+    a = collect('d':'z') # all letters except of a,b and c
+    p = order(t)
+    n = ceil(Int, p / 23)
+    alphabet = String[]
+    # if the tree could need more than the 23 available letters, the letter get a number as a suffix
+    if n == 1
+        alphabet = [string(letter) for letter in a]
+    else
+        for i in 1:n
+            alphabet = vcat(alphabet, [letter * string(i) for letter in a])
+        end
+    end
+
+
+    substrings = String[]
+    first_index = splice!(alphabet, 1)
+    indices = [first_index]
+
+    substring, idx, _ = elm_weights_rec!(t, first_index, alphabet) # Call the recursive function
+    indices = vcat(indices, idx)
+    push!(substrings, substring)
+
+    pushfirst!(substrings, "\\sum_{$(join(indices,", "))}b_{$(first_index)}")
+    return latexstring(join(substrings))
+end
+
+# Function used to go recursively through the RootedTree 
+# to generate the elementary weight of the tree.
+function elm_weights_rec!(t::RootedTree, last_index, a)
+    alphabet = copy(a)
+    # leaf-node
+    if length(t.level_sequence) == 1 && t.level_sequence[1] != 1
+        return "c_{$(last_index)}", [], alphabet
+    else
+        substrings = String[]
+        indices = String[]
+        if t.level_sequence[1] != 1 # Specialcase: Complete Tree
+            push!(substrings, "a_{$(last_index),$(alphabet[1])}")
+            index = splice!(alphabet, 1)
+            push!(indices, index)
+        else
+            index = last_index
+        end
+        # counting identical trees
+        prev_tree = 0
+        tree_count = 1
+        for subtree in SubtreeIterator(t)
+            if subtree == prev_tree
+                tree_count += 1
+                continue
+            # When reaching the last one of identical trees, the substring gets the number of trees as an exponent
+            elseif tree_count > 1
+                if length(prev_tree.level_sequence) == 1
+                    substrings[end] = "$(substrings[end])^{$tree_count}"
+                else
+                    substrings[end] = "($(substrings[end]))^{$tree_count}"
+                end
+            end
+            prev_tree = copy(subtree)
+            tree_count = 1
+            substring, idx, alphabet = elm_weights_rec!(subtree, index, alphabet)
+            indices = vcat(indices, idx)
+            push!(substrings, substring)
+        end
+        # Specialcase: The identical trees were the last ones 
+        if tree_count > 1
+            if length(prev_tree.level_sequence) == 1
+                substrings[end] = "$(substrings[end])^{$tree_count}"
+            else
+                substrings[end] = "($(substrings[end]))^{$tree_count}"
+            end
+        end
+        return join(substrings), indices, alphabet
+    end
 end
 
 include("colored_trees.jl")

@@ -84,6 +84,16 @@ In LaTeX this results in the following output:
 
 ![latex-elementary_differentials](https://user-images.githubusercontent.com/125130707/282897199-4967fe07-a370-4d64-b671-84f578a52391.png)
 
+Similarly, to get the elemantary weight, corresponding to a `RootedTree`, as a [`LaTeXString`](https://github.com/JuliaStrings/LaTeXStrings.jl), you can use [`elementary_weight_latexstring`](@ref).
+
+```@example basics
+for t in RootedTreeIterator(4)
+    println(elementary_weight_latexstring(t))
+end
+```
+
+![latex-elementary_weight_latexstring]()
+
 
 ## Number of trees
 
