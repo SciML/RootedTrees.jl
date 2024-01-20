@@ -1474,7 +1474,6 @@ function elementary_weight_latexstring(t::RootedTree)
         end
     end
 
-
     substrings = String[]
     first_index = splice!(alphabet, 1)
     indices = [first_index]
@@ -1511,7 +1510,7 @@ function elm_weights_rec!(t::RootedTree, last_index, a)
             if subtree == prev_tree
                 tree_count += 1
                 continue
-            # When reaching the last one of identical trees, the substring gets the number of trees as an exponent
+                # When reaching the last one of identical trees, the substring gets the number of trees as an exponent
             elseif tree_count > 1
                 if length(prev_tree.level_sequence) == 1
                     substrings[end] = "$(substrings[end])^{$tree_count}"

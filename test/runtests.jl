@@ -382,7 +382,8 @@ using Aqua: Aqua
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
             @test elementary_differential(t6) == L"$f^{\prime\prime}(f^{\prime}f, f)$"
-            @test elementary_weight_latexstring(t6) == L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}$"
+            @test elementary_weight_latexstring(t6) ==
+                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}$"
 
             t7 = rootedtree([1, 2, 3, 3])
             @test order(t7) == 4
@@ -477,7 +478,8 @@ using Aqua: Aqua
             @test butcher_representation(t14) == "[[τ³]]"
             @test elementary_differential(t14) ==
                   L"$f^{\prime}f^{\prime\prime\prime}(f, f, f)$"
-            @test elementary_weight_latexstring(t14) == L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{3}$"
+            @test elementary_weight_latexstring(t14) ==
+                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{3}$"
 
             t15 = rootedtree([1, 2, 3, 3, 4])
             @test order(t15) == 5
