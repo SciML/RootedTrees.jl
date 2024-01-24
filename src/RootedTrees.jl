@@ -1417,14 +1417,16 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     return result
 end
 
+@depracate elementary_differential(t::RootedTree) elementary_differential_latexstring(t)
+
 """
-    elementary_differential(t::RootedTree)
+    elementary_differential_latexstring(t::RootedTree)
 
 Returns the elementary differential as a `LaTeXString`
 from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
 
 """
-function elementary_differential(t::RootedTree)
+function elementary_differential_latexstring(t::RootedTree)
     return latexstring(rec_elementary_differential(t))
 end
 
