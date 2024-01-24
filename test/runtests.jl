@@ -368,7 +368,8 @@ using Aqua: Aqua
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
                   [rootedtree([2]), rootedtree([2]), rootedtree([2])]
-            @test elementary_differential_latexstring(t5) == L"$f^{\prime\prime\prime}(f, f, f)$"
+            @test elementary_differential_latexstring(t5) ==
+                  L"$f^{\prime\prime\prime}(f, f, f)$"
             @test elementary_weight_latexstring(t5) == L"$\sum_{d}b_{d}c_{d}^{3}$"
 
             t6 = rootedtree([1, 2, 2, 3])
@@ -381,7 +382,8 @@ using Aqua: Aqua
             @test t6 == t2 ∘ t2 == t4 ∘ t1
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
-            @test elementary_differential_latexstring(t6) == L"$f^{\prime\prime}(f^{\prime}f, f)$"
+            @test elementary_differential_latexstring(t6) ==
+                  L"$f^{\prime\prime}(f^{\prime}f, f)$"
             @test elementary_weight_latexstring(t6) ==
                   L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}$"
 
@@ -392,7 +394,8 @@ using Aqua: Aqua
             @test β(t7) == α(t7) * γ(t7)
             @test t7 == t1 ∘ t3
             @test butcher_representation(t7) == "[[τ²]]"
-            @test elementary_differential_latexstring(t7) == L"$f^{\prime}f^{\prime\prime}(f, f)$"
+            @test elementary_differential_latexstring(t7) ==
+                  L"$f^{\prime}f^{\prime\prime}(f, f)$"
             @test elementary_weight_latexstring(t7) == L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{2}$"
 
             t8 = rootedtree([1, 2, 3, 4])
@@ -402,7 +405,8 @@ using Aqua: Aqua
             @test α(t8) == 1
             @test t8 == t1 ∘ t4
             @test butcher_representation(t8) == "[[[τ]]]"
-            @test elementary_differential_latexstring(t8) == L"$f^{\prime}f^{\prime}f^{\prime}f$"
+            @test elementary_differential_latexstring(t8) ==
+                  L"$f^{\prime}f^{\prime}f^{\prime}f$"
             @test elementary_weight_latexstring(t8) ==
                   L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}$"
 
