@@ -17,7 +17,7 @@ end
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
-export butcher_representation, elementary_differential, elementary_weight_latexstring
+export butcher_representation, elementary_differential, elementary_differential_latexstring ,elementary_weight_latexstring
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
@@ -1417,7 +1417,7 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     return result
 end
 
-@depracate elementary_differential(t::RootedTree) elementary_differential_latexstring(t)
+@deprecate elementary_differential(t::RootedTree) elementary_differential_latexstring(t)
 
 """
     elementary_differential_latexstring(t::RootedTree)
