@@ -1515,11 +1515,7 @@ function elm_weights_rec!(t::RootedTree, last_index, a)
                 continue
                 # When reaching the last one of identical trees, the substring gets the number of trees as an exponent
             elseif tree_count > 1
-                if length(prev_tree.level_sequence) == 1
-                    substrings[end] = "$(substrings[end])^{$tree_count}"
-                else
-                    substrings[end] = "($(substrings[end]))^{$tree_count}"
-                end
+                substrings[end] = "($(substrings[end]))^{$tree_count}"
             end
             prev_tree = copy(subtree)
             tree_count = 1
