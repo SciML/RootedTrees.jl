@@ -1,5 +1,5 @@
 module RootedTrees
-
+ 
 @doc read(joinpath(dirname(@__DIR__), "README.md"), String) RootedTrees
 
 using LinearAlgebra: dot
