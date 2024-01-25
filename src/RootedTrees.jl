@@ -17,7 +17,7 @@ end
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
        ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
-export butcher_representation, elementary_differential, elementary_differential_latexstring,
+export butcher_representation, elementary_differential_latexstring,
        elementary_weight_latexstring
 
 export α, β, γ, density, σ, symmetry, order, root_color
