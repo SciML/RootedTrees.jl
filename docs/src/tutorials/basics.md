@@ -73,16 +73,26 @@ savefig("basics_tree.png"); nothing # hide
 
 ![](basics_tree.png)
 
-To get the elementary differential, corresponding to a `RootedTree`, as a [`LaTeXString`](https://github.com/JuliaStrings/LaTeXStrings.jl), you can use [`elementary_differential`](@ref).
+To get the elementary differential, corresponding to a `RootedTree`, as a [`LaTeXString`](https://github.com/JuliaStrings/LaTeXStrings.jl), you can use [`elementary_differential_latexstring`](@ref).
 
 ```@example basics
 for t in RootedTreeIterator(4)
-    println(elementary_differential(t))
+    println(elementary_differential_latexstring(t))
 end
 ```
 In LaTeX this results in the following output:
 
 ![latex-elementary_differentials](https://user-images.githubusercontent.com/125130707/282897199-4967fe07-a370-4d64-b671-84f578a52391.png)
+
+Similarly, to get the elementary weight, corresponding to a `RootedTree`, as a [`LaTeXString`](https://github.com/JuliaStrings/LaTeXStrings.jl), you can use [`elementary_weight_latexstring`](@ref).
+
+```@example basics
+for t in RootedTreeIterator(4)
+    println(elementary_weight_latexstring(t))
+end
+```
+
+![latex elemenary weights](https://private-user-images.githubusercontent.com/125130707/298310491-8a035faf-fd1a-4fc0-92be-c3387eb53177.png?jwt=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJnaXRodWIuY29tIiwiYXVkIjoicmF3LmdpdGh1YnVzZXJjb250ZW50LmNvbSIsImtleSI6ImtleTUiLCJleHAiOjE3MDYxNjY1ODAsIm5iZiI6MTcwNjE2NjI4MCwicGF0aCI6Ii8xMjUxMzA3MDcvMjk4MzEwNDkxLThhMDM1ZmFmLWZkMWEtNGZjMC05MmJlLWMzMzg3ZWI1MzE3Ny5wbmc_WC1BbXotQWxnb3JpdGhtPUFXUzQtSE1BQy1TSEEyNTYmWC1BbXotQ3JlZGVudGlhbD1BS0lBVkNPRFlMU0E1M1BRSzRaQSUyRjIwMjQwMTI1JTJGdXMtZWFzdC0xJTJGczMlMkZhd3M0X3JlcXVlc3QmWC1BbXotRGF0ZT0yMDI0MDEyNVQwNzA0NDBaJlgtQW16LUV4cGlyZXM9MzAwJlgtQW16LVNpZ25hdHVyZT1kYzQyYjM0MWY0MDU5YWZlYzBmODA4MjFiZGIxN2E3YjhkYTdmZDNkYTU5NmI5OTEwNWFiZjg0OGZjNDg1MzZhJlgtQW16LVNpZ25lZEhlYWRlcnM9aG9zdCZhY3Rvcl9pZD0wJmtleV9pZD0wJnJlcG9faWQ9MCJ9.GB-PigOlQqenzgruzWg19qslzM6RXeX4xWwCNreOvNY)
 
 
 ## Number of trees
