@@ -1077,7 +1077,7 @@ end
 Create all splitting forests and subtrees associated to ordered subtrees of a
 rooted tree `t`.
 
-Seee also [`SplittingIterator`](@ref).
+See also [`SplittingIterator`](@ref).
 
 # References
 
@@ -1431,7 +1431,7 @@ function elementary_differential_latexstring(t::RootedTree)
     return latexstring(rec_elementary_differential(t))
 end
 
-# Function used to go recursively through the RootedTree 
+# Function used to go recursively through the RootedTree
 # to generate the elementary differential of the tree.
 function rec_elementary_differential(t::RootedTree)
     subtree_strings = String[]
@@ -1489,7 +1489,7 @@ function elementary_weight_latexstring(t::RootedTree)
     return latexstring(join(substrings))
 end
 
-# Function used to go recursively through the RootedTree 
+# Function used to go recursively through the RootedTree
 # to generate the elementary weight of the tree.
 function elm_weights_rec!(t::RootedTree, last_index, a)
     alphabet = copy(a)
@@ -1523,7 +1523,7 @@ function elm_weights_rec!(t::RootedTree, last_index, a)
             indices = vcat(indices, idx)
             push!(substrings, substring)
         end
-        # Specialcase: The identical trees were the last ones 
+        # Specialcase: The identical trees were the last ones
         if tree_count > 1
             if length(prev_tree.level_sequence) == 1
                 substrings[end] = "$(substrings[end])^{$tree_count}"
