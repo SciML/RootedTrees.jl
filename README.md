@@ -7,7 +7,7 @@
 [![codecov](https://codecov.io/gh/SciML/RootedTrees.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/SciML/RootedTrees.jl)
 [![License: MIT](https://img.shields.io/badge/License-MIT-success.svg)](https://opensource.org/licenses/MIT)
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.5534590.svg)](https://doi.org/10.5281/zenodo.5534590)
-<-- [![Downloads](https://shields.io/endpoint?url=https://pkgs.genieframework.com/api/v1/badge/RootedTrees)](https://pkgs.genieframework.com?packages=RootedTrees) -->
+<!-- [![Downloads](https://shields.io/endpoint?url=https://pkgs.genieframework.com/api/v1/badge/RootedTrees)](https://pkgs.genieframework.com?packages=RootedTrees) -->
 
 A collection of functionality around rooted trees to generate order conditions
 for Runge-Kutta methods in [Julia](https://julialang.org/).
