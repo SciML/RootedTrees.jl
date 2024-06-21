@@ -22,6 +22,8 @@ export butcher_representation, elementary_differential_latexstring,
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
+export butcher_product!
+
 export residual_order_condition, elementary_weight, derivative_weight
 
 export count_trees
@@ -1342,6 +1344,8 @@ end
 The non-associative Butcher product of rooted trees. It is formed
 by adding an edge from the root of `t1` to the root of `t2`.
 
+See also [`butcher_product!`](@ref).
+
 Reference: Section 301 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
@@ -1351,6 +1355,42 @@ function Base.:∘(t1::RootedTree, t2::RootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
     level_sequence = vcat(t1.level_sequence, t2.level_sequence .+ offset)
     rootedtree(level_sequence)
+end
+
+"""
+    butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
+
+Compute the non-associative Butcher product `t = t1 ∘ t2` of rooted trees
+in-place. It is formed by adding an edge from the root of `t1` to the root
+of `t2`.
+
+See also [`∘`](@ref) (available as `\\circ` plus TAB).
+
+Reference: Section 301 of
+- Butcher, John Charles.
+  Numerical methods for ordinary differential equations.
+  John Wiley & Sons, 2016.
+"""
+function butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
+    offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
+
+    unsafe_resize!(t, order(t1) + order(t2))
+    i = firstindex(t.level_sequence)
+    j = firstindex(t1.level_sequence)
+    while j <= lastindex(t1.level_sequence)
+        t.level_sequence[i] = t1.level_sequence[j]
+        i += 1
+        j += 1
+    end
+    j = firstindex(t2.level_sequence)
+    while j <= lastindex(t2.level_sequence)
+        t.level_sequence[i] = t2.level_sequence[j] + offset
+        i += 1
+        j += 1
+    end
+
+    canonical_representation!(t)
+    return t
 end
 
 """
