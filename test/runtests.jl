@@ -312,6 +312,9 @@ using Aqua: Aqua
             @inferred α(t1)
             @inferred β(t1)
             @inferred t1 ∘ t1
+            t_result = copy(t1)
+            @inferred butcher_product!(t_result, t1, t1)
+            @test t_result == t1 ∘ t1
 
             t2 = rootedtree([1, 2])
             @test order(t2) == 2
@@ -320,6 +323,8 @@ using Aqua: Aqua
             @test α(t2) == 1
             @test β(t2) == α(t2) * γ(t2)
             @test t2 == t1 ∘ t1
+            @inferred butcher_product!(t_result, t1, t1)
+            @test t2 == t_result
             @test butcher_representation(t2) == "[τ]"
             latex_string = "\\rootedtree[.[.]]"
             @test RootedTrees.latexify(t2) == latex_string
@@ -335,6 +340,8 @@ using Aqua: Aqua
             @test α(t3) == 1
             @test β(t3) == α(t3) * γ(t3)
             @test t3 == t2 ∘ t1
+            @inferred butcher_product!(t_result, t2, t1)
+            @test t3 == t_result
             @test butcher_representation(t3) == "[τ²]"
             latex_string = "\\rootedtree[.[.][.]]"
             @test RootedTrees.latexify(t3) == latex_string
@@ -350,6 +357,8 @@ using Aqua: Aqua
             @test α(t4) == 1
             @test β(t4) == α(t4) * γ(t4)
             @test t4 == t1 ∘ t2
+            @inferred butcher_product!(t_result, t1, t2)
+            @test t4 == t_result
             @test butcher_representation(t4) == "[[τ]]"
             latex_string = "\\rootedtree[.[.[.]]]"
             @test RootedTrees.latexify(t4) == latex_string
@@ -365,6 +374,8 @@ using Aqua: Aqua
             @test α(t5) == 1
             @test β(t5) == α(t5) * γ(t5)
             @test t5 == t3 ∘ t1
+            @inferred butcher_product!(t_result, t3, t1)
+            @test t5 == t_result
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
                   [rootedtree([2]), rootedtree([2]), rootedtree([2])]
@@ -380,6 +391,10 @@ using Aqua: Aqua
             @test α(t6) == 3
             @test β(t6) == α(t6) * γ(t6)
             @test t6 == t2 ∘ t2 == t4 ∘ t1
+            @inferred butcher_product!(t_result, t2, t2)
+            @test t6 == t_result
+            @inferred butcher_product!(t_result, t4, t1)
+            @test t6 == t_result
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
             @test elementary_differential_latexstring(t6) ==
@@ -393,6 +408,8 @@ using Aqua: Aqua
             @test γ(t7) == 12
             @test β(t7) == α(t7) * γ(t7)
             @test t7 == t1 ∘ t3
+            @inferred butcher_product!(t_result, t1, t3)
+            @test t7 == t_result
             @test butcher_representation(t7) == "[[τ²]]"
             @test elementary_differential_latexstring(t7) ==
                   L"$f^{\prime}f^{\prime\prime}(f, f)$"
@@ -404,6 +421,8 @@ using Aqua: Aqua
             @test γ(t8) == 24
             @test α(t8) == 1
             @test t8 == t1 ∘ t4
+            @inferred butcher_product!(t_result, t1, t4)
+            @test t8 == t_result
             @test butcher_representation(t8) == "[[[τ]]]"
             @test elementary_differential_latexstring(t8) ==
                   L"$f^{\prime}f^{\prime}f^{\prime}f$"
@@ -417,6 +436,8 @@ using Aqua: Aqua
             @test α(t9) == 1
             @test β(t9) == α(t9) * γ(t9)
             @test t9 == t5 ∘ t1
+            @inferred butcher_product!(t_result, t5, t1)
+            @test t9 == t_result
             @test butcher_representation(t9) == "[τ⁴]"
             @test elementary_differential_latexstring(t9) == L"$f^{(4)}(f, f, f, f)$"
             @test elementary_weight_latexstring(t9) == L"$\sum_{d}b_{d}c_{d}^{4}$"
@@ -428,6 +449,10 @@ using Aqua: Aqua
             @test α(t10) == 6
             @test β(t10) == α(t10) * γ(t10)
             @test t10 == t3 ∘ t2 == t6 ∘ t1
+            @inferred butcher_product!(t_result, t3, t2)
+            @test t10 == t_result
+            @inferred butcher_product!(t_result, t6, t1)
+            @test t10 == t_result
             @test butcher_representation(t10) == "[[τ]τ²]"
             @test elementary_differential_latexstring(t10) ==
                   L"$f^{\prime\prime\prime}(f^{\prime}f, f, f)$"
@@ -440,6 +465,10 @@ using Aqua: Aqua
             @test γ(t11) == 15
             @test α(t11) == 4
             @test t11 == t2 ∘ t3 == t7 ∘ t1
+            @inferred butcher_product!(t_result, t2, t3)
+            @test t11 == t_result
+            @inferred butcher_product!(t_result, t7, t1)
+            @test t11 == t_result
             @test butcher_representation(t11) == "[[τ²]τ]"
             @test elementary_differential_latexstring(t11) ==
                   L"$f^{\prime\prime}(f^{\prime\prime}(f, f), f)$"
@@ -453,6 +482,10 @@ using Aqua: Aqua
             @test α(t12) == 4
             @test β(t12) == α(t12) * γ(t12)
             @test t12 == t2 ∘ t4 == t8 ∘ t1
+            @inferred butcher_product!(t_result, t2, t4)
+            @test t12 == t_result
+            @inferred butcher_product!(t_result, t8, t1)
+            @test t12 == t_result
             @test butcher_representation(t12) == "[[[τ]]τ]"
             @test elementary_differential_latexstring(t12) ==
                   L"$f^{\prime\prime}(f^{\prime}f^{\prime}f, f)$"
@@ -466,6 +499,8 @@ using Aqua: Aqua
             @test α(t13) == 3
             @test β(t13) == α(t13) * γ(t13)
             @test t13 == t4 ∘ t2
+            @inferred butcher_product!(t_result, t4, t2)
+            @test t13 == t_result
             @test butcher_representation(t13) == "[[τ][τ]]"
             @test elementary_differential_latexstring(t13) ==
                   L"$f^{\prime\prime}(f^{\prime}f, f^{\prime}f)$"
@@ -479,6 +514,8 @@ using Aqua: Aqua
             @test α(t14) == 1
             @test β(t14) == α(t14) * γ(t14)
             @test t14 == t1 ∘ t5
+            @inferred butcher_product!(t_result, t1, t5)
+            @test t14 == t_result
             @test butcher_representation(t14) == "[[τ³]]"
             @test elementary_differential_latexstring(t14) ==
                   L"$f^{\prime}f^{\prime\prime\prime}(f, f, f)$"
@@ -492,6 +529,8 @@ using Aqua: Aqua
             @test α(t15) == 3
             @test β(t15) == α(t15) * γ(t15)
             @test t15 == t1 ∘ t6
+            @inferred butcher_product!(t_result, t1, t6)
+            @test t15 == t_result
             @test butcher_representation(t15) == "[[[τ]τ]]"
             @test elementary_differential_latexstring(t15) ==
                   L"$f^{\prime}f^{\prime\prime}(f^{\prime}f, f)$"
@@ -505,6 +544,8 @@ using Aqua: Aqua
             @test α(t16) == 1
             @test β(t16) == α(t16) * γ(t16)
             @test t16 == t1 ∘ t7
+            @inferred butcher_product!(t_result, t1, t7)
+            @test t16 == t_result
             @test butcher_representation(t16) == "[[[τ²]]]"
             @test elementary_differential_latexstring(t16) ==
                   L"$f^{\prime}f^{\prime}f^{\prime\prime}(f, f)$"
@@ -518,6 +559,8 @@ using Aqua: Aqua
             @test α(t17) == 1
             @test β(t17) == α(t17) * γ(t17)
             @test t17 == t1 ∘ t8
+            @inferred butcher_product!(t_result, t1, t8)
+            @test t17 == t_result
             @test butcher_representation(t17) == "[[[[τ]]]]"
             @test elementary_differential_latexstring(t17) ==
                   L"$f^{\prime}f^{\prime}f^{\prime}f^{\prime}f$"
