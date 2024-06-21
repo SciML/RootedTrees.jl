@@ -1374,7 +1374,7 @@ Reference: Section 301 of
 function butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
 
-    resize!(t, order(t1) + order(t2))
+    unsafe_resize!(t, order(t1) + order(t2))
     i = firstindex(t.level_sequence)
     j = firstindex(t1.level_sequence)
     while j <= lastindex(t1.level_sequence)
