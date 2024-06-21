@@ -1389,7 +1389,7 @@ function butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
         j += 1
     end
 
-    canonical_representation!(t.level_sequence)
+    canonical_representation!(t)
     return t
 end
 
