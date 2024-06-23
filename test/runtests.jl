@@ -314,6 +314,7 @@ using Aqua: Aqua
             @inferred t1 ∘ t1
             t_result = copy(t1)
             @inferred butcher_product!(t_result, t1, t1)
+            @test @allocated(butcher_product!(t_result, t1, t1)) == 0
             @test t_result == t1 ∘ t1
 
             t2 = rootedtree([1, 2])
@@ -324,6 +325,7 @@ using Aqua: Aqua
             @test β(t2) == α(t2) * γ(t2)
             @test t2 == t1 ∘ t1
             @inferred butcher_product!(t_result, t1, t1)
+            @test @allocated(butcher_product!(t_result, t1, t1)) == 0
             @test t2 == t_result
             @test butcher_representation(t2) == "[τ]"
             latex_string = "\\rootedtree[.[.]]"
@@ -341,6 +343,7 @@ using Aqua: Aqua
             @test β(t3) == α(t3) * γ(t3)
             @test t3 == t2 ∘ t1
             @inferred butcher_product!(t_result, t2, t1)
+            @test @allocated(butcher_product!(t_result, t2, t1)) == 0
             @test t3 == t_result
             @test butcher_representation(t3) == "[τ²]"
             latex_string = "\\rootedtree[.[.][.]]"
@@ -358,6 +361,7 @@ using Aqua: Aqua
             @test β(t4) == α(t4) * γ(t4)
             @test t4 == t1 ∘ t2
             @inferred butcher_product!(t_result, t1, t2)
+            @test @allocated(butcher_product!(t_result, t1, t2)) == 0
             @test t4 == t_result
             @test butcher_representation(t4) == "[[τ]]"
             latex_string = "\\rootedtree[.[.[.]]]"
@@ -375,6 +379,7 @@ using Aqua: Aqua
             @test β(t5) == α(t5) * γ(t5)
             @test t5 == t3 ∘ t1
             @inferred butcher_product!(t_result, t3, t1)
+            @test @allocated(butcher_product!(t_result, t3, t1)) == 0
             @test t5 == t_result
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
@@ -392,8 +397,10 @@ using Aqua: Aqua
             @test β(t6) == α(t6) * γ(t6)
             @test t6 == t2 ∘ t2 == t4 ∘ t1
             @inferred butcher_product!(t_result, t2, t2)
+            @test @allocated(butcher_product!(t_result, t2, t2)) == 0
             @test t6 == t_result
             @inferred butcher_product!(t_result, t4, t1)
+            @test @allocated(butcher_product!(t_result, t4, t1)) == 0
             @test t6 == t_result
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
@@ -409,6 +416,7 @@ using Aqua: Aqua
             @test β(t7) == α(t7) * γ(t7)
             @test t7 == t1 ∘ t3
             @inferred butcher_product!(t_result, t1, t3)
+            @test @allocated(butcher_product!(t_result, t1, t3)) == 0
             @test t7 == t_result
             @test butcher_representation(t7) == "[[τ²]]"
             @test elementary_differential_latexstring(t7) ==
@@ -422,6 +430,7 @@ using Aqua: Aqua
             @test α(t8) == 1
             @test t8 == t1 ∘ t4
             @inferred butcher_product!(t_result, t1, t4)
+            @test @allocated(butcher_product!(t_result, t1, t4)) == 0
             @test t8 == t_result
             @test butcher_representation(t8) == "[[[τ]]]"
             @test elementary_differential_latexstring(t8) ==
@@ -437,6 +446,7 @@ using Aqua: Aqua
             @test β(t9) == α(t9) * γ(t9)
             @test t9 == t5 ∘ t1
             @inferred butcher_product!(t_result, t5, t1)
+            @test @allocated(butcher_product!(t_result, t5, t1)) == 0
             @test t9 == t_result
             @test butcher_representation(t9) == "[τ⁴]"
             @test elementary_differential_latexstring(t9) == L"$f^{(4)}(f, f, f, f)$"
@@ -450,8 +460,10 @@ using Aqua: Aqua
             @test β(t10) == α(t10) * γ(t10)
             @test t10 == t3 ∘ t2 == t6 ∘ t1
             @inferred butcher_product!(t_result, t3, t2)
+            @test @allocated(butcher_product!(t_result, t3, t2)) == 0
             @test t10 == t_result
             @inferred butcher_product!(t_result, t6, t1)
+            @test @allocated(butcher_product!(t_result, t6, t1)) == 0
             @test t10 == t_result
             @test butcher_representation(t10) == "[[τ]τ²]"
             @test elementary_differential_latexstring(t10) ==
@@ -466,8 +478,10 @@ using Aqua: Aqua
             @test α(t11) == 4
             @test t11 == t2 ∘ t3 == t7 ∘ t1
             @inferred butcher_product!(t_result, t2, t3)
+            @test @allocated(butcher_product!(t_result, t2, t3)) == 0
             @test t11 == t_result
             @inferred butcher_product!(t_result, t7, t1)
+            @test @allocated(butcher_product!(t_result, t7, t1)) == 0
             @test t11 == t_result
             @test butcher_representation(t11) == "[[τ²]τ]"
             @test elementary_differential_latexstring(t11) ==
@@ -483,8 +497,10 @@ using Aqua: Aqua
             @test β(t12) == α(t12) * γ(t12)
             @test t12 == t2 ∘ t4 == t8 ∘ t1
             @inferred butcher_product!(t_result, t2, t4)
+            @test @allocated(butcher_product!(t_result, t2, t4)) == 0
             @test t12 == t_result
             @inferred butcher_product!(t_result, t8, t1)
+            @test @allocated(butcher_product!(t_result, t8, t1)) == 0
             @test t12 == t_result
             @test butcher_representation(t12) == "[[[τ]]τ]"
             @test elementary_differential_latexstring(t12) ==
@@ -500,6 +516,7 @@ using Aqua: Aqua
             @test β(t13) == α(t13) * γ(t13)
             @test t13 == t4 ∘ t2
             @inferred butcher_product!(t_result, t4, t2)
+            @test @allocated(butcher_product!(t_result, t4, t2)) == 0
             @test t13 == t_result
             @test butcher_representation(t13) == "[[τ][τ]]"
             @test elementary_differential_latexstring(t13) ==
@@ -515,6 +532,7 @@ using Aqua: Aqua
             @test β(t14) == α(t14) * γ(t14)
             @test t14 == t1 ∘ t5
             @inferred butcher_product!(t_result, t1, t5)
+            @test @allocated(butcher_product!(t_result, t1, t5)) == 0
             @test t14 == t_result
             @test butcher_representation(t14) == "[[τ³]]"
             @test elementary_differential_latexstring(t14) ==
@@ -530,6 +548,7 @@ using Aqua: Aqua
             @test β(t15) == α(t15) * γ(t15)
             @test t15 == t1 ∘ t6
             @inferred butcher_product!(t_result, t1, t6)
+            @test @allocated(butcher_product!(t_result, t1, t6)) == 0
             @test t15 == t_result
             @test butcher_representation(t15) == "[[[τ]τ]]"
             @test elementary_differential_latexstring(t15) ==
@@ -545,6 +564,7 @@ using Aqua: Aqua
             @test β(t16) == α(t16) * γ(t16)
             @test t16 == t1 ∘ t7
             @inferred butcher_product!(t_result, t1, t7)
+            @test @allocated(butcher_product!(t_result, t1, t7)) == 0
             @test t16 == t_result
             @test butcher_representation(t16) == "[[[τ²]]]"
             @test elementary_differential_latexstring(t16) ==
@@ -560,6 +580,7 @@ using Aqua: Aqua
             @test β(t17) == α(t17) * γ(t17)
             @test t17 == t1 ∘ t8
             @inferred butcher_product!(t_result, t1, t8)
+            @test @allocated(butcher_product!(t_result, t1, t8)) == 0
             @test t17 == t_result
             @test butcher_representation(t17) == "[[[[τ]]]]"
             @test elementary_differential_latexstring(t17) ==
@@ -1101,23 +1122,29 @@ using Aqua: Aqua
             @inferred t1_0 ∘ t1_0
             t_result = copy(t1_0)
             @inferred butcher_product!(t_result, t1_0, t1_0)
+            @test_broken @allocated(butcher_product!(t_result, t1_0, t1_0)) == 0
             @test t_result == t1_0 ∘ t1_0
             @test t_result == rootedtree([1, 2], Bool[0, 0])
             @inferred butcher_product!(t_result, t1_1, t1_0)
+            @test_broken @allocated(butcher_product!(t_result, t1_1, t1_0)) == 0
             @test t_result == t1_1 ∘ t1_0
             @test t_result == rootedtree([1, 2], Bool[1, 0])
             @inferred butcher_product!(t_result, t1_0, t1_1)
+            @test_broken @allocated(butcher_product!(t_result, t1_0, t1_1)) == 0
             @test t_result == t1_0 ∘ t1_1
             @test t_result == rootedtree([1, 2], Bool[0, 1])
             @inferred butcher_product!(t_result, t1_1, t1_1)
+            @test_broken @allocated(butcher_product!(t_result, t1_1, t1_1)) == 0
             @test t_result == t1_1 ∘ t1_1
             @test t_result == rootedtree([1, 2], Bool[1, 1])
 
             t2_0 = @inferred rootedtree([1, 2], Bool[0, 0])
             @inferred butcher_product!(t_result, t2_0, t1_0)
+            @test_broken @allocated(butcher_product!(t_result, t2_0, t1_0)) == 0
             @test t_result == t2_0 ∘ t1_0
             @test t_result == rootedtree([1, 2, 2], Bool[0, 0, 0])
             @inferred butcher_product!(t_result, t2_0, t1_1)
+            @test_broken @allocated(butcher_product!(t_result, t2_0, t1_1)) == 0
             @test t_result == t2_0 ∘ t1_1
             @test t_result == rootedtree([1, 2, 2], Bool[0, 0, 1])
         end
