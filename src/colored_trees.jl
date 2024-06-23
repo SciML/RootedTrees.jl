@@ -591,7 +591,7 @@ function butcher_product!(t::ColoredRootedTree,
         j += 1
     end
 
-    canonical_representation!(t; buffer_level, buffer_color)
+    canonical_representation!(t, buffer_level, buffer_color)
     return t
 end
 
