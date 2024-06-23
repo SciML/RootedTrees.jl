@@ -1358,7 +1358,7 @@ function Base.:∘(t1::RootedTree, t2::RootedTree)
 end
 
 """
-    butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
+    butcher_product!(t, t1, t2)
 
 Compute the non-associative Butcher product `t = t1 ∘ t2` of rooted trees
 in-place. It is formed by adding an edge from the root of `t1` to the root
@@ -1371,7 +1371,8 @@ Reference: Section 301 of
   Numerical methods for ordinary differential equations.
   John Wiley & Sons, 2016.
 """
-function butcher_product!(t::RootedTree, t1::RootedTree, t2::RootedTree)
+function butcher_product!(t::RootedTree,
+                          t1::RootedTree, t2::RootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
 
     unsafe_resize!(t, order(t1) + order(t2))
