@@ -568,6 +568,33 @@ function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)
     rootedtree(level_sequence, color_sequence)
 end
 
+function butcher_product!(t::ColoredRootedTree,
+                          t1::ColoredRootedTree, t2::ColoredRootedTree,
+                          buffer_level = similar(t.level_sequence),
+                          buffer_color = similar(t.color_sequence))
+    offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
+
+    unsafe_resize!(t, order(t1) + order(t2))
+    i = firstindex(t.level_sequence)
+    j = firstindex(t1.level_sequence)
+    while j <= lastindex(t1.level_sequence)
+        t.level_sequence[i] = t1.level_sequence[j]
+        t.color_sequence[i] = t1.color_sequence[j]
+        i += 1
+        j += 1
+    end
+    j = firstindex(t2.level_sequence)
+    while j <= lastindex(t2.level_sequence)
+        t.level_sequence[i] = t2.level_sequence[j] + offset
+        t.color_sequence[i] = t2.color_sequence[j]
+        i += 1
+        j += 1
+    end
+
+    canonical_representation!(t; buffer_level, buffer_color)
+    return t
+end
+
 function butcher_representation(t::ColoredRootedTree, normalize::Bool = true;
                                 colormap = _colormap_butcher_representation(t))
     if order(t) == 0
