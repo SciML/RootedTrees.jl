@@ -1372,9 +1372,7 @@ Reference: Section 301 of
   John Wiley & Sons, 2016.
 """
 function butcher_product!(t::RootedTree,
-                          t1::RootedTree, t2::RootedTree;
-                          buffer = similar(t.level_sequence,
-                                           (order(t1) + order(t2),)))
+                          t1::RootedTree, t2::RootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
 
     unsafe_resize!(t, order(t1) + order(t2))
@@ -1392,7 +1390,7 @@ function butcher_product!(t::RootedTree,
         j += 1
     end
 
-    canonical_representation!(t, buffer)
+    canonical_representation!(t)
     return t
 end
 

@@ -569,9 +569,7 @@ function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)
 end
 
 function butcher_product!(t::ColoredRootedTree,
-                          t1::ColoredRootedTree, t2::ColoredRootedTree,
-                          buffer_level = similar(t.level_sequence),
-                          buffer_color = similar(t.color_sequence))
+                          t1::ColoredRootedTree, t2::ColoredRootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
 
     unsafe_resize!(t, order(t1) + order(t2))
@@ -591,7 +589,7 @@ function butcher_product!(t::ColoredRootedTree,
         j += 1
     end
 
-    canonical_representation!(t, buffer_level, buffer_color)
+    canonical_representation!(t)
     return t
 end
 
