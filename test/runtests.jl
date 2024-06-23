@@ -1095,6 +1095,33 @@ using Aqua: Aqua
             end
         end
 
+        @testset "Butcher product" begin
+            t1_0 = @inferred rootedtree([1], Bool[0])
+            t1_1 = @inferred rootedtree([1], Bool[1])
+            @inferred t1_0 ∘ t1_0
+            t_result = copy(t1_0)
+            @inferred butcher_product!(t_result, t1_0, t1_0)
+            @test t_result == t1_0 ∘ t1_0
+            @test t_result == rootedtree([1, 2], Bool[0, 0])
+            @inferred butcher_product!(t_result, t1_1, t1_0)
+            @test t_result == t1_1 ∘ t1_0
+            @test t_result == rootedtree([1, 2], Bool[1, 0])
+            @inferred butcher_product!(t_result, t1_0, t1_1)
+            @test t_result == t1_0 ∘ t1_1
+            @test t_result == rootedtree([1, 2], Bool[0, 1])
+            @inferred butcher_product!(t_result, t1_1, t1_1)
+            @test t_result == t1_1 ∘ t1_1
+            @test t_result == rootedtree([1, 2], Bool[1, 1])
+
+            t2_0 = @inferred rootedtree([1, 2], Bool[0, 0])
+            @inferred butcher_product!(t_result, t2_0, t1_0)
+            @test t_result == t2_0 ∘ t1_0
+            @test t_result == rootedtree([1, 2, 2], Bool[0, 0, 0])
+            @inferred butcher_product!(t_result, t2_0, t1_1)
+            @test t_result == t2_0 ∘ t1_1
+            @test t_result == rootedtree([1, 2, 2], Bool[0, 0, 1])
+        end
+
         @testset "latexify" begin
             @testset "default style" begin
                 let t = rootedtree(Int[], Bool[])
