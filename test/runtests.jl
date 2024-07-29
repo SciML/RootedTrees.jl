@@ -1594,8 +1594,8 @@ using Aqua: Aqua
             let order = 4
                 for t in RootedTreeIterator(order)
                     @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
-                    @test derivative_weight(t, rk.A, rk.b, rk.c) ≈ derivative_weight(t, rk)
-                    @test residual_order_condition(t, rk.A, rk.b, rk.c) ≈
+                    @test derivative_weight(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈ derivative_weight(t, rk)
+                    @test residual_order_condition(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈
                           residual_order_condition(t, rk)
                 end
             end
