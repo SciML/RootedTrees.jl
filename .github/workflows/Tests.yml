@@ -24,4 +24,5 @@ jobs:
     uses: "SciML/.github/.github/workflows/tests.yml@v1"
     with:
       julia-version: "${{ matrix.version }}"
+      julia-runtest-depwarn: "yes"
     secrets: "inherit"
