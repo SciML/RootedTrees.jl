@@ -781,7 +781,7 @@ using Aqua: Aqua
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
-                [rootedtree([1]), rootedtree([1]), rootedtree([1]), rootedtree([1])],
+                [rootedtree([1]), rootedtree([1]), rootedtree([1]), rootedtree([1])]
             ]
             reference_skeletons = [
                 rootedtree([1]),
@@ -791,7 +791,7 @@ using Aqua: Aqua
                 rootedtree([1, 2, 2]),
                 rootedtree([1, 2, 3]),
                 rootedtree([1, 2, 3]),
-                rootedtree([1, 2, 3, 3]),
+                rootedtree([1, 2, 3, 3])
             ]
             for forest in reference_forests
                 sort!(forest)
@@ -855,7 +855,7 @@ using Aqua: Aqua
                 ([rootedtree([1]), rootedtree([1])], rootedtree([1, 2, 2])),
                 ([rootedtree([1]), rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
                 ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
-                ([rootedtree([1, 2, 3, 2, 2])], rootedtree(Int[])),
+                ([rootedtree([1, 2, 3, 2, 2])], rootedtree(Int[]))
             ]
             sort!(reference_forests_and_subtrees)
 
@@ -1502,24 +1502,24 @@ using Aqua: Aqua
                 [
                     rootedtree([1], Bool[1]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[0, 0]),
+                    rootedtree([1, 2], Bool[0, 0])
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[1, 0]),
+                    rootedtree([1, 2], Bool[1, 0])
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[0, 1]),
+                    rootedtree([1, 2], Bool[0, 1])
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1], Bool[1]),
-                ],
+                    rootedtree([1], Bool[1])
+                ]
             ]
             reference_skeletons = [
                 rootedtree([1], Bool[1]),
@@ -1529,7 +1529,7 @@ using Aqua: Aqua
                 rootedtree([1, 2, 2], Bool[1, 1, 0]),
                 rootedtree([1, 2, 3], Bool[1, 0, 0]),
                 rootedtree([1, 2, 3], Bool[1, 0, 1]),
-                rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),
+                rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0])
             ]
             for forest in reference_forests
                 sort!(forest)
@@ -1594,7 +1594,8 @@ using Aqua: Aqua
             let order = 4
                 for t in RootedTreeIterator(order)
                     @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
-                    @test derivative_weight(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈ derivative_weight(t, rk)
+                    @test derivative_weight(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈
+                          derivative_weight(t, rk)
                     @test residual_order_condition(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈
                           residual_order_condition(t, rk)
                 end
@@ -1631,11 +1632,11 @@ using Aqua: Aqua
             # Table II.2.1
             As = [
                 [0 0; 1//2 1//2],
-                [1//2 0; 1//2 0],
+                [1//2 0; 1//2 0]
             ]
             bs = [
                 [1 // 2, 1 // 2],
-                [1 // 2, 1 // 2],
+                [1 // 2, 1 // 2]
             ]
             ark = AdditiveRungeKuttaMethod(As, bs)
 
@@ -1660,11 +1661,11 @@ using Aqua: Aqua
             # Table II.2.2
             As = [
                 [0 0 0; 5//24 1//3 -1//24; 1//6 2//3 1//6],
-                [1//6 -1//6 0; 1//6 1//3 0; 1//6 5//6 0],
+                [1//6 -1//6 0; 1//6 1//3 0; 1//6 5//6 0]
             ]
             bs = [
                 [1 // 6, 2 // 3, 1 // 6],
-                [1 // 6, 2 // 3, 1 // 6],
+                [1 // 6, 2 // 3, 1 // 6]
             ]
             ark = AdditiveRungeKuttaMethod(As, bs)
 
@@ -1725,7 +1726,7 @@ using Aqua: Aqua
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
                 11266239266428 / 11593286722821,
-                1767732205903 / 4055673282236,
+                1767732205903 / 4055673282236
             ]
             rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
             A_implicit = @SArray [0 0 0 0
@@ -1736,7 +1737,7 @@ using Aqua: Aqua
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
                 11266239266428 / 11593286722821,
-                1767732205903 / 4055673282236,
+                1767732205903 / 4055673282236
             ]
             rk_implicit = RungeKuttaMethod(A_implicit, b_implicit)
             ark = AdditiveRungeKuttaMethod([rk_explicit, rk_implicit])
