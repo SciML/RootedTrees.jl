@@ -119,8 +119,8 @@ Reference: Section 315 of
 function residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
     ew = elementary_weight(t, rk)
     T = typeof(ew)
-    invγ = 1//γ(t)
-    invσ = 1//σ(t)
+    invγ = 1 // γ(t)
+    invσ = 1 // σ(t)
 
     (ew - invγ) * invσ
 end
