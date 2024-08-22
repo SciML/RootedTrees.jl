@@ -64,12 +64,12 @@ makedocs(modules = [RootedTrees],
                  "tutorials/basics.md",
                  "tutorials/RK_order_conditions.md",
                  "tutorials/ARK_order_conditions.md",
-                 "tutorials/Rosenbrock_order_conditions.md"
+                 "tutorials/Rosenbrock_order_conditions.md",
              ],
              # "Benchmarks" => "benchmarks.md",
              "API reference" => "api_reference.md",
              "Contributing" => "contributing.md",
-             "License" => "license.md"
+             "License" => "license.md",
          ])
 
 deploydocs(repo = "github.com/SciML/RootedTrees.jl",
