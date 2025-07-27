@@ -1600,7 +1600,8 @@ function __init__()
     Threads.resize_nthreads!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
                              Vector{Bool}(undef, BUFFER_LENGTH))
 
-    @static # explicit precompilation on Julia v1.8 and newer
+    return nothing
+end
 @static if VERSION >= v"1.8"
     include("precompile.jl")
 end
