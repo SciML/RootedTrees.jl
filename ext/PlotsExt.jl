@@ -1,9 +1,6 @@
 module PlotsExt
 
-    using Plots: Plots
-else
-    import ..Plots: Plots
-end
+using Plots: Plots
 
 using RootedTrees: RootedTrees
 
