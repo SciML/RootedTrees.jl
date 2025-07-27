@@ -1602,8 +1602,8 @@ function __init__()
 
     return nothing
 end
-@static if VERSION >= v"1.8"
-    include("precompile.jl")
-end
+                              
+# explicit precompilation
+include("precompile.jl")
 
 end # module
