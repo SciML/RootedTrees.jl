@@ -43,9 +43,10 @@ Representation of bicolored rooted trees.
 
 See also [`ColoredRootedTree`](@ref), [`RootedTree`](@ref), [`rootedtree`](@ref).
 """
-const BicoloredRootedTree{T <: Integer, V <: AbstractVector{T}, C <: AbstractVector{Bool}} = ColoredRootedTree{T,
-                                                                                                               V,
-                                                                                                               C}
+const BicoloredRootedTree{T <: Integer, V <: AbstractVector{T},
+                          C <: AbstractVector{Bool}} = ColoredRootedTree{T,
+                                                                         V,
+                                                                         C}
 
 """
     rootedtree(level_sequence, color_sequence)
@@ -204,7 +205,7 @@ function Base.:(==)(t1::ColoredRootedTree, t2::ColoredRootedTree)
 
     root1_minus_root2 = first(t1.level_sequence) - first(t2.level_sequence)
     for (e1, c1, e2, c2) in zip(t1.level_sequence, t1.color_sequence, t2.level_sequence,
-                                t2.color_sequence)
+            t2.color_sequence)
         v1 = e1
         v2 = e2 + root1_minus_root2
         (v1 == v2 && c1 == c2) || return false
