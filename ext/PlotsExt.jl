@@ -1,10 +1,6 @@
 module PlotsExt
 
-if isdefined(Base, :get_extension)
-    using Plots: Plots
-else
-    import ..Plots: Plots
-end
+using Plots: Plots
 
 using RootedTrees: RootedTrees
 
