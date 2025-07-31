@@ -72,8 +72,9 @@ function _plot_coordinates(t::AbstractRootedTree,
         x_child = x_children[idx]
         push!(x, nan, x_root, x_child)
         push!(y, nan, y_root, y_child)
-        x_recursive, y_recursive = _plot_coordinates(subtr[idx],
-                                                     x_child, y_child, width / 3, height)
+        x_recursive,
+        y_recursive = _plot_coordinates(subtr[idx],
+                                        x_child, y_child, width / 3, height)
         append!(x, x_recursive)
         append!(y, y_recursive)
     end
@@ -212,10 +213,11 @@ function _plot_coordinates(t::ColoredRootedTree,
         push!(x, [x_root, x_child])
         push!(y, [y_root, y_child])
         push!(colors, [color_root, colormap[first(subtr[idx].color_sequence)]])
-        x_recursive, y_recursive, colors_recursive = _plot_coordinates(subtr[idx],
-                                                                       x_child, y_child,
-                                                                       width / 3, height,
-                                                                       colormap)
+        x_recursive, y_recursive,
+        colors_recursive = _plot_coordinates(subtr[idx],
+                                             x_child, y_child,
+                                             width / 3, height,
+                                             colormap)
         append!(x, x_recursive)
         append!(y, y_recursive)
         append!(colors, colors_recursive)
