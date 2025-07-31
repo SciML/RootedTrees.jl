@@ -94,7 +94,7 @@ end
     root = first(level_sequence)
     prev = root
     for level in view(level_sequence,
-                      (firstindex(level_sequence) + 1):lastindex(level_sequence))
+             (firstindex(level_sequence) + 1):lastindex(level_sequence))
         if (level <= root) || (level > prev + 1)
             return false
         end
@@ -905,7 +905,7 @@ function all_partitions(t::RootedTree)
     forests = [partition_forest(t, edge_set)]
     skeletons = [partition_skeleton(t, edge_set)]
 
-    for edge_set_value in 1:(2^length(edge_set) - 1)
+    for edge_set_value in 1:(2 ^ length(edge_set) - 1)
         binary_digits!(edge_set, edge_set_value)
         push!(forests, partition_forest(t, edge_set))
         push!(skeletons, partition_skeleton(t, edge_set))
@@ -1056,10 +1056,8 @@ end
 
 # necessary for simple and convenient use since the iterates may be modified
 function Base.collect(partitions::PartitionIterator{TreeInput,
-                                                    TreeOutput}) where {
-                                                                        TreeInput,
-                                                                        TreeOutput
-                                                                        }
+                                                    TreeOutput}) where {TreeInput,
+                                                                        TreeOutput}
     iterates = Vector{Tuple{Vector{TreeOutput}, TreeOutput}}()
     sizehint!(iterates, length(partitions))
     for (forest, skeleton) in partitions
@@ -1092,7 +1090,7 @@ function all_splittings(t::RootedTree)
     forests = Vector{Vector{RootedTree{T, Vector{T}}}}()
     subtrees = Vector{RootedTree{T, Vector{T}}}() # ordered subtrees
 
-    for node_set_value in 0:(2^order(t) - 1)
+    for node_set_value in 0:(2 ^ order(t) - 1)
         binary_digits!(node_set, node_set_value)
 
         # Check that if a node is removed then all of its descendants are removed
