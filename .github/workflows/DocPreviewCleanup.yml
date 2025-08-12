@@ -7,7 +7,7 @@ on:
 jobs:
   doc-preview-cleanup:
     # Do not run on forks to avoid authorization errors
-    # Source: https://github.community/t/have-github-action-only-run-on-master-repo-and-not-on-forks/140840/18
+    # Source: https://github.community/t/have-github-action-only-run-on-main-repo-and-not-on-forks/140840/18
     if: github.repository_owner == 'SciML'
     runs-on: ubuntu-latest
     steps:
