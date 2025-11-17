@@ -17,7 +17,7 @@ Plots = "91a5bcdd-55d7-5caf-9e0b-520d859cae80"
 PlotsExt = "Plots"
 
 [compat]
-LaTeXStrings = "1.1"
+LaTeXStrings = "1.2"
 Latexify = "0.16.8"
 LinearAlgebra = "1"
 Plots = "1.39"
