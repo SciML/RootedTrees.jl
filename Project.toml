@@ -1,7 +1,7 @@
 name = "RootedTrees"
 uuid = "47965b36-3f3e-11e9-0dcf-4570dfd42a8c"
 authors = ["Hendrik Ranocha <mail@ranocha.de> and contributors"]
-version = "2.23.1"
+version = "2.23.2"
 
 [deps]
 LaTeXStrings = "b964fa9f-0449-5b57-a5c2-d3ea65f4040f"
