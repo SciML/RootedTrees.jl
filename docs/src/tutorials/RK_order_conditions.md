@@ -29,7 +29,7 @@ is assumed, which reduces all analysis to autonomous problems.
 The step from ``u^{n}`` to ``u^{n+1}`` is given by
 ```math
 \begin{aligned}
-  y^i &= u^n + \Delta t \sum_j a_{i,j} f(t^n + c_i \Delta t, y^i), \\
+  y^i &= u^n + \Delta t \sum_j a_{i,j} f(t^n + c_j \Delta t, y^j), \\
   u^{n+1} &= u^n + \Delta t \sum_i b_{i} f(t^n + c_i \Delta t, y^i),
 \end{aligned}
 ```
