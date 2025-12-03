@@ -148,8 +148,8 @@ An additive Runge-Kutta method applied to the ODE problem
 has the form
 ```math
 \\begin{aligned}
-  y^i &= u^n + \\Delta t \\sum_\\nu \\sum_j a^\\nu_{i,j} f^\\nu(y^i), \\\\
-  u^{n+1} &= u^n + \\Delta t \\sum_\\nu \\sum_i b^\\nu_{i} f^\\nu(y^i).
+  y^i &= u^n + \\Delta t \\sum_\\nu \\sum_j a^\\nu_{i,j} f^\\nu(t^n + c_j \\Delta t, y^j), \\\\
+  u^{n+1} &= u^n + \\Delta t \\sum_\\nu \\sum_i b^\\nu_{i} f^\\nu(t^n + c_i \\Delta t, y^i).
 \\end{aligned}
 ```
 

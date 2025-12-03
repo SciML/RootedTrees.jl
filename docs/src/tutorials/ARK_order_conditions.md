@@ -2,7 +2,7 @@
 
 Consider an ordinary differential equation (ODE) of the form
 ```math
-u'(t) = \sum_\nu^N f^\nu(t, u(t)).
+u'(t) = \sum_{\nu=1}^N f^\nu(t, u(t)).
 ```
 
 An additive Runge-Kutta (ARK) method with ``s`` stages is given by its
@@ -21,8 +21,8 @@ is assumed, which reduces all analysis to autonomous problems.
 The step from ``u^{n}`` to ``u^{n+1}`` is given by
 ```math
 \begin{aligned}
-  y^i &= u^n + \Delta t \sum_\nu \sum_j a^\nu_{i,j} f^\nu(y^i), \\
-  u^{n+1} &= u^n + \Delta t \sum_\nu \sum_i b^\nu_{i} f^\nu(y^i),
+  y^i &= u^n + \Delta t \sum_\nu \sum_j a^\nu_{i,j} f^\nu(t^n + c_j \Delta t, y^j), \\
+  u^{n+1} &= u^n + \Delta t \sum_\nu \sum_i b^\nu_{i} f^\nu(t^n + c_i \Delta t, y^i),
 \end{aligned}
 ```
 where ``y^i`` are the stage values.
@@ -34,7 +34,7 @@ ARK methods are represented as
 
 ## Order conditions
 
-The order conditions of RK methods can be derived using colored rooted trees.
+The order conditions of ARK methods can be derived using colored rooted trees.
 In [RootedTrees.jl](https://github.com/SciML/RootedTrees.jl), this
 functionality is implemented in [`residual_order_condition`](@ref).
 Thus, an [`AdditiveRungeKuttaMethod`](@ref) is of order ``p`` if the
