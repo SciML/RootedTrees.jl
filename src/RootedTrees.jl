@@ -1254,7 +1254,10 @@ function symmetry(t::AbstractRootedTree)
 
     # Unroll the `for` loop manually to be able to compare the next iterate with
     # the previous one.
-    previous_subtree, state = iterate(subtrees)
+    first_iter = iterate(subtrees)
+    # This should never be `nothing` since order(t) >= 3 implies at least one subtree
+    first_iter === nothing && error("Unexpected: tree with order >= 3 has no subtrees")
+    previous_subtree, state = first_iter
 
     result = 1
     num_same_subtrees = 1
