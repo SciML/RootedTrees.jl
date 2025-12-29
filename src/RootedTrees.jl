@@ -11,7 +11,8 @@ using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
-    ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
+    ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator,
+    ColoredRootedTreeIterator, FilteredTreeIterator
 
 export butcher_representation, elementary_differential_latexstring,
     elementary_weight_latexstring

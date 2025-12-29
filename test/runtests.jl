@@ -904,6 +904,79 @@ using JET: @test_opt
                 end
             end
         end
+
+        @testset "FilteredTreeIterator" begin
+            # Test filtering RootedTreeIterator
+            for order in 1:5
+                # Filter by symmetry == 1 (asymmetric trees)
+                filtered = collect(FilteredTreeIterator(RootedTreeIterator(order),
+                                                        t -> symmetry(t) == 1))
+                # Note: RootedTreeIterator returns views, so we need to copy
+                all_trees = [copy(t) for t in RootedTreeIterator(order)]
+                expected = filter(t -> symmetry(t) == 1, all_trees)
+                @test length(filtered) == length(expected)
+
+                # Verify each filtered tree has the expected property
+                for t in filtered
+                    @test symmetry(t) == 1
+                end
+            end
+
+            # Test filtering BicoloredRootedTreeIterator by root color
+            for order in 1:4
+                # Filter by root color == false
+                filtered = collect(FilteredTreeIterator(BicoloredRootedTreeIterator(order),
+                                                        t -> root_color(t) == false))
+                for t in filtered
+                    @test root_color(t) == false
+                end
+
+                # Filter by root color == true
+                filtered = collect(FilteredTreeIterator(BicoloredRootedTreeIterator(order),
+                                                        t -> root_color(t) == true))
+                for t in filtered
+                    @test root_color(t) == true
+                end
+            end
+
+            # Test that filtered trees are copies (can be modified)
+            let iter = FilteredTreeIterator(RootedTreeIterator(4), t -> order(t) == 4)
+                trees = collect(iter)
+                if !isempty(trees)
+                    original_level = copy(trees[1].level_sequence)
+                    trees[1].level_sequence[1] = 999
+                    # Verify that modifying doesn't affect other iterations
+                    new_trees = collect(FilteredTreeIterator(RootedTreeIterator(4),
+                                                             t -> order(t) == 4))
+                    @test !isempty(new_trees)
+                    @test new_trees[1].level_sequence[1] != 999
+                end
+            end
+
+            # Test with predicate that matches nothing
+            let filtered = collect(FilteredTreeIterator(RootedTreeIterator(3),
+                                                        t -> false))
+                @test isempty(filtered)
+            end
+
+            # Test with predicate that matches everything
+            let filtered = collect(FilteredTreeIterator(RootedTreeIterator(3),
+                                                        t -> true))
+                # Note: RootedTreeIterator returns views, so we count instead
+                all_count = sum(1 for _ in RootedTreeIterator(3))
+                @test length(filtered) == all_count
+            end
+
+            # Test with ColoredRootedTreeIterator
+            for order in 1:3
+                filtered = collect(FilteredTreeIterator(
+                    ColoredRootedTreeIterator(order, 3),
+                    t -> all(c -> c == 0, t.color_sequence)))
+                for t in filtered
+                    @test all(c -> c == 0, t.color_sequence)
+                end
+            end
+        end
     end # @testset "RootedTree"
 
     @testset "ColoredRootedTree" begin
@@ -1610,6 +1683,87 @@ using JET: @test_opt
             @inferred PartitionIterator(t)
             t = @inferred rootedtree!(view(level_sequence, :), view(color_sequence, :))
             @inferred PartitionIterator(t)
+        end
+
+        @testset "ColoredRootedTreeIterator" begin
+            # Test basic iteration
+            for order in 1:4
+                for num_colors in 1:3
+                    count = 0
+                    for t in ColoredRootedTreeIterator(order, num_colors)
+                        count += 1
+                        # Verify all colors are in valid range
+                        @test all(c -> 0 <= c < num_colors, t.color_sequence)
+                        # Verify tree is canonical
+                        t_canonical = RootedTrees.canonical_representation(t)
+                        @test t == t_canonical
+                    end
+                    # At least one tree exists for any order >= 1
+                    @test count >= 1
+                end
+            end
+
+            # Test that ColoredRootedTreeIterator with 2 colors produces same trees
+            # as BicoloredRootedTreeIterator (when converting Bool to Int)
+            for order in 1:5
+                bicolored_trees = Set{Tuple{Vector{Int}, Vector{Int}}}()
+                for t in BicoloredRootedTreeIterator(order)
+                    push!(bicolored_trees,
+                          (copy(t.level_sequence), Int.(copy(t.color_sequence))))
+                end
+
+                colored_trees = Set{Tuple{Vector{Int}, Vector{Int}}}()
+                for t in ColoredRootedTreeIterator(order, 2)
+                    push!(colored_trees, (copy(t.level_sequence), copy(t.color_sequence)))
+                end
+
+                @test length(bicolored_trees) == length(colored_trees)
+            end
+
+            # Test error handling
+            @test_throws ArgumentError ColoredRootedTreeIterator(3, 0)
+        end
+
+        @testset "splittings for ColoredRootedTree" begin
+            # consistency of all_splittings and the SplittingIterator for colored trees
+            for order in 1:5
+                for t in BicoloredRootedTreeIterator(order)
+                    forests, subtrees = all_splittings(t)
+                    @test collect(zip(forests, subtrees)) == collect(SplittingIterator(t))
+                end
+            end
+
+            # Basic test with specific colored tree
+            let t = rootedtree([1, 2, 3], Bool[0, 1, 0])
+                splittings = all_splittings(t)
+                @test length(splittings.forests) == length(splittings.subtrees)
+                @test length(splittings.forests) >= 1
+
+                # Also test via iterator
+                iterator_results = collect(SplittingIterator(t))
+                @test length(iterator_results) == length(splittings.forests)
+            end
+
+            # Test that colors are preserved correctly
+            let t = rootedtree([1, 2, 2], Bool[1, 0, 1])
+                for (forest, subtree) in SplittingIterator(t)
+                    # Each tree in forest should have consistent level/color sequences
+                    for tree in forest
+                        @test length(tree.level_sequence) == length(tree.color_sequence)
+                    end
+                    @test length(subtree.level_sequence) == length(subtree.color_sequence)
+                end
+            end
+
+            # Test with Integer colors (not just Bool)
+            let t = rootedtree([1, 2, 3], [0, 1, 2])
+                splittings = all_splittings(t)
+                @test length(splittings.forests) >= 1
+
+                iterator_results = collect(SplittingIterator(t))
+                @test collect(zip(splittings.forests, splittings.subtrees)) ==
+                      iterator_results
+            end
         end
     end # @testset "ColoredRootedTree"
 

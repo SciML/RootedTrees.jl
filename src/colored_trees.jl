@@ -492,6 +492,90 @@ end
     return (iter.t, (inner_state, color_id + 1))
 end
 
+"""
+    ColoredRootedTreeIterator(order::Integer, num_colors::Integer)
+
+Iterator over all colored rooted trees of given `order` with `num_colors` different
+colors. The returned trees are views to an internal tree modified during the
+iteration. If the returned trees shall be stored or modified during the iteration,
+a `copy` has to be made.
+
+See also [`BicoloredRootedTreeIterator`](@ref) for the special case of two colors.
+"""
+struct ColoredRootedTreeIterator{T <: Integer}
+    num_colors::T
+    total_color_combinations::Int
+    iter::RootedTreeIterator{T}
+    t::ColoredRootedTree{T, Vector{T}, Vector{T}}
+
+    function ColoredRootedTreeIterator(order::T, num_colors::T) where {T <: Integer}
+        if num_colors < 1
+            throw(ArgumentError("The number of colors must be at least 1."))
+        end
+        iter = RootedTreeIterator(order)
+        total_color_combinations = Int(num_colors)^order
+        t = ColoredRootedTree(iter.t.level_sequence, zeros(T, order), true)
+        new{T}(num_colors, total_color_combinations, iter, t)
+    end
+end
+
+function ColoredRootedTreeIterator(order::Integer, num_colors::Integer)
+    T = promote_type(typeof(order), typeof(num_colors))
+    ColoredRootedTreeIterator(convert(T, order), convert(T, num_colors))
+end
+
+Base.IteratorSize(::Type{<:ColoredRootedTreeIterator}) = Base.SizeUnknown()
+function Base.eltype(::Type{ColoredRootedTreeIterator{T}}) where {T}
+    ColoredRootedTree{T, Vector{T}, Vector{T}}
+end
+
+# Convert a non-negative integer to a mixed-radix representation
+# This is analogous to `binary_digits!` but for arbitrary base
+@inline function mixed_radix_digits!(digits::AbstractVector{T}, n::Int,
+                                     base::T) where {T <: Integer}
+    for i in eachindex(digits)
+        digits[i] = n % base
+        n = n ÷ base
+    end
+    digits
+end
+
+@inline function Base.iterate(iter::ColoredRootedTreeIterator)
+    _, inner_state = iterate(iter.iter)
+    color_id = 0
+    mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+    (iter.t, (inner_state, color_id + 1))
+end
+
+@inline function Base.iterate(iter::ColoredRootedTreeIterator, state)
+    inner_state, color_id = state
+
+    # If we can iterate more by changing the color sequence, let's do so.
+    while color_id < iter.total_color_combinations
+        mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+
+        # Check if this color assignment yields a canonical representation.
+        # Similar to BicoloredRootedTreeIterator, some color assignments
+        # may not be in canonical representation.
+        if check_canonical(iter.t)
+            return (iter.t, (inner_state, color_id + 1))
+        else
+            color_id = color_id + 1
+        end
+    end
+
+    # Now, we need to iterate to a new baseline (uncolored) tree - if possible
+    inner_value_state = iterate(iter.iter, inner_state)
+    if inner_value_state === nothing
+        return nothing
+    end
+
+    _, inner_state = inner_value_state
+    color_id = 0
+    mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+    return (iter.t, (inner_state, color_id + 1))
+end
+
 # subtrees
 @inline function Base.iterate(subtrees::SubtreeIterator{<:ColoredRootedTree})
     subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
@@ -608,8 +692,171 @@ function PartitionIterator(t::ColoredRootedTree{Int, Vector{Int}, Vector{Bool}})
     )
 end
 
-# TODO: ColoredRootedTree. splittings
-# SplittingIterator
+# splittings for ColoredRootedTree
+"""
+    all_splittings(t::ColoredRootedTree)
+
+Create all splitting forests and subtrees associated to ordered subtrees of a
+colored rooted tree `t`.
+
+See also [`SplittingIterator`](@ref).
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series.
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+function all_splittings(t::ColoredRootedTree)
+    node_set = zeros(Bool, order(t))
+    ls = t.level_sequence
+    cs = t.color_sequence
+    T = eltype(ls)
+    C = eltype(cs)
+    TreeType = ColoredRootedTree{T, Vector{T}, Vector{C}}
+    forests = Vector{Vector{TreeType}}()
+    subtrees = Vector{TreeType}() # ordered subtrees
+
+    for node_set_value in 0:(2^order(t) - 1)
+        binary_digits!(node_set, node_set_value)
+
+        # Check that if a node is removed then all of its descendants are removed
+        subtree_root_index = 1
+        forest = Vector{TreeType}()
+        while subtree_root_index <= order(t)
+            if node_set[subtree_root_index] == false # This node is removed
+                # Find complete subtree
+                subtree_last_index = _subtree_last_index(subtree_root_index, ls)
+
+                # Check that subtree is all removed
+                if !any(@view node_set[subtree_root_index:subtree_last_index])
+                    idx = subtree_root_index:subtree_last_index
+                    new_tree = rootedtree(@view(ls[idx]), @view(cs[idx]))
+                    push!(forest, new_tree)
+                    subtree_root_index = subtree_last_index + 1
+                else
+                    break
+                end
+            else
+                subtree_root_index += 1
+            end
+        end
+
+        if subtree_root_index == order(t) + 1
+            # This is a valid ordered subtree.
+            # The sequences will not automatically be in canonical representation.
+            level_sequence = ls[node_set]
+            color_sequence = cs[node_set]
+            subtree = rootedtree!(level_sequence, color_sequence)
+            push!(subtrees, subtree)
+            push!(forests, forest)
+        end
+    end
+
+    return (; forests, subtrees)
+end
+
+"""
+    SplittingIterator(t::ColoredRootedTree)
+
+Iterator over all splitting forests and subtrees of the colored rooted tree `t`.
+This is basically an iterator version of [`all_splittings`](@ref).
+
+See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
+
+# References
+
+Section 2.2 of
+- Philippe Chartier, Ernst Hairer, Gilles Vilmart (2010)
+  Algebraic Structures of B-series.
+  Foundations of Computational Mathematics
+  [DOI: 10.1007/s10208-010-9065-1](https://doi.org/10.1007/s10208-010-9065-1)
+"""
+struct ColoredSplittingIterator{T <: ColoredRootedTree}
+    t::T
+    node_set::Vector{Bool}
+    max_node_set_value::Int
+
+    function ColoredSplittingIterator(t::T) where {T <: ColoredRootedTree}
+        node_set = zeros(Bool, order(t))
+        new{T}(t, node_set, 2^order(t) - 1)
+    end
+end
+
+# Make SplittingIterator work for ColoredRootedTree by dispatching
+function SplittingIterator(t::ColoredRootedTree)
+    ColoredSplittingIterator(t)
+end
+
+Base.IteratorSize(::Type{<:ColoredSplittingIterator}) = Base.SizeUnknown()
+function Base.eltype(::Type{ColoredSplittingIterator{T}}) where {T}
+    Tuple{Vector{T}, T}
+end
+
+@inline function Base.iterate(splittings::ColoredSplittingIterator)
+    node_set_value = 0
+    iterate(splittings, node_set_value)
+end
+
+@inline function Base.iterate(splittings::ColoredSplittingIterator, node_set_value)
+    node_set_value > splittings.max_node_set_value && return nothing
+
+    node_set = splittings.node_set
+    t = splittings.t
+    ls = t.level_sequence
+    cs = t.color_sequence
+    T = eltype(ls)
+    C = eltype(cs)
+    TreeType = ColoredRootedTree{T, Vector{T}, Vector{C}}
+    forest = Vector{TreeType}()
+
+    while node_set_value <= splittings.max_node_set_value
+        binary_digits!(node_set, node_set_value)
+
+        # Check that if a node is removed then all of its descendants are removed
+        subtree_root_index = 1
+        empty!(forest)
+        while subtree_root_index <= order(t)
+            if node_set[subtree_root_index] == false # This node is removed
+                subtree_last_index = _subtree_last_index(subtree_root_index, ls)
+
+                # Check that subtree is all removed
+                if !any(@view node_set[subtree_root_index:subtree_last_index])
+                    # If `iscanonical(t)`, the subtree starting at the root of `t`
+                    # is also in canonical representation. Thus, we don't need to
+                    # use the more expensive version
+                    #   push!(forest, rootedtree!(level_sequence, color_sequence))
+                    # but can use the cheaper version below.
+                    idx = subtree_root_index:subtree_last_index
+                    level_sequence = ls[idx]
+                    color_sequence = cs[idx]
+                    push!(forest,
+                          ColoredRootedTree(level_sequence, color_sequence, iscanonical(t)))
+                    subtree_root_index = subtree_last_index + 1
+                else
+                    break
+                end
+            else
+                subtree_root_index += 1
+            end
+        end
+
+        if subtree_root_index == order(t) + 1
+            # This is a valid ordered subtree.
+            # The sequences will not automatically be in canonical representation.
+            level_sequence = ls[node_set]
+            color_sequence = cs[node_set]
+            subtree = rootedtree!(level_sequence, color_sequence)
+            return ((forest, subtree), node_set_value + 1)
+        else
+            node_set_value = node_set_value + 1
+        end
+    end
+
+    return nothing
+end
 
 # additional representation and construction methods
 
