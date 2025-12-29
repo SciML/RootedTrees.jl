@@ -1885,6 +1885,34 @@ using Aqua: Aqua
         end
     end # @testset "plots"
 
+    @testset "JET static analysis" begin
+        using JET: JET, report_call, get_reports
+
+        # Test key functions for type stability using report_call
+        @testset "Type stability" begin
+            t = rootedtree([1, 2, 3, 2])
+            t2 = rootedtree([1, 2])
+            ct = rootedtree([1, 2, 3, 2], Bool[false, true, true, false])
+
+            # Core functions should have no JET issues
+            @test isempty(get_reports(report_call(order, (typeof(t),))))
+            @test isempty(get_reports(report_call(symmetry, (typeof(t),))))
+            @test isempty(get_reports(report_call(density, (typeof(t),))))
+            @test isempty(get_reports(report_call(α, (typeof(t),))))
+            @test isempty(get_reports(report_call(β, (typeof(t),))))
+
+            # Iterators should have no JET issues
+            @test isempty(get_reports(report_call(RootedTreeIterator, (Int,))))
+            @test isempty(get_reports(report_call(SubtreeIterator, (typeof(t),))))
+
+            # Colored tree operations should have no JET issues
+            @test isempty(get_reports(report_call(order, (typeof(ct),))))
+            @test isempty(get_reports(report_call(symmetry, (typeof(ct),))))
+            @test isempty(get_reports(report_call(density, (typeof(ct),))))
+            @test isempty(get_reports(report_call(BicoloredRootedTreeIterator, (Int,))))
+        end
+    end
+
     @testset "Aqua" begin
         Aqua.test_all(RootedTrees;
                       ambiguities = (; exclude = [getindex]),
