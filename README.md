@@ -130,6 +130,7 @@ for your research, please cite the paper
   eprintclass={math.NA}
 }
 ```
+
 In addition, you can also refer to RootedTrees.jl directly as
 ```bibtex
 @misc{ranocha2019rootedtrees,
