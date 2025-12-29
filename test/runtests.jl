@@ -10,6 +10,7 @@ Plots.unicodeplots()
 using LaTeXStrings: @L_str
 
 using Aqua: Aqua
+using ExplicitImports: check_no_implicit_imports, check_no_stale_explicit_imports
 
 @testset "RootedTrees" begin
     @testset "RootedTree" begin
@@ -1890,5 +1891,10 @@ using Aqua: Aqua
                       ambiguities = (; exclude = [getindex]),
                       # Requires.jl is not loaded on new versions of Julia
                       stale_deps = (; ignore = [:Requires]))
+    end
+
+    @testset "ExplicitImports" begin
+        @test isnothing(check_no_implicit_imports(RootedTrees))
+        @test isnothing(check_no_stale_explicit_imports(RootedTrees))
     end
 end # @testset "RootedTrees"
