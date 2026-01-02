@@ -11,7 +11,8 @@ using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
 
 export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
-       ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
+       ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator,
+       ColoredRootedTreeIterator, FilteredTreeIterator
 
 export butcher_representation, elementary_differential_latexstring,
        elementary_weight_latexstring
@@ -606,6 +607,69 @@ function count_trees(order)
         num += 1
     end
     num
+end
+
+"""
+    FilteredTreeIterator(predicate, iter)
+
+Iterator that filters trees from another iterator using a predicate function.
+Only trees for which `predicate(tree)` returns `true` are yielded.
+
+Since the underlying iterator may return views to internal buffers, trees are
+copied before being passed to the predicate and returned. Thus, the returned
+trees are safe to store and modify.
+
+# Examples
+
+```julia
+# Iterate over bicolored trees where the root has color 0
+for t in FilteredTreeIterator(t -> root_color(t) == false,
+                              BicoloredRootedTreeIterator(4))
+    println(t)
+end
+
+# Filter rooted trees by symmetry
+for t in FilteredTreeIterator(t -> symmetry(t) == 1,
+                              RootedTreeIterator(5))
+    println(t)
+end
+```
+
+See also [`RootedTreeIterator`](@ref), [`BicoloredRootedTreeIterator`](@ref),
+[`ColoredRootedTreeIterator`](@ref).
+"""
+struct FilteredTreeIterator{F, I}
+    predicate::F
+    iter::I
+end
+
+function Base.IteratorSize(::Type{FilteredTreeIterator{F, I}}) where {F, I}
+    # Filtering may reduce count, so we can't know exact size.
+    # But if the inner iterator is infinite, so is the filtered iterator.
+    Base.IteratorSize(I) isa Base.IsInfinite ? Base.IsInfinite() : Base.SizeUnknown()
+end
+Base.eltype(::Type{FilteredTreeIterator{F, I}}) where {F, I} = eltype(I)
+
+@inline function Base.iterate(fiter::FilteredTreeIterator)
+    iter_result = iterate(fiter.iter)
+    _filtered_tree_iterate(fiter, iter_result)
+end
+
+@inline function Base.iterate(fiter::FilteredTreeIterator, state)
+    iter_result = iterate(fiter.iter, state)
+    _filtered_tree_iterate(fiter, iter_result)
+end
+
+@inline function _filtered_tree_iterate(fiter::FilteredTreeIterator, iter_result)
+    while iter_result !== nothing
+        tree, state = iter_result
+        tree_copy = copy(tree)
+        if fiter.predicate(tree_copy)
+            return (tree_copy, state)
+        end
+        iter_result = iterate(fiter.iter, state)
+    end
+    return nothing
 end
 
 # subtrees
