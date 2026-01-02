@@ -610,14 +610,10 @@ function count_trees(order)
 end
 
 """
-    FilteredTreeIterator(iter, predicate)
+    FilteredTreeIterator(predicate, iter)
 
 Iterator that filters trees from another iterator using a predicate function.
 Only trees for which `predicate(tree)` returns `true` are yielded.
-
-This iterator wraps any rooted tree iterator and applies a filter predicate
-to select only trees satisfying certain conditions. This is useful, for example,
-for Nyström methods which require trees with specific properties.
 
 Since the underlying iterator may return views to internal buffers, trees are
 copied before being passed to the predicate and returned. Thus, the returned
@@ -627,14 +623,14 @@ trees are safe to store and modify.
 
 ```julia
 # Iterate over bicolored trees where the root has color 0
-for t in FilteredTreeIterator(BicoloredRootedTreeIterator(4),
-                              t -> root_color(t) == false)
+for t in FilteredTreeIterator(t -> root_color(t) == false,
+                              BicoloredRootedTreeIterator(4))
     println(t)
 end
 
 # Filter rooted trees by symmetry
-for t in FilteredTreeIterator(RootedTreeIterator(5),
-                              t -> symmetry(t) == 1)
+for t in FilteredTreeIterator(t -> symmetry(t) == 1,
+                              RootedTreeIterator(5))
     println(t)
 end
 ```
@@ -642,13 +638,17 @@ end
 See also [`RootedTreeIterator`](@ref), [`BicoloredRootedTreeIterator`](@ref),
 [`ColoredRootedTreeIterator`](@ref).
 """
-struct FilteredTreeIterator{I, F}
-    iter::I
+struct FilteredTreeIterator{F, I}
     predicate::F
+    iter::I
 end
 
-Base.IteratorSize(::Type{<:FilteredTreeIterator}) = Base.SizeUnknown()
-Base.eltype(::Type{FilteredTreeIterator{I, F}}) where {I, F} = eltype(I)
+function Base.IteratorSize(::Type{FilteredTreeIterator{F, I}}) where {F, I}
+    # Filtering may reduce count, so we can't know exact size.
+    # But if the inner iterator is infinite, so is the filtered iterator.
+    Base.IteratorSize(I) isa Base.IsInfinite ? Base.IsInfinite() : Base.SizeUnknown()
+end
+Base.eltype(::Type{FilteredTreeIterator{F, I}}) where {F, I} = eltype(I)
 
 @inline function Base.iterate(fiter::FilteredTreeIterator)
     iter_result = iterate(fiter.iter)
