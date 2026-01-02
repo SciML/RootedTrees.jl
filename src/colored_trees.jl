@@ -529,21 +529,21 @@ function Base.eltype(::Type{ColoredRootedTreeIterator{T}}) where {T}
     ColoredRootedTree{T, Vector{T}, Vector{T}}
 end
 
-# Convert a non-negative integer to a mixed-radix representation
-# This is analogous to `binary_digits!` but for arbitrary base
-@inline function mixed_radix_digits!(digits::AbstractVector{T}, n::Int,
-                                     base::T) where {T <: Integer}
-    for i in eachindex(digits)
-        digits[i] = n % base
-        n = n ÷ base
+# Helper to fill color sequence using digits representation
+@inline function _fill_color_sequence!(color_sequence, color_id, num_colors)
+    if num_colors == 1
+        # Special case: only one color, all digits are 0
+        fill!(color_sequence, zero(eltype(color_sequence)))
+    else
+        digits!(color_sequence, color_id; base = num_colors)
     end
-    digits
+    color_sequence
 end
 
 @inline function Base.iterate(iter::ColoredRootedTreeIterator)
     _, inner_state = iterate(iter.iter)
     color_id = 0
-    mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+    _fill_color_sequence!(iter.t.color_sequence, color_id, iter.num_colors)
     (iter.t, (inner_state, color_id + 1))
 end
 
@@ -552,7 +552,7 @@ end
 
     # If we can iterate more by changing the color sequence, let's do so.
     while color_id < iter.total_color_combinations
-        mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+        _fill_color_sequence!(iter.t.color_sequence, color_id, iter.num_colors)
 
         # Check if this color assignment yields a canonical representation.
         # Similar to BicoloredRootedTreeIterator, some color assignments
@@ -572,7 +572,7 @@ end
 
     _, inner_state = inner_value_state
     color_id = 0
-    mixed_radix_digits!(iter.t.color_sequence, color_id, iter.num_colors)
+    _fill_color_sequence!(iter.t.color_sequence, color_id, iter.num_colors)
     return (iter.t, (inner_state, color_id + 1))
 end
 
@@ -719,7 +719,7 @@ function all_splittings(t::ColoredRootedTree)
     forests = Vector{Vector{TreeType}}()
     subtrees = Vector{TreeType}() # ordered subtrees
 
-    for node_set_value in 0:(2^order(t) - 1)
+    for node_set_value in 0:(2 ^ order(t) - 1)
         binary_digits!(node_set, node_set_value)
 
         # Check that if a node is removed then all of its descendants are removed
