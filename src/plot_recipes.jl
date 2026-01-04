@@ -1,4 +1,3 @@
-
 RecipesBase.@recipe function plot(t::AbstractRootedTree)
     # Compute x and y coordinates recursively
     width = 2.0
@@ -42,9 +41,11 @@ RecipesBase.@recipe function plot(t::AbstractRootedTree)
     x, y
 end
 
-function _plot_coordinates(t::AbstractRootedTree,
-                           x_root::T, y_root::T,
-                           width::T, height::T) where {T}
+function _plot_coordinates(
+        t::AbstractRootedTree,
+        x_root::T, y_root::T,
+        width::T, height::T
+    ) where {T}
     # Indicate a new line series by `NaN`
     nan = convert(T, NaN)
 
@@ -73,8 +74,10 @@ function _plot_coordinates(t::AbstractRootedTree,
         push!(x, nan, x_root, x_child)
         push!(y, nan, y_root, y_child)
         x_recursive,
-        y_recursive = _plot_coordinates(subtr[idx],
-                                        x_child, y_child, width / 3, height)
+            y_recursive = _plot_coordinates(
+            subtr[idx],
+            x_child, y_child, width / 3, height
+        )
         append!(x, x_recursive)
         append!(y, y_recursive)
     end
@@ -146,10 +149,12 @@ RecipesBase.@recipe function plot(t::ColoredRootedTree)
     x, y
 end
 
-function _plot_coordinates(t::ColoredRootedTree,
-                           x_root::T, y_root::T,
-                           width::T, height::T,
-                           colormap) where {T}
+function _plot_coordinates(
+        t::ColoredRootedTree,
+        x_root::T, y_root::T,
+        width::T, height::T,
+        colormap
+    ) where {T}
     # Initialize vectors of return values
     x = Vector{Vector{T}}()
     y = Vector{Vector{T}}()
@@ -214,10 +219,12 @@ function _plot_coordinates(t::ColoredRootedTree,
         push!(y, [y_root, y_child])
         push!(colors, [color_root, colormap[first(subtr[idx].color_sequence)]])
         x_recursive, y_recursive,
-        colors_recursive = _plot_coordinates(subtr[idx],
-                                             x_child, y_child,
-                                             width / 3, height,
-                                             colormap)
+            colors_recursive = _plot_coordinates(
+            subtr[idx],
+            x_child, y_child,
+            width / 3, height,
+            colormap
+        )
         append!(x, x_recursive)
         append!(y, y_recursive)
         append!(colors, colors_recursive)

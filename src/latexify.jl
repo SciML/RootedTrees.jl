@@ -1,4 +1,3 @@
-
 """
     latexify(t::Union{RootedTree, BicoloredRootedTree})
 
@@ -107,5 +106,5 @@ function set_latexify_style(style::String)
         throw(ArgumentError("Invalid printing style: \"$(style)\""))
     end
 
-    @set_preferences!("latexify_style"=>style)
+    return @set_preferences!("latexify_style" => style)
 end

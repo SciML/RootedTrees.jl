@@ -24,16 +24,20 @@ using JET: @test_opt
         end
 
         @testset "comparisons etc." begin
-            trees = (rootedtree([1, 2, 3]),
-                     rootedtree([1, 2, 3]),
-                     rootedtree([1, 2, 2]),
-                     rootedtree([1, 2, 3, 3]),
-                     rootedtree(Int[]))
-            trees_shifted = (rootedtree([1, 2, 3]),
-                             rootedtree([2, 3, 4]),
-                             rootedtree([1, 2, 2]),
-                             rootedtree([1, 2, 3, 3]),
-                             rootedtree(Int[]))
+            trees = (
+                rootedtree([1, 2, 3]),
+                rootedtree([1, 2, 3]),
+                rootedtree([1, 2, 2]),
+                rootedtree([1, 2, 3, 3]),
+                rootedtree(Int[]),
+            )
+            trees_shifted = (
+                rootedtree([1, 2, 3]),
+                rootedtree([2, 3, 4]),
+                rootedtree([1, 2, 2]),
+                rootedtree([1, 2, 3, 3]),
+                rootedtree(Int[]),
+            )
 
             for (t1, t2, t3, t4, t5) in (trees, trees_shifted)
                 @test t1 == t1
@@ -385,9 +389,9 @@ using JET: @test_opt
             @test t5 == t_result
             @test butcher_representation(t5) == "[τ³]"
             @test RootedTrees.subtrees(t5) ==
-                  [rootedtree([2]), rootedtree([2]), rootedtree([2])]
+                [rootedtree([2]), rootedtree([2]), rootedtree([2])]
             @test elementary_differential_latexstring(t5) ==
-                  L"$f^{\prime\prime\prime}(f, f, f)$"
+                L"$f^{\prime\prime\prime}(f, f, f)$"
             @test elementary_weight_latexstring(t5) == L"$\sum_{d}b_{d}c_{d}^{3}$"
 
             t6 = rootedtree([1, 2, 2, 3])
@@ -407,9 +411,9 @@ using JET: @test_opt
             @test butcher_representation(t6) == "[[τ]τ]"
             @test RootedTrees.subtrees(t6) == [rootedtree([2, 3]), rootedtree([2])]
             @test elementary_differential_latexstring(t6) ==
-                  L"$f^{\prime\prime}(f^{\prime}f, f)$"
+                L"$f^{\prime\prime}(f^{\prime}f, f)$"
             @test elementary_weight_latexstring(t6) ==
-                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}$"
+                L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}$"
 
             t7 = rootedtree([1, 2, 3, 3])
             @test order(t7) == 4
@@ -422,7 +426,7 @@ using JET: @test_opt
             @test t7 == t_result
             @test butcher_representation(t7) == "[[τ²]]"
             @test elementary_differential_latexstring(t7) ==
-                  L"$f^{\prime}f^{\prime\prime}(f, f)$"
+                L"$f^{\prime}f^{\prime\prime}(f, f)$"
             @test elementary_weight_latexstring(t7) == L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{2}$"
 
             t8 = rootedtree([1, 2, 3, 4])
@@ -436,9 +440,9 @@ using JET: @test_opt
             @test t8 == t_result
             @test butcher_representation(t8) == "[[[τ]]]"
             @test elementary_differential_latexstring(t8) ==
-                  L"$f^{\prime}f^{\prime}f^{\prime}f$"
+                L"$f^{\prime}f^{\prime}f^{\prime}f$"
             @test elementary_weight_latexstring(t8) ==
-                  L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}$"
+                L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}$"
 
             t9 = rootedtree([1, 2, 2, 2, 2])
             @test order(t9) == 5
@@ -469,9 +473,9 @@ using JET: @test_opt
             @test t10 == t_result
             @test butcher_representation(t10) == "[[τ]τ²]"
             @test elementary_differential_latexstring(t10) ==
-                  L"$f^{\prime\prime\prime}(f^{\prime}f, f, f)$"
+                L"$f^{\prime\prime\prime}(f^{\prime}f, f, f)$"
             @test elementary_weight_latexstring(t10) ==
-                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}^{2}$"
+                L"$\sum_{d, e}b_{d}a_{d,e}c_{e}c_{d}^{2}$"
 
             t11 = rootedtree([1, 2, 2, 3, 3])
             @test order(t11) == 5
@@ -487,9 +491,9 @@ using JET: @test_opt
             @test t11 == t_result
             @test butcher_representation(t11) == "[[τ²]τ]"
             @test elementary_differential_latexstring(t11) ==
-                  L"$f^{\prime\prime}(f^{\prime\prime}(f, f), f)$"
+                L"$f^{\prime\prime}(f^{\prime\prime}(f, f), f)$"
             @test elementary_weight_latexstring(t11) ==
-                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{2}c_{d}$"
+                L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{2}c_{d}$"
 
             t12 = rootedtree([1, 2, 2, 3, 4])
             @test order(t12) == 5
@@ -506,9 +510,9 @@ using JET: @test_opt
             @test t12 == t_result
             @test butcher_representation(t12) == "[[[τ]]τ]"
             @test elementary_differential_latexstring(t12) ==
-                  L"$f^{\prime\prime}(f^{\prime}f^{\prime}f, f)$"
+                L"$f^{\prime\prime}(f^{\prime}f^{\prime}f, f)$"
             @test elementary_weight_latexstring(t12) ==
-                  L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}c_{d}$"
+                L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}c_{d}$"
 
             t13 = rootedtree([1, 2, 3, 2, 3])
             @test order(t13) == 5
@@ -522,9 +526,9 @@ using JET: @test_opt
             @test t13 == t_result
             @test butcher_representation(t13) == "[[τ][τ]]"
             @test elementary_differential_latexstring(t13) ==
-                  L"$f^{\prime\prime}(f^{\prime}f, f^{\prime}f)$"
+                L"$f^{\prime\prime}(f^{\prime}f, f^{\prime}f)$"
             @test elementary_weight_latexstring(t13) ==
-                  L"$\sum_{d, e}b_{d}(a_{d,e}c_{e})^{2}$"
+                L"$\sum_{d, e}b_{d}(a_{d,e}c_{e})^{2}$"
 
             t14 = rootedtree([1, 2, 3, 3, 3])
             @test order(t14) == 5
@@ -538,9 +542,9 @@ using JET: @test_opt
             @test t14 == t_result
             @test butcher_representation(t14) == "[[τ³]]"
             @test elementary_differential_latexstring(t14) ==
-                  L"$f^{\prime}f^{\prime\prime\prime}(f, f, f)$"
+                L"$f^{\prime}f^{\prime\prime\prime}(f, f, f)$"
             @test elementary_weight_latexstring(t14) ==
-                  L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{3}$"
+                L"$\sum_{d, e}b_{d}a_{d,e}c_{e}^{3}$"
 
             t15 = rootedtree([1, 2, 3, 3, 4])
             @test order(t15) == 5
@@ -554,9 +558,9 @@ using JET: @test_opt
             @test t15 == t_result
             @test butcher_representation(t15) == "[[[τ]τ]]"
             @test elementary_differential_latexstring(t15) ==
-                  L"$f^{\prime}f^{\prime\prime}(f^{\prime}f, f)$"
+                L"$f^{\prime}f^{\prime\prime}(f^{\prime}f, f)$"
             @test elementary_weight_latexstring(t15) ==
-                  L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}c_{e}$"
+                L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}c_{e}$"
 
             t16 = rootedtree([1, 2, 3, 4, 4])
             @test order(t16) == 5
@@ -570,9 +574,9 @@ using JET: @test_opt
             @test t16 == t_result
             @test butcher_representation(t16) == "[[[τ²]]]"
             @test elementary_differential_latexstring(t16) ==
-                  L"$f^{\prime}f^{\prime}f^{\prime\prime}(f, f)$"
+                L"$f^{\prime}f^{\prime}f^{\prime\prime}(f, f)$"
             @test elementary_weight_latexstring(t16) ==
-                  L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}^{2}$"
+                L"$\sum_{d, e, f}b_{d}a_{d,e}a_{e,f}c_{f}^{2}$"
 
             t17 = rootedtree([1, 2, 3, 4, 5])
             @test order(t17) == 5
@@ -586,19 +590,19 @@ using JET: @test_opt
             @test t17 == t_result
             @test butcher_representation(t17) == "[[[[τ]]]]"
             @test elementary_differential_latexstring(t17) ==
-                  L"$f^{\prime}f^{\prime}f^{\prime}f^{\prime}f$"
+                L"$f^{\prime}f^{\prime}f^{\prime}f^{\prime}f$"
             @test elementary_weight_latexstring(t17) ==
-                  L"$\sum_{d, e, f, g}b_{d}a_{d,e}a_{e,f}a_{f,g}c_{g}$"
+                L"$\sum_{d, e, f, g}b_{d}a_{d,e}a_{e,f}a_{f,g}c_{g}$"
 
             # test elementary_weight_latexstring which needs more than 23 indices
 
             t18 = rootedtree(collect(1:25))
             @test elementary_weight_latexstring(t18) ==
-                  L"$\sum_{d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, d2}b_{d1}a_{d1,e1}a_{e1,f1}a_{f1,g1}a_{g1,h1}a_{h1,i1}a_{i1,j1}a_{j1,k1}a_{k1,l1}a_{l1,m1}a_{m1,n1}a_{n1,o1}a_{o1,p1}a_{p1,q1}a_{q1,r1}a_{r1,s1}a_{s1,t1}a_{t1,u1}a_{u1,v1}a_{v1,w1}a_{w1,x1}a_{x1,y1}a_{y1,z1}a_{z1,d2}c_{d2}$"
+                L"$\sum_{d1, e1, f1, g1, h1, i1, j1, k1, l1, m1, n1, o1, p1, q1, r1, s1, t1, u1, v1, w1, x1, y1, z1, d2}b_{d1}a_{d1,e1}a_{e1,f1}a_{f1,g1}a_{g1,h1}a_{h1,i1}a_{i1,j1}a_{j1,k1}a_{k1,l1}a_{l1,m1}a_{m1,n1}a_{n1,o1}a_{o1,p1}a_{p1,q1}a_{q1,r1}a_{r1,s1}a_{s1,t1}a_{t1,u1}a_{u1,v1}a_{v1,w1}a_{w1,x1}a_{x1,y1}a_{y1,z1}a_{z1,d2}c_{d2}$"
 
             t19 = rootedtree([1, 2, 2, 3, 2, 3])
             @test elementary_weight_latexstring(t19) ==
-                  L"$\sum_{d, e}b_{d}(a_{d,e}c_{e})^{2}c_{d}$"
+                L"$\sum_{d, e}b_{d}(a_{d,e}c_{e})^{2}c_{d}$"
 
             # test non-canonical representation
             level_sequence = [1, 2, 3, 2, 3, 4, 2, 3, 2, 3, 4, 5, 6, 2, 3, 4]
@@ -625,12 +629,14 @@ using JET: @test_opt
         @testset "partitions" begin
             let t = rootedtree([1, 2, 3, 4, 3])
                 edge_set = [true, true, false, false]
-                reference_forest = [rootedtree([1, 2, 3]),
+                reference_forest = [
+                    rootedtree([1, 2, 3]),
                     rootedtree([4]),
-                    rootedtree([3])]
+                    rootedtree([3]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -638,12 +644,14 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 4, 3])
                 edge_set = [false, true, true, false]
-                reference_forest = [rootedtree([3]),
+                reference_forest = [
+                    rootedtree([3]),
                     rootedtree([2, 3, 4]),
-                    rootedtree([1])]
+                    rootedtree([1]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -651,13 +659,15 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 4, 3])
                 edge_set = [false, true, false, false]
-                reference_forest = [rootedtree([4]),
+                reference_forest = [
+                    rootedtree([4]),
                     rootedtree([3]),
                     rootedtree([2, 3]),
-                    rootedtree([1])]
+                    rootedtree([1]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3, 3])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -665,12 +675,14 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 2, 2, 2])
                 edge_set = [false, false, true, true]
-                reference_forest = [rootedtree([2]),
+                reference_forest = [
                     rootedtree([2]),
-                    rootedtree([1, 2, 2])]
+                    rootedtree([2]),
+                    rootedtree([1, 2, 2]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -678,13 +690,15 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 2, 2])
                 edge_set = [false, false, false, true]
-                reference_forest = [rootedtree([3]),
+                reference_forest = [
+                    rootedtree([3]),
                     rootedtree([2]),
                     rootedtree([2]),
-                    rootedtree([1, 2])]
+                    rootedtree([1, 2]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3, 2])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -695,7 +709,7 @@ using JET: @test_opt
                 reference_forest = [rootedtree([1, 2, 3, 2, 2])]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -703,12 +717,14 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 2, 3])
                 edge_set = [true, true, false, false]
-                reference_forest = [rootedtree([3]),
+                reference_forest = [
+                    rootedtree([3]),
                     rootedtree([2]),
-                    rootedtree([1, 2, 3])]
+                    rootedtree([1, 2, 3]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -716,13 +732,15 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 2, 3])
                 edge_set = [false, true, false, false]
-                reference_forest = [rootedtree([2, 3]),
+                reference_forest = [
+                    rootedtree([2, 3]),
                     rootedtree([3]),
                     rootedtree([2]),
-                    rootedtree([1])]
+                    rootedtree([1]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2, 3])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -730,12 +748,14 @@ using JET: @test_opt
 
             let t = rootedtree([1, 2, 3, 3, 3])
                 edge_set = [false, true, true, false]
-                reference_forest = [rootedtree([3]),
+                reference_forest = [
+                    rootedtree([3]),
                     rootedtree([2, 3, 3]),
-                    rootedtree([1])]
+                    rootedtree([1]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -744,11 +764,13 @@ using JET: @test_opt
             # additional tests not included in the examples of the paper
             let t = rootedtree([1, 2, 3, 2, 3])
                 edge_set = [true, false, true, true]
-                reference_forest = [rootedtree([1, 2, 3, 2]),
-                    rootedtree([3])]
+                reference_forest = [
+                    rootedtree([1, 2, 3, 2]),
+                    rootedtree([3]),
+                ]
                 @test sort!(partition_forest(t, edge_set)) == sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -783,7 +805,7 @@ using JET: @test_opt
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
                 [rootedtree([1]), rootedtree([1]), rootedtree([1, 2])],
-                [rootedtree([1]), rootedtree([1]), rootedtree([1]), rootedtree([1])]
+                [rootedtree([1]), rootedtree([1]), rootedtree([1]), rootedtree([1])],
             ]
             reference_skeletons = [
                 rootedtree([1]),
@@ -793,7 +815,7 @@ using JET: @test_opt
                 rootedtree([1, 2, 2]),
                 rootedtree([1, 2, 3]),
                 rootedtree([1, 2, 3]),
-                rootedtree([1, 2, 3, 3])
+                rootedtree([1, 2, 3, 3]),
             ]
             for forest in reference_forests
                 sort!(forest)
@@ -820,7 +842,7 @@ using JET: @test_opt
                     for t in RootedTreeIterator(order)
                         forests, skeletons = all_partitions(t)
                         @test collect(zip(forests, skeletons)) ==
-                              collect(PartitionIterator(t))
+                            collect(PartitionIterator(t))
                     end
                 end
 
@@ -841,8 +863,14 @@ using JET: @test_opt
         @testset "splittings" begin
             t = rootedtree([1, 2, 3, 2, 2])
             splittings = all_splittings(t)
-            forests_and_subtrees = sort!(collect(zip(splittings.forests,
-                                                     splittings.subtrees)))
+            forests_and_subtrees = sort!(
+                collect(
+                    zip(
+                        splittings.forests,
+                        splittings.subtrees
+                    )
+                )
+            )
 
             reference_forests_and_subtrees = [
                 (empty([rootedtree([1])]), rootedtree([1, 2, 3, 2, 2])),
@@ -857,7 +885,7 @@ using JET: @test_opt
                 ([rootedtree([1]), rootedtree([1])], rootedtree([1, 2, 2])),
                 ([rootedtree([1]), rootedtree([1]), rootedtree([1])], rootedtree([1, 2])),
                 ([rootedtree([1, 2]), rootedtree([1]), rootedtree([1])], rootedtree([1])),
-                ([rootedtree([1, 2, 3, 2, 2])], rootedtree(Int[]))
+                ([rootedtree([1, 2, 3, 2, 2])], rootedtree(Int[])),
             ]
             sort!(reference_forests_and_subtrees)
 
@@ -882,32 +910,38 @@ using JET: @test_opt
         @testset "validate level sequence in constructor" begin
             @test_nowarn rootedtree([1, 2, 3, 4], Bool[0, 0, 0, 0])
             @test_throws DimensionMismatch rootedtree([1, 2, 3, 4, 5, 1], Bool[0, 0])
-            @test_throws ArgumentError rootedtree([1, 2, 3, 4, 5, 1],
-                                                  Bool[0, 0, 0, 0, 0, 0])
+            @test_throws ArgumentError rootedtree(
+                [1, 2, 3, 4, 5, 1],
+                Bool[0, 0, 0, 0, 0, 0]
+            )
             @test_throws ArgumentError rootedtree([1, 1], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 3], Bool[0, 0])
             @test_throws ArgumentError rootedtree([1, 0], Bool[0, 0])
         end
 
         @testset "comparisons etc." begin
-            trees = (rootedtree([1, 2, 3], [1, 1, 1]),
-                     rootedtree([1, 2, 3], [1, 1, 1]),
-                     rootedtree([1, 2, 2], [1, 1, 1]),
-                     rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
-                     rootedtree(Int[], Int[]),
-                     rootedtree([1, 2, 3], [1, 1, 2]),
-                     rootedtree([1, 2, 3], [1, 2, 1]),
-                     rootedtree([1, 2, 3], [1, 2, 2]),
-                     rootedtree([1, 2, 2], [2, 2, 2]))
-            trees_shifted = (rootedtree([1, 2, 3], [1, 1, 1]),
-                             rootedtree([2, 3, 4], [1, 1, 1]),
-                             rootedtree([1, 2, 2], [1, 1, 1]),
-                             rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
-                             rootedtree(Int[], Int[]),
-                             rootedtree([1, 2, 3], [1, 1, 2]),
-                             rootedtree([0, 1, 2], [1, 2, 1]),
-                             rootedtree([2, 3, 4], [1, 2, 2]),
-                             rootedtree([1, 2, 2], [2, 2, 2]))
+            trees = (
+                rootedtree([1, 2, 3], [1, 1, 1]),
+                rootedtree([1, 2, 3], [1, 1, 1]),
+                rootedtree([1, 2, 2], [1, 1, 1]),
+                rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+                rootedtree(Int[], Int[]),
+                rootedtree([1, 2, 3], [1, 1, 2]),
+                rootedtree([1, 2, 3], [1, 2, 1]),
+                rootedtree([1, 2, 3], [1, 2, 2]),
+                rootedtree([1, 2, 2], [2, 2, 2]),
+            )
+            trees_shifted = (
+                rootedtree([1, 2, 3], [1, 1, 1]),
+                rootedtree([2, 3, 4], [1, 1, 1]),
+                rootedtree([1, 2, 2], [1, 1, 1]),
+                rootedtree([1, 2, 3, 3], [1, 1, 1, 1]),
+                rootedtree(Int[], Int[]),
+                rootedtree([1, 2, 3], [1, 1, 2]),
+                rootedtree([0, 1, 2], [1, 2, 1]),
+                rootedtree([2, 3, 4], [1, 2, 2]),
+                rootedtree([1, 2, 2], [2, 2, 2]),
+            )
 
             for (t1, t2, t3, t4, t5, t6, t7, t8, t9) in (trees, trees_shifted)
                 @test t1 == t1
@@ -1007,8 +1041,10 @@ using JET: @test_opt
                     push!(hashes, new_hash)
                 end
             end
-            t = rootedtree([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2],
-                           Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0])
+            t = rootedtree(
+                [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 2],
+                Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0, 1, 0]
+            )
             new_hash = @inferred hash(t)
             @test !(new_hash in hashes)
         end
@@ -1188,8 +1224,10 @@ using JET: @test_opt
                     @test latexify(t) == latex_string
                 end
 
-                let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                let t = rootedtree(
+                        [1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+                    )
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end
@@ -1233,8 +1271,10 @@ using JET: @test_opt
                     @test latexify(t) == latex_string
                 end
 
-                let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                let t = rootedtree(
+                        [1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+                    )
                     latex_string = "[[[τ₁τ₀]₀[τ₀]₁τ₁τ₀]₁τ₁]₀"
                     @test latexify(t) == latex_string
                 end
@@ -1278,8 +1318,10 @@ using JET: @test_opt
                     @test latexify(t) == latex_string
                 end
 
-                let t = rootedtree([1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
-                                   Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1])
+                let t = rootedtree(
+                        [1, 2, 3, 4, 4, 3, 4, 3, 3, 2],
+                        Bool[0, 1, 0, 1, 0, 1, 0, 1, 0, 1]
+                    )
                     latex_string = "\\rootedtree[.[o[.[o][.]][o[.]][o][.]][o]]"
                     @test latexify(t) == latex_string
                 end
@@ -1319,12 +1361,14 @@ using JET: @test_opt
             # Example in Section 6.1
             let t = rootedtree([1, 2, 3, 3], Bool[0, 1, 0, 0])
                 edge_set = [false, true, false]
-                reference_forest = [rootedtree([3], Bool[0]),
+                reference_forest = [
+                    rootedtree([3], Bool[0]),
                     rootedtree([2, 3], Bool[1, 0]),
-                    rootedtree([1], Bool[0])]
+                    rootedtree([1], Bool[0]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3], Bool[0, 1, 0])
                 @test reference_skeleton == partition_skeleton(t, edge_set)
@@ -1333,74 +1377,84 @@ using JET: @test_opt
             # Other examples for single-colored trees
             let t = rootedtree([1, 2, 3, 4, 3], Bool[1, 1, 0, 1, 1])
                 edge_set = [true, true, false, false]
-                reference_forest = [rootedtree([1, 2, 3], Bool[1, 1, 0]),
+                reference_forest = [
+                    rootedtree([1, 2, 3], Bool[1, 1, 0]),
                     rootedtree([4], Bool[1]),
-                    rootedtree([3], Bool[1])]
+                    rootedtree([3], Bool[1]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 4, 3], rand(Bool, 5))
                 edge_set = [false, true, true, false]
-                reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                reference_forest = [
+                    rootedtree([3], t.color_sequence[5:5]),
                     rootedtree([2, 3, 4], t.color_sequence[2:4]),
-                    rootedtree([1], t.color_sequence[1:1])]
+                    rootedtree([1], t.color_sequence[1:1]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 4, 3], rand(Bool, 5))
                 edge_set = [false, true, false, false]
-                reference_forest = [rootedtree([4], t.color_sequence[4:4]),
+                reference_forest = [
+                    rootedtree([4], t.color_sequence[4:4]),
                     rootedtree([3], t.color_sequence[5:5]),
                     rootedtree([2, 3], t.color_sequence[2:3]),
-                    rootedtree([1], t.color_sequence[1:1])]
+                    rootedtree([1], t.color_sequence[1:1]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3, 3])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 2, 2, 2], rand(Bool, 5))
                 edge_set = [false, false, true, true]
-                reference_forest = [rootedtree([2], t.color_sequence[2:2]),
+                reference_forest = [
+                    rootedtree([2], t.color_sequence[2:2]),
                     rootedtree([2], t.color_sequence[3:3]),
-                    rootedtree([1, 2, 2], t.color_sequence[[1, 4, 5]])]
+                    rootedtree([1, 2, 2], t.color_sequence[[1, 4, 5]]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 2, 2], rand(Bool, 5))
                 edge_set = [false, false, false, true]
-                reference_forest = [rootedtree([3], t.color_sequence[3:3]),
+                reference_forest = [
+                    rootedtree([3], t.color_sequence[3:3]),
                     rootedtree([2], t.color_sequence[2:2]),
                     rootedtree([2], t.color_sequence[4:4]),
-                    rootedtree([1, 2], t.color_sequence[[1, 5]])]
+                    rootedtree([1, 2], t.color_sequence[[1, 5]]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3, 2])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 2, 2], rand(Bool, 5))
@@ -1408,54 +1462,60 @@ using JET: @test_opt
                 reference_forest = [rootedtree([1, 2, 3, 2, 2], t.color_sequence[:])]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 2, 3], rand(Bool, 5))
                 edge_set = [true, true, false, false]
-                reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                reference_forest = [
+                    rootedtree([3], t.color_sequence[5:5]),
                     rootedtree([2], t.color_sequence[4:4]),
-                    rootedtree([1, 2, 3], t.color_sequence[1:3])]
+                    rootedtree([1, 2, 3], t.color_sequence[1:3]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 2, 3], rand(Bool, 5))
                 edge_set = [false, true, false, false]
-                reference_forest = [rootedtree([2, 3], t.color_sequence[2:3]),
+                reference_forest = [
+                    rootedtree([2, 3], t.color_sequence[2:3]),
                     rootedtree([3], t.color_sequence[5:5]),
                     rootedtree([2], t.color_sequence[4:4]),
-                    rootedtree([1], t.color_sequence[1:1])]
+                    rootedtree([1], t.color_sequence[1:1]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 2, 3])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             let t = rootedtree([1, 2, 3, 3, 3], rand(Bool, 5))
                 edge_set = [false, true, true, false]
-                reference_forest = [rootedtree([3], t.color_sequence[5:5]),
+                reference_forest = [
+                    rootedtree([3], t.color_sequence[5:5]),
                     rootedtree([2, 3, 3], t.color_sequence[2:4]),
-                    rootedtree([1], t.color_sequence[1:1])]
+                    rootedtree([1], t.color_sequence[1:1]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2, 3])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
 
             # additional tests not included in the examples of the paper
@@ -1463,14 +1523,15 @@ using JET: @test_opt
                 edge_set = [true, false, true, true]
                 reference_forest = [
                     rootedtree([1, 2, 3, 2], t.color_sequence[[1, 4, 5, 2]]),
-                    rootedtree([3], t.color_sequence[3:3])]
+                    rootedtree([3], t.color_sequence[3:3]),
+                ]
                 sort!(reference_forest)
                 @test sort!(collect(PartitionForestIterator(t, edge_set))) ==
-                      reference_forest
+                    reference_forest
 
                 reference_skeleton = rootedtree([1, 2])
                 @test reference_skeleton.level_sequence ==
-                      partition_skeleton(t, edge_set).level_sequence
+                    partition_skeleton(t, edge_set).level_sequence
             end
         end
 
@@ -1504,24 +1565,24 @@ using JET: @test_opt
                 [
                     rootedtree([1], Bool[1]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[0, 0])
+                    rootedtree([1, 2], Bool[0, 0]),
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[1, 0])
+                    rootedtree([1, 2], Bool[1, 0]),
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1, 2], Bool[0, 1])
+                    rootedtree([1, 2], Bool[0, 1]),
                 ],
                 [
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[0]),
                     rootedtree([1], Bool[1]),
-                    rootedtree([1], Bool[1])
-                ]
+                    rootedtree([1], Bool[1]),
+                ],
             ]
             reference_skeletons = [
                 rootedtree([1], Bool[1]),
@@ -1531,7 +1592,7 @@ using JET: @test_opt
                 rootedtree([1, 2, 2], Bool[1, 1, 0]),
                 rootedtree([1, 2, 3], Bool[1, 0, 0]),
                 rootedtree([1, 2, 3], Bool[1, 0, 1]),
-                rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0])
+                rootedtree([1, 2, 3, 3], Bool[1, 0, 1, 0]),
             ]
             for forest in reference_forests
                 sort!(forest)
@@ -1555,14 +1616,14 @@ using JET: @test_opt
     @testset "Order conditions" begin
         # Runge-Kutta method SSPRK33 of order 3
         @testset "RungeKuttaMethod, SSPRK33" begin
-            A = [0 0 0; 1 0 0; 1/4 1/4 0]
+            A = [0 0 0; 1 0 0; 1 / 4 1 / 4 0]
             b = [1 / 6, 1 / 6, 2 / 3]
             rk = RungeKuttaMethod(A, b)
             show(IOContext(stdout, :compact => false), rk)
 
             for order in 1:3
                 for t in RootedTreeIterator(order)
-                    @test residual_order_condition(t, rk)≈0 atol=eps()
+                    @test residual_order_condition(t, rk) ≈ 0 atol = eps()
                 end
             end
 
@@ -1574,7 +1635,7 @@ using JET: @test_opt
                 @test res > 10 * eps()
             end
 
-            A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
+            A = @SArray [0 0 0; 1 0 0; 1 / 4 1 / 4 0]
             b = @SArray [1 / 6, 1 / 6, 2 / 3]
             rk = RungeKuttaMethod(A, b)
             show(IOContext(stdout, :compact => true), rk)
@@ -1597,9 +1658,9 @@ using JET: @test_opt
                 for t in RootedTreeIterator(order)
                     @test elementary_weight(t, rk.A, rk.b, rk.c) ≈ elementary_weight(t, rk)
                     @test derivative_weight(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈
-                          derivative_weight(t, rk)
+                        derivative_weight(t, rk)
                     @test residual_order_condition(t, RungeKuttaMethod(rk.A, rk.b, rk.c)) ≈
-                          residual_order_condition(t, rk)
+                        residual_order_condition(t, rk)
                 end
             end
         end
@@ -1615,7 +1676,7 @@ using JET: @test_opt
 
             for order in 1:1
                 for t in BicoloredRootedTreeIterator(order)
-                    @test residual_order_condition(t, ark)≈0 atol=eps()
+                    @test residual_order_condition(t, ark) ≈ 0 atol = eps()
                 end
             end
 
@@ -1633,18 +1694,18 @@ using JET: @test_opt
             # Geometric numerical integration
             # Table II.2.1
             As = [
-                [0 0; 1//2 1//2],
-                [1//2 0; 1//2 0]
+                [0 0; 1 // 2 1 // 2],
+                [1 // 2 0; 1 // 2 0],
             ]
             bs = [
                 [1 // 2, 1 // 2],
-                [1 // 2, 1 // 2]
+                [1 // 2, 1 // 2],
             ]
             ark = AdditiveRungeKuttaMethod(As, bs)
 
             for order in 1:2
                 for t in BicoloredRootedTreeIterator(order)
-                    @test residual_order_condition(t, ark)≈0 atol=eps()
+                    @test residual_order_condition(t, ark) ≈ 0 atol = eps()
                 end
             end
 
@@ -1662,18 +1723,18 @@ using JET: @test_opt
             # Geometric numerical integration
             # Table II.2.2
             As = [
-                [0 0 0; 5//24 1//3 -1//24; 1//6 2//3 1//6],
-                [1//6 -1//6 0; 1//6 1//3 0; 1//6 5//6 0]
+                [0 0 0; 5 // 24 1 // 3 -1 // 24; 1 // 6 2 // 3 1 // 6],
+                [1 // 6 -1 // 6 0; 1 // 6 1 // 3 0; 1 // 6 5 // 6 0],
             ]
             bs = [
                 [1 // 6, 2 // 3, 1 // 6],
-                [1 // 6, 2 // 3, 1 // 6]
+                [1 // 6, 2 // 3, 1 // 6],
             ]
             ark = AdditiveRungeKuttaMethod(As, bs)
 
             for order in 1:4
                 for t in BicoloredRootedTreeIterator(order)
-                    @test residual_order_condition(t, ark)≈0 atol=eps()
+                    @test residual_order_condition(t, ark) ≈ 0 atol = eps()
                 end
             end
 
@@ -1691,18 +1752,18 @@ using JET: @test_opt
             # "Generalized Split-Explicit Runge-Kutta Methods for the
             # Compressible Euler Equations".
             # Monthly Weather Review, 142, 2067-2081
-            A_explicit = @SArray [0 0 0; 1//2 0 0; -1 2 0]
+            A_explicit = @SArray [0 0 0; 1 // 2 0 0; -1 2 0]
             b_explicit = @SArray [1 // 6, 2 // 3, 1 // 6]
             rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
             β = sqrt(3) / 3
-            A_implicit = @SArray [0 0 0; -β/2 (1 + β)/2 0; (3 + 5β)/2 -1-3β (1 + β)/2]
+            A_implicit = @SArray [0 0 0; -β / 2 (1 + β) / 2 0; (3 + 5β) / 2 -1 - 3β (1 + β) / 2]
             b_implicit = @SArray [1 // 6, 2 // 3, 1 // 6]
             rk_implicit = RungeKuttaMethod(A_implicit, b_implicit)
             ark = AdditiveRungeKuttaMethod([rk_explicit, rk_implicit])
 
             for order in 1:3
                 for t in BicoloredRootedTreeIterator(order)
-                    @test residual_order_condition(t, ark)≈0 atol=eps()
+                    @test residual_order_condition(t, ark) ≈ 0 atol = eps()
                 end
             end
 
@@ -1720,33 +1781,37 @@ using JET: @test_opt
             # "Additive Runge-Kutta schemes for convection-diffusion-reaction equations."
             # Applied Numerical Mathematics 44, no. 1-2 (2003): 139-181.
             # https://doi.org/10.1016/S0168-9274(02)00138-1
-            A_explicit = @SArray [0 0 0 0
-                                  1767732205903/2027836641118 0 0 0
-                                  5535828885825/10492691773637 788022342437/10882634858940 0 0
-                                  6485989280629/16251701735622 -4246266847089/9704473918619 10755448449292/10357097424841 0]
+            A_explicit = @SArray [
+                0 0 0 0
+                1767732205903 / 2027836641118 0 0 0
+                5535828885825 / 10492691773637 788022342437 / 10882634858940 0 0
+                6485989280629 / 16251701735622 -4246266847089 / 9704473918619 10755448449292 / 10357097424841 0
+            ]
             b_explicit = @SArray [
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
                 11266239266428 / 11593286722821,
-                1767732205903 / 4055673282236
+                1767732205903 / 4055673282236,
             ]
             rk_explicit = RungeKuttaMethod(A_explicit, b_explicit)
-            A_implicit = @SArray [0 0 0 0
-                                  1767732205903/4055673282236 1767732205903/4055673282236 0 0
-                                  2746238789719/10658868560708 -640167445237/6845629431997 1767732205903/4055673282236 0
-                                  1471266399579/7840856788654 -4482444167858/7529755066697 11266239266428/11593286722821 1767732205903/4055673282236]
+            A_implicit = @SArray [
+                0 0 0 0
+                1767732205903 / 4055673282236 1767732205903 / 4055673282236 0 0
+                2746238789719 / 10658868560708 -640167445237 / 6845629431997 1767732205903 / 4055673282236 0
+                1471266399579 / 7840856788654 -4482444167858 / 7529755066697 11266239266428 / 11593286722821 1767732205903 / 4055673282236
+            ]
             b_implicit = @SArray [
                 1471266399579 / 7840856788654,
                 -4482444167858 / 7529755066697,
                 11266239266428 / 11593286722821,
-                1767732205903 / 4055673282236
+                1767732205903 / 4055673282236,
             ]
             rk_implicit = RungeKuttaMethod(A_implicit, b_implicit)
             ark = AdditiveRungeKuttaMethod([rk_explicit, rk_implicit])
 
             for order in 1:3
                 for t in BicoloredRootedTreeIterator(order)
-                    @test residual_order_condition(t, ark)≈0 atol=eps()
+                    @test residual_order_condition(t, ark) ≈ 0 atol = eps()
                 end
             end
 
@@ -1762,13 +1827,13 @@ using JET: @test_opt
         @testset "AdditiveRungeKuttaMethod, SSPRK33 three times" begin
             # Using the same method multiple times is equivalent to using a plain RK
             # method without any splitting/partitioning/decomposition
-            A = @SArray [0 0 0; 1 0 0; 1/4 1/4 0]
+            A = @SArray [0 0 0; 1 0 0; 1 / 4 1 / 4 0]
             b = @SArray [1 / 6, 1 / 6, 2 / 3]
             rk = RungeKuttaMethod(A, b)
             ark = AdditiveRungeKuttaMethod([rk, rk, rk])
 
             let t = rootedtree([1, 2, 2], [1, 2, 3])
-                @test residual_order_condition(t, ark)≈0 atol=eps()
+                @test residual_order_condition(t, ark) ≈ 0 atol = eps()
             end
 
             let t = rootedtree([1, 2, 3, 2], [1, 2, 3, 1])
@@ -1777,24 +1842,28 @@ using JET: @test_opt
         end
 
         @testset "RosenbrockMethod, original Rosenbrock" begin
-            γ = [1-sqrt(2) / 2 0;
-                 0 1-sqrt(2) / 2]
-            A = [0 0;
-                 (sqrt(2) - 1)/2 0]
+            γ = [
+                1 - sqrt(2) / 2 0;
+                0 1 - sqrt(2) / 2
+            ]
+            A = [
+                0 0;
+                (sqrt(2) - 1) / 2 0
+            ]
             b = [0, 1]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
             # second-order accurate
             @test abs(@inferred(residual_order_condition(rootedtree(Int[]), ros))) <
-                  10 * eps()
+                10 * eps()
             @test abs(@inferred(residual_order_condition(rootedtree(Int[1]), ros))) <
-                  10 * eps()
+                10 * eps()
             @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2]), ros))) <
-                  10 * eps()
+                10 * eps()
             @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 3]), ros))) >
-                  0.04
+                0.04
             @test abs(@inferred(residual_order_condition(rootedtree(Int[1, 2, 2]), ros))) >
-                  0.14
+                0.14
         end
 
         @testset "RosenbrockMethod, GRK4A (Kaps and Rentrop, 1979)" begin
@@ -1802,14 +1871,18 @@ using JET: @test_opt
             # Generalized Runge-Kutta methods of order four with stepsize control
             # for stiff ordinary differential equations
             # https://doi.org/10.1007/BF01396495
-            γ = [0.395 0 0 0;
-                 -0.767672395484 0.395 0 0;
-                 -0.851675323742 0.522967289188 0.395 0;
-                 0.288463109545 0.880214273381e-1 -0.337389840627 0.395]
-            A = [0 0 0 0;
-                 0.438 0 0 0;
-                 0.796920457938 0.730795420615e-1 0 0;
-                 0.796920457938 0.730795420615e-1 0 0]
+            γ = [
+                0.395 0 0 0;
+                -0.767672395484 0.395 0 0;
+                -0.851675323742 0.522967289188 0.395 0;
+                0.288463109545 0.880214273381e-1 -0.337389840627 0.395
+            ]
+            A = [
+                0 0 0 0;
+                0.438 0 0 0;
+                0.796920457938 0.730795420615e-1 0 0;
+                0.796920457938 0.730795420615e-1 0 0
+            ]
             b = [0.199293275701, 0.482645235674, 0.680614886256e-1, 0.25]
             ros = @inferred RosenbrockMethod(γ, A, b)
 
@@ -1888,10 +1961,12 @@ using JET: @test_opt
     end # @testset "plots"
 
     @testset "Aqua" begin
-        Aqua.test_all(RootedTrees;
-                      ambiguities = (; exclude = [getindex]),
-                      # Requires.jl is not loaded on new versions of Julia
-                      stale_deps = (; ignore = [:Requires]))
+        Aqua.test_all(
+            RootedTrees;
+            ambiguities = (; exclude = [getindex]),
+            # Requires.jl is not loaded on new versions of Julia
+            stale_deps = (; ignore = [:Requires])
+        )
     end
 
     @testset "ExplicitImports" begin
@@ -1926,13 +2001,13 @@ using JET: @test_opt
         @test_opt target_modules = (RootedTrees,) hash(ct)
 
         # RungeKuttaMethod construction
-        A = [0 0; 1//2 0]
+        A = [0 0; 1 // 2 0]
         b = [0, 1]
-        c = [0, 1//2]
+        c = [0, 1 // 2]
         @test_opt target_modules = (RootedTrees,) RungeKuttaMethod(A, b, c)
 
         # RosenbrockMethod construction
-        @test_opt target_modules = (RootedTrees,) RosenbrockMethod([1//2;;], [0 0; 1 0], [1//2, 1//2])
+        @test_opt target_modules = (RootedTrees,) RosenbrockMethod([1 // 2;;], [0 0; 1 0], [1 // 2, 1 // 2])
 
         # SubtreeIterator
         @test_opt target_modules = (RootedTrees,) RootedTrees.SubtreeIterator(t)
