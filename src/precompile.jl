@@ -119,43 +119,93 @@
 function _precompile_()
     ccall(:jl_generating_output, Cint, ()) == 1 || return nothing
 
-    Base.precompile(Tuple{typeof(residual_order_condition),
-                          RootedTree{Int64, Vector{Int64}},
-                          RungeKuttaMethod{Rational{Int64}, Matrix{Rational{Int64}},
-                                           Vector{Rational{Int64}}}})   # time: 0.18134941
-    Base.precompile(Tuple{typeof(residual_order_condition),
-                          BicoloredRootedTree{Int64, Vector{Int64}, Vector{Bool}},
-                          AdditiveRungeKuttaMethod{Rational{Int64},
-                                                   Vector{RungeKuttaMethod{Rational{Int64},
-                                                                           Matrix{Rational{Int64}},
-                                                                           Vector{Rational{Int64}}}}}})   # time: 0.16824293
+    Base.precompile(
+        Tuple{
+            typeof(residual_order_condition),
+            RootedTree{Int64, Vector{Int64}},
+            RungeKuttaMethod{
+                Rational{Int64}, Matrix{Rational{Int64}},
+                Vector{Rational{Int64}},
+            },
+        }
+    )   # time: 0.18134941
+    Base.precompile(
+        Tuple{
+            typeof(residual_order_condition),
+            BicoloredRootedTree{Int64, Vector{Int64}, Vector{Bool}},
+            AdditiveRungeKuttaMethod{
+                Rational{Int64},
+                Vector{
+                    RungeKuttaMethod{
+                        Rational{Int64},
+                        Matrix{Rational{Int64}},
+                        Vector{Rational{Int64}},
+                    },
+                },
+            },
+        }
+    )   # time: 0.16824293
     Base.precompile(Tuple{typeof(rootedtree), Vector{Int64}})   # time: 0.087751105
-    Base.precompile(Tuple{typeof(residual_order_condition),
-                          RootedTree{Int64, Vector{Int64}},
-                          RosenbrockMethod{Float64, Matrix{Float64}, Vector{Float64}}})   # time: 0.07817012
-    Base.precompile(Tuple{Type{RungeKuttaMethod}, Matrix{Rational{Int64}},
-                          Vector{Rational{Int64}}})   # time: 0.075997345
-    Base.precompile(Tuple{Type{AdditiveRungeKuttaMethod}, Vector{Matrix{Rational{Int64}}},
-                          Vector{Vector{Rational{Int64}}}})   # time: 0.05049169
-    Base.precompile(Tuple{typeof(iterate),
-                          SplittingIterator{RootedTree{Int64, Vector{Int64}}}})   # time: 0.044273302
-    Base.precompile(Tuple{Type{RosenbrockMethod}, Matrix{Float64}, Matrix{Float64},
-                          Vector{Float64}})   # time: 0.016924093
+    Base.precompile(
+        Tuple{
+            typeof(residual_order_condition),
+            RootedTree{Int64, Vector{Int64}},
+            RosenbrockMethod{Float64, Matrix{Float64}, Vector{Float64}},
+        }
+    )   # time: 0.07817012
+    Base.precompile(
+        Tuple{
+            Type{RungeKuttaMethod}, Matrix{Rational{Int64}},
+            Vector{Rational{Int64}},
+        }
+    )   # time: 0.075997345
+    Base.precompile(
+        Tuple{
+            Type{AdditiveRungeKuttaMethod}, Vector{Matrix{Rational{Int64}}},
+            Vector{Vector{Rational{Int64}}},
+        }
+    )   # time: 0.05049169
+    Base.precompile(
+        Tuple{
+            typeof(iterate),
+            SplittingIterator{RootedTree{Int64, Vector{Int64}}},
+        }
+    )   # time: 0.044273302
+    Base.precompile(
+        Tuple{
+            Type{RosenbrockMethod}, Matrix{Float64}, Matrix{Float64},
+            Vector{Float64},
+        }
+    )   # time: 0.016924093
     Base.precompile(Tuple{typeof(butcher_representation), RootedTree{Int64, Vector{Int64}}})   # time: 0.014338499
-    Base.precompile(Tuple{typeof(iterate), BicoloredRootedTreeIterator{Int64},
-                          Tuple{Bool, Int64}})   # time: 0.014068822
-    Base.precompile(Tuple{typeof(symmetry),
-                          BicoloredRootedTree{Int64, Vector{Int64}, Vector{Bool}}})   # time: 0.008579416
+    Base.precompile(
+        Tuple{
+            typeof(iterate), BicoloredRootedTreeIterator{Int64},
+            Tuple{Bool, Int64},
+        }
+    )   # time: 0.014068822
+    Base.precompile(
+        Tuple{
+            typeof(symmetry),
+            BicoloredRootedTree{Int64, Vector{Int64}, Vector{Bool}},
+        }
+    )   # time: 0.008579416
     Base.precompile(Tuple{typeof(symmetry), RootedTree{Int64, Vector{Int64}}})   # time: 0.007220166
-    Base.precompile(Tuple{typeof(iterate),
-                          PartitionIterator{RootedTree{Int64, Vector{Int64}},
-                                            RootedTree{Int64, Vector{Int64}}}})   # time: 0.006673861
+    Base.precompile(
+        Tuple{
+            typeof(iterate),
+            PartitionIterator{
+                RootedTree{Int64, Vector{Int64}},
+                RootedTree{Int64, Vector{Int64}},
+            },
+        }
+    )   # time: 0.006673861
     Base.precompile(Tuple{Type{BicoloredRootedTreeIterator}, Int64})   # time: 0.003071257
     Base.precompile(Tuple{Type{PartitionIterator}, RootedTree{Int64, Vector{Int64}}})   # time: 0.002802794
     Base.precompile(Tuple{typeof(iterate), RootedTreeIterator{Int64}, Bool})   # time: 0.002423941
     Base.precompile(Tuple{Type{RootedTreeIterator}, Int64})   # time: 0.002368873
     Base.precompile(Tuple{typeof(iterate), RootedTreeIterator{Int64}})   # time: 0.002200462
-    Base.precompile(Tuple{typeof(iterate), BicoloredRootedTreeIterator{Int64}})   # time: 0.001368852
+    return Base.precompile(Tuple{typeof(iterate), BicoloredRootedTreeIterator{Int64}})   # time: 0.001368852
 end
 
 _precompile_()

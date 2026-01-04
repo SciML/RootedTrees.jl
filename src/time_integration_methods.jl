@@ -1,4 +1,3 @@
-
 abstract type AbstractTimeIntegrationMethod end
 
 """
@@ -9,14 +8,16 @@ If `c` is not provided, the usual "row sum" requirement of consistency with
 autonomous problems is applied.
 """
 struct RungeKuttaMethod{T, MatT <: AbstractMatrix{T}, VecT <: AbstractVector{T}} <:
-       AbstractTimeIntegrationMethod
+    AbstractTimeIntegrationMethod
     A::MatT
     b::VecT
     c::VecT
 end
 
-function RungeKuttaMethod(A::AbstractMatrix, b::AbstractVector,
-                          c::AbstractVector = vec(sum(A, dims = 2)))
+function RungeKuttaMethod(
+        A::AbstractMatrix, b::AbstractVector,
+        c::AbstractVector = vec(sum(A, dims = 2))
+    )
     T = promote_type(eltype(A), eltype(b), eltype(c))
     _A = T.(A)
     _b = T.(b)
@@ -28,7 +29,7 @@ Base.eltype(rk::RungeKuttaMethod{T}) where {T} = T
 
 function Base.show(io::IO, rk::RungeKuttaMethod)
     print(io, "RungeKuttaMethod{", eltype(rk), "}")
-    if get(io, :compact, false)
+    return if get(io, :compact, false)
         print(io, "(")
         show(io, rk.A)
         print(io, ", ")
@@ -60,13 +61,15 @@ Reference: Section 312 of
   John Wiley & Sons, 2008.
 """
 function elementary_weight(t::RootedTree, rk::RungeKuttaMethod)
-    dot(rk.b, derivative_weight(t, rk))
+    return dot(rk.b, derivative_weight(t, rk))
 end
 
 # TODO: Deprecate also this method?
-function elementary_weight(t::RootedTree, A::AbstractMatrix, b::AbstractVector,
-                           c::AbstractVector)
-    elementary_weight(t, RungeKuttaMethod(A, b, c))
+function elementary_weight(
+        t::RootedTree, A::AbstractMatrix, b::AbstractVector,
+        c::AbstractVector
+    )
+    return elementary_weight(t, RungeKuttaMethod(A, b, c))
 end
 
 """
@@ -97,10 +100,14 @@ function derivative_weight(t::RootedTree, rk::RungeKuttaMethod)
 end
 
 # TODO: Deprecations introduced in v2
-@deprecate derivative_weight(t::RootedTree, A, b, c) derivative_weight(t,
-                                                                       RungeKuttaMethod(A,
-                                                                                        b,
-                                                                                        c))
+@deprecate derivative_weight(t::RootedTree, A, b, c) derivative_weight(
+    t,
+    RungeKuttaMethod(
+        A,
+        b,
+        c
+    )
+)
 
 """
     residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
@@ -122,14 +129,18 @@ function residual_order_condition(t::RootedTree, rk::RungeKuttaMethod)
     invγ = 1 // γ(t)
     invσ = 1 // σ(t)
 
-    (ew - invγ) * invσ
+    return (ew - invγ) * invσ
 end
 
 # TODO: Deprecations introduced in v2
-@deprecate residual_order_condition(t::RootedTree, A, b, c) residual_order_condition(t,
-                                                                                     RungeKuttaMethod(A,
-                                                                                                      b,
-                                                                                                      c))
+@deprecate residual_order_condition(t::RootedTree, A, b, c) residual_order_condition(
+    t,
+    RungeKuttaMethod(
+        A,
+        b,
+        c
+    )
+)
 
 """
     AdditiveRungeKuttaMethod(rks)
@@ -169,7 +180,7 @@ methods, which are applied to partitioned problems of the form
   [DOI: 10.1137/S0036142995292128](https://doi.org/10.1137/S0036142995292128)
 """
 struct AdditiveRungeKuttaMethod{T, RKs <: AbstractVector{<:RungeKuttaMethod{T}}} <:
-       AbstractTimeIntegrationMethod
+    AbstractTimeIntegrationMethod
     rks::RKs
 end
 
@@ -178,12 +189,12 @@ function AdditiveRungeKuttaMethod(rks) # if not all RK methods use the same elty
     As = map(rk -> T.(rk.A), rks)
     bs = map(rk -> T.(rk.b), rks)
     cs = map(rk -> T.(rk.c), rks)
-    AdditiveRungeKuttaMethod(As, bs, cs)
+    return AdditiveRungeKuttaMethod(As, bs, cs)
 end
 
 function AdditiveRungeKuttaMethod(As, bs, cs = map(A -> vec(sum(A, dims = 2)), As))
     rks = map(RungeKuttaMethod, As, bs, cs)
-    AdditiveRungeKuttaMethod(rks)
+    return AdditiveRungeKuttaMethod(rks)
 end
 
 Base.eltype(ark::AdditiveRungeKuttaMethod{T}) where {T} = T
@@ -194,6 +205,7 @@ function Base.show(io::IO, ark::AdditiveRungeKuttaMethod)
         print(io, idx, ". ")
         show(io, rk)
     end
+    return
 end
 
 # Colored trees are used for order conditions of additive Runge-Kutta methods.
@@ -287,7 +299,7 @@ function residual_order_condition(t::ColoredRootedTree, ark::AdditiveRungeKuttaM
     ew = elementary_weight(t, ark)
     T = typeof(ew)
 
-    (ew - one(T) / γ(t)) / σ(t)
+    return (ew - one(T) / γ(t)) / σ(t)
 end
 
 """
@@ -306,16 +318,18 @@ autonomous problems is applied.
   Section IV.7
 """
 struct RosenbrockMethod{T, MatT <: AbstractMatrix{T}, VecT <: AbstractVector{T}} <:
-       AbstractTimeIntegrationMethod
+    AbstractTimeIntegrationMethod
     γ::MatT
     A::MatT
     b::VecT
     c::VecT
 end
 
-function RosenbrockMethod(γ::AbstractMatrix, A::AbstractMatrix,
-                          b::AbstractVector,
-                          c::AbstractVector = vec(sum(A, dims = 2)))
+function RosenbrockMethod(
+        γ::AbstractMatrix, A::AbstractMatrix,
+        b::AbstractVector,
+        c::AbstractVector = vec(sum(A, dims = 2))
+    )
     T = promote_type(eltype(γ), eltype(A), eltype(b), eltype(c))
     _γ = T.(γ)
     _A = T.(A)
@@ -328,7 +342,7 @@ Base.eltype(ros::RosenbrockMethod{T}) where {T} = T
 
 function Base.show(io::IO, ros::RosenbrockMethod)
     print(io, "RosenbrockMethod{", eltype(ros), "}")
-    if get(io, :compact, false)
+    return if get(io, :compact, false)
         print(io, "(")
         show(io, ros.γ)
         print(io, ", ")
@@ -358,7 +372,7 @@ Compute the elementary weight Φ(`t`) of the [`RosenbrockMethod`](@ref) `ros`
 for a rooted tree `t`.
 """
 function elementary_weight(t::RootedTree, ros::RosenbrockMethod)
-    dot(ros.b, derivative_weight(t, ros))
+    return dot(ros.b, derivative_weight(t, ros))
 end
 
 """
@@ -415,5 +429,5 @@ function residual_order_condition(t::RootedTree, ros::RosenbrockMethod)
     ew = elementary_weight(t, ros)
     T = typeof(ew)
 
-    (ew - one(T) / γ(t)) / σ(t)
+    return (ew - one(T) / γ(t)) / σ(t)
 end

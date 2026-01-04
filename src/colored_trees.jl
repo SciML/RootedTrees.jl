@@ -1,4 +1,3 @@
-
 """
     ColoredRootedTree(level_sequence, color_sequence, is_canonical::Bool=false)
 
@@ -23,16 +22,20 @@ See also [`BicoloredRootedTree`](@ref), [`rootedtree`](@ref).
   [DOI: 10.1137/S0036142995292128](https://doi.org/10.1137/S0036142995292128)
 """
 struct ColoredRootedTree{T <: Integer, V <: AbstractVector{T}, C <: AbstractVector} <:
-       AbstractRootedTree
+    AbstractRootedTree
     level_sequence::V
     color_sequence::C
     iscanonical::Bool
 
-    function ColoredRootedTree(level_sequence::V, color_sequence::C,
-                               iscanonical::Bool = false) where {T <: Integer,
-                                                                 V <: AbstractVector{T},
-                                                                 C <: AbstractVector}
-        new{T, V, C}(level_sequence, color_sequence, iscanonical)
+    function ColoredRootedTree(
+            level_sequence::V, color_sequence::C,
+            iscanonical::Bool = false
+        ) where {
+            T <: Integer,
+            V <: AbstractVector{T},
+            C <: AbstractVector,
+        }
+        return new{T, V, C}(level_sequence, color_sequence, iscanonical)
     end
 end
 
@@ -43,10 +46,14 @@ Representation of bicolored rooted trees.
 
 See also [`ColoredRootedTree`](@ref), [`RootedTree`](@ref), [`rootedtree`](@ref).
 """
-const BicoloredRootedTree{T <: Integer, V <: AbstractVector{T},
-                          C <: AbstractVector{Bool}} = ColoredRootedTree{T,
-                                                                         V,
-                                                                         C}
+const BicoloredRootedTree{
+    T <: Integer, V <: AbstractVector{T},
+    C <: AbstractVector{Bool},
+} = ColoredRootedTree{
+    T,
+    V,
+    C,
+}
 
 """
     rootedtree(level_sequence, color_sequence)
@@ -71,7 +78,7 @@ function rootedtree(level_sequence::AbstractVector, color_sequence::AbstractVect
         throw(ArgumentError("The level sequence $level_sequence does not represent a rooted tree."))
     end
 
-    canonical_representation(ColoredRootedTree(level_sequence, color_sequence))
+    return canonical_representation(ColoredRootedTree(level_sequence, color_sequence))
 end
 
 """
@@ -89,21 +96,21 @@ and a `color_sequence` which may be modified in this process. See also
   [DOI: 10.1137/0209055](https://doi.org/10.1137/0209055)
 """
 function rootedtree!(level_sequence::AbstractVector, color_sequence::AbstractVector)
-    canonical_representation!(ColoredRootedTree(level_sequence, color_sequence))
+    return canonical_representation!(ColoredRootedTree(level_sequence, color_sequence))
 end
 
 iscanonical(t::ColoredRootedTree) = t.iscanonical
 #TODO: Validate rooted tree in constructor?
 
 function Base.copy(t::ColoredRootedTree)
-    ColoredRootedTree(copy(t.level_sequence), copy(t.color_sequence), t.iscanonical)
+    return ColoredRootedTree(copy(t.level_sequence), copy(t.color_sequence), t.iscanonical)
 end
 function Base.similar(t::ColoredRootedTree)
-    ColoredRootedTree(similar(t.level_sequence), similar(t.color_sequence), true)
+    return ColoredRootedTree(similar(t.level_sequence), similar(t.color_sequence), true)
 end
 Base.isempty(t::ColoredRootedTree) = isempty(t.level_sequence)
 function Base.empty(t::ColoredRootedTree)
-    ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
+    return ColoredRootedTree(empty(t.level_sequence), empty(t.color_sequence), iscanonical(t))
 end
 
 @inline function Base.copy!(t_dst::ColoredRootedTree, t_src::ColoredRootedTree)
@@ -134,8 +141,10 @@ end
 end
 
 # Internal interface
-@inline function unsafe_copyto!(t_dst::ColoredRootedTree, dst_offset,
-                                t_src::ColoredRootedTree, src_offset, N)
+@inline function unsafe_copyto!(
+        t_dst::ColoredRootedTree, dst_offset,
+        t_src::ColoredRootedTree, src_offset, N
+    )
     copyto!(t_dst.level_sequence, dst_offset, t_src.level_sequence, src_offset, N)
     copyto!(t_dst.color_sequence, dst_offset, t_src.color_sequence, src_offset, N)
     return t_dst
@@ -151,7 +160,7 @@ function Base.show(io::IO, t::ColoredRootedTree{T}) where {T}
     # end
     # print(io, "]")
     print(io, "ColoredRootedTree{", T, "}: ")
-    show(io, (t.level_sequence, t.color_sequence))
+    return show(io, (t.level_sequence, t.color_sequence))
 end
 
 # comparison
@@ -204,8 +213,10 @@ function Base.:(==)(t1::ColoredRootedTree, t2::ColoredRootedTree)
     end
 
     root1_minus_root2 = first(t1.level_sequence) - first(t2.level_sequence)
-    for (e1, c1, e2, c2) in zip(t1.level_sequence, t1.color_sequence, t2.level_sequence,
-            t2.color_sequence)
+    for (e1, c1, e2, c2) in zip(
+            t1.level_sequence, t1.color_sequence, t2.level_sequence,
+            t2.color_sequence
+        )
         v1 = e1
         v2 = e2 + root1_minus_root2
         (v1 == v2 && c1 == c2) || return false
@@ -288,9 +299,11 @@ end
 # non-allocating sorting algorithm instead - although bubble sort is slower in
 # general when comparing the complexity with quicksort etc., it will be faster
 # here since we can avoid allocations.
-function canonical_representation!(t::ColoredRootedTree,
-                                   buffer_level = similar(t.level_sequence),
-                                   buffer_color = similar(t.color_sequence))
+function canonical_representation!(
+        t::ColoredRootedTree,
+        buffer_level = similar(t.level_sequence),
+        buffer_color = similar(t.color_sequence)
+    )
     # Since we use a recursive implementation, it is useful to exit early for
     # small trees. If there are at most 3 vertices in a valid rooted tree, its
     # level sequence must already be in canonical representation. However, the
@@ -311,11 +324,15 @@ function canonical_representation!(t::ColoredRootedTree,
 
         # We found a complete subtree
         idx_subtree = subtree_root_index:subtree_last_index
-        subtree = ColoredRootedTree(view(t.level_sequence, idx_subtree),
-                                    view(t.color_sequence, idx_subtree))
-        canonical_representation!(subtree,
-                                  view(buffer_level, idx_subtree),
-                                  view(buffer_color, idx_subtree))
+        subtree = ColoredRootedTree(
+            view(t.level_sequence, idx_subtree),
+            view(t.color_sequence, idx_subtree)
+        )
+        canonical_representation!(
+            subtree,
+            view(buffer_level, idx_subtree),
+            view(buffer_color, idx_subtree)
+        )
 
         subtree_root_index = subtree_last_index + 1
         number_of_subtrees += 1
@@ -338,38 +355,58 @@ function canonical_representation!(t::ColoredRootedTree,
             subtree1_last_index = 0
             subtree2_last_index = 0
             while subtree1_root_index <= subtree_last_index_to_sort
-                subtree1_last_index = _subtree_last_index(subtree1_root_index,
-                                                          t.level_sequence)
+                subtree1_last_index = _subtree_last_index(
+                    subtree1_root_index,
+                    t.level_sequence
+                )
                 subtree2_last_index = subtree1_last_index
 
                 # Search the next complete subtree
                 subtree1_last_index == subtree_last_index_to_sort && break
 
                 subtree2_root_index = subtree1_last_index + 1
-                subtree2_last_index = _subtree_last_index(subtree2_root_index,
-                                                          t.level_sequence)
+                subtree2_last_index = _subtree_last_index(
+                    subtree2_root_index,
+                    t.level_sequence
+                )
 
                 # Swap the subtrees if they are not sorted correctly
                 subtree1_idx = subtree1_root_index:subtree1_last_index
-                subtree1 = ColoredRootedTree(view(t.level_sequence, subtree1_idx),
-                                             view(t.color_sequence, subtree1_idx))
+                subtree1 = ColoredRootedTree(
+                    view(t.level_sequence, subtree1_idx),
+                    view(t.color_sequence, subtree1_idx)
+                )
                 subtree2_idx = subtree2_root_index:subtree2_last_index
-                subtree2 = ColoredRootedTree(view(t.level_sequence, subtree2_idx),
-                                             view(t.color_sequence, subtree2_idx))
+                subtree2 = ColoredRootedTree(
+                    view(t.level_sequence, subtree2_idx),
+                    view(t.color_sequence, subtree2_idx)
+                )
                 if isless(subtree1, subtree2)
-                    copyto!(buffer_level, 1, t.level_sequence, subtree1_root_index,
-                            order(subtree1) + order(subtree2))
-                    copyto!(t.level_sequence, subtree1_root_index, buffer_level,
-                            order(subtree1) + 1, order(subtree2))
-                    copyto!(t.level_sequence, subtree1_root_index + order(subtree2),
-                            buffer_level, 1, order(subtree1))
+                    copyto!(
+                        buffer_level, 1, t.level_sequence, subtree1_root_index,
+                        order(subtree1) + order(subtree2)
+                    )
+                    copyto!(
+                        t.level_sequence, subtree1_root_index, buffer_level,
+                        order(subtree1) + 1, order(subtree2)
+                    )
+                    copyto!(
+                        t.level_sequence, subtree1_root_index + order(subtree2),
+                        buffer_level, 1, order(subtree1)
+                    )
 
-                    copyto!(buffer_color, 1, t.color_sequence, subtree1_root_index,
-                            order(subtree1) + order(subtree2))
-                    copyto!(t.color_sequence, subtree1_root_index, buffer_color,
-                            order(subtree1) + 1, order(subtree2))
-                    copyto!(t.color_sequence, subtree1_root_index + order(subtree2),
-                            buffer_color, 1, order(subtree1))
+                    copyto!(
+                        buffer_color, 1, t.color_sequence, subtree1_root_index,
+                        order(subtree1) + order(subtree2)
+                    )
+                    copyto!(
+                        t.color_sequence, subtree1_root_index, buffer_color,
+                        order(subtree1) + 1, order(subtree2)
+                    )
+                    copyto!(
+                        t.color_sequence, subtree1_root_index + order(subtree2),
+                        buffer_color, 1, order(subtree1)
+                    )
 
                     # `subtree1_root_index` will be updated below using `subtree1_last_index`.
                     # Thus, we need to adapt this variable here.
@@ -387,7 +424,7 @@ function canonical_representation!(t::ColoredRootedTree,
         end
     end
 
-    ColoredRootedTree(t.level_sequence, t.color_sequence, true)
+    return ColoredRootedTree(t.level_sequence, t.color_sequence, true)
 end
 
 """
@@ -406,20 +443,20 @@ struct BicoloredRootedTreeIterator{T <: Integer}
         iter = RootedTreeIterator(order)
         number_of_colors = convert(T, 2)^order
         t = ColoredRootedTree(iter.t.level_sequence, zeros(Bool, order), true)
-        new{T}(number_of_colors, iter, t)
+        return new{T}(number_of_colors, iter, t)
     end
 end
 
 Base.IteratorSize(::Type{<:BicoloredRootedTreeIterator}) = Base.SizeUnknown()
 function Base.eltype(::Type{BicoloredRootedTreeIterator{T}}) where {T}
-    BicoloredRootedTree{T, Vector{T}, Vector{Bool}}
+    return BicoloredRootedTree{T, Vector{T}, Vector{Bool}}
 end
 
 @inline function Base.iterate(iter::BicoloredRootedTreeIterator)
     _, inner_state = iterate(iter.iter)
     color_id = 0
     binary_digits!(iter.t.color_sequence, color_id)
-    (iter.t, (inner_state, color_id + 1))
+    return (iter.t, (inner_state, color_id + 1))
 end
 
 @inline function Base.iterate(iter::BicoloredRootedTreeIterator, state)
@@ -458,11 +495,13 @@ end
 # subtrees
 @inline function Base.iterate(subtrees::SubtreeIterator{<:ColoredRootedTree})
     subtree_root_index = firstindex(subtrees.t.level_sequence) + 1
-    iterate(subtrees, subtree_root_index)
+    return iterate(subtrees, subtree_root_index)
 end
 
-@inline function Base.iterate(subtrees::SubtreeIterator{<:ColoredRootedTree},
-                              subtree_root_index)
+@inline function Base.iterate(
+        subtrees::SubtreeIterator{<:ColoredRootedTree},
+        subtree_root_index
+    )
     level_sequence = subtrees.t.level_sequence
     color_sequence = subtrees.t.color_sequence
 
@@ -473,10 +512,12 @@ end
 
     # find the next complete subtree
     subtree_last_index = _subtree_last_index(subtree_root_index, level_sequence)
-    subtree = ColoredRootedTree(view(level_sequence, subtree_root_index:subtree_last_index),
-                                view(color_sequence, subtree_root_index:subtree_last_index),
-                                # if t is in canonical representation, its subtrees are, too
-                                iscanonical(subtrees.t))
+    subtree = ColoredRootedTree(
+        view(level_sequence, subtree_root_index:subtree_last_index),
+        view(color_sequence, subtree_root_index:subtree_last_index),
+        # if t is in canonical representation, its subtrees are, too
+        iscanonical(subtrees.t)
+    )
 
     return (subtree, subtree_last_index + 1)
 end
@@ -487,9 +528,11 @@ end
 Returns a vector of all subtrees of `t`.
 """
 function subtrees(t::ColoredRootedTree)
-    subtr = ColoredRootedTree{eltype(t.level_sequence),
-                              Vector{eltype(t.level_sequence)},
-                              Vector{eltype(t.color_sequence)}}[]
+    subtr = ColoredRootedTree{
+        eltype(t.level_sequence),
+        Vector{eltype(t.level_sequence)},
+        Vector{eltype(t.color_sequence)},
+    }[]
 
     if length(t.level_sequence) < 2
         return subtr
@@ -499,15 +542,21 @@ function subtrees(t::ColoredRootedTree)
     i = 3
     while i <= length(t.level_sequence)
         if t.level_sequence[i] <= t.level_sequence[start]
-            push!(subtr,
-                  ColoredRootedTree(t.level_sequence[start:(i - 1)],
-                                    t.color_sequence[start:(i - 1)]))
+            push!(
+                subtr,
+                ColoredRootedTree(
+                    t.level_sequence[start:(i - 1)],
+                    t.color_sequence[start:(i - 1)]
+                )
+            )
             start = i
         end
         i += 1
     end
-    push!(subtr,
-          ColoredRootedTree(t.level_sequence[start:end], t.color_sequence[start:end]))
+    return push!(
+        subtr,
+        ColoredRootedTree(t.level_sequence[start:end], t.color_sequence[start:end])
+    )
 end
 
 # partitions
@@ -550,11 +599,13 @@ function PartitionIterator(t::ColoredRootedTree{Int, Vector{Int}, Vector{Bool}})
     t_forest = ColoredRootedTree(buffer_forest_t, buffer_forest_t_colors, true)
     t_temp_forest = ColoredRootedTree(level_sequence, color_sequence, true)
     forest = PartitionForestIterator(t_forest, t_temp_forest, edge_set_tmp)
-    PartitionIterator{typeof(t), ColoredRootedTree{Int, Vector{Int}, Vector{Bool}}}(t,
-                                                                                    forest,
-                                                                                    skeleton,
-                                                                                    edge_set,
-                                                                                    edge_set_tmp)
+    return PartitionIterator{typeof(t), ColoredRootedTree{Int, Vector{Int}, Vector{Bool}}}(
+        t,
+        forest,
+        skeleton,
+        edge_set,
+        edge_set_tmp
+    )
 end
 
 # TODO: ColoredRootedTree. splittings
@@ -566,11 +617,13 @@ function Base.:∘(t1::ColoredRootedTree, t2::ColoredRootedTree)
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
     level_sequence = vcat(t1.level_sequence, t2.level_sequence .+ offset)
     color_sequence = vcat(t1.color_sequence, t2.color_sequence)
-    rootedtree(level_sequence, color_sequence)
+    return rootedtree(level_sequence, color_sequence)
 end
 
-function butcher_product!(t::ColoredRootedTree,
-                          t1::ColoredRootedTree, t2::ColoredRootedTree)
+function butcher_product!(
+        t::ColoredRootedTree,
+        t1::ColoredRootedTree, t2::ColoredRootedTree
+    )
     offset = first(t1.level_sequence) - first(t2.level_sequence) + 1
 
     unsafe_resize!(t, order(t1) + order(t2))
@@ -594,8 +647,10 @@ function butcher_product!(t::ColoredRootedTree,
     return t
 end
 
-function butcher_representation(t::ColoredRootedTree, normalize::Bool = true;
-                                colormap = _colormap_butcher_representation(t))
+function butcher_representation(
+        t::ColoredRootedTree, normalize::Bool = true;
+        colormap = _colormap_butcher_representation(t)
+    )
     if order(t) == 0
         return "∅"
     elseif order(t) == 1
