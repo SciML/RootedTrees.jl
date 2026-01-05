@@ -678,24 +678,24 @@ function Base.IteratorSize(::Type{FilteredTreeIterator{F, I}}) where {F, I}
 end
 Base.eltype(::Type{FilteredTreeIterator{F, I}}) where {F, I} = eltype(I)
 
-@inline function Base.iterate(fiter::FilteredTreeIterator)
-    iter_result = iterate(fiter.iter)
-    return _filtered_tree_iterate(fiter, iter_result)
+@inline function Base.iterate(filter_iter::FilteredTreeIterator)
+    iter_result = iterate(filter_iter.iter)
+    return _filtered_tree_iterate(filter_iter, iter_result)
 end
 
-@inline function Base.iterate(fiter::FilteredTreeIterator, state)
-    iter_result = iterate(fiter.iter, state)
-    return _filtered_tree_iterate(fiter, iter_result)
+@inline function Base.iterate(filter_iter::FilteredTreeIterator, state)
+    iter_result = iterate(filter_iter.iter, state)
+    return _filtered_tree_iterate(filter_iter, iter_result)
 end
 
-@inline function _filtered_tree_iterate(fiter::FilteredTreeIterator, iter_result)
+@inline function _filtered_tree_iterate(filter_iter::FilteredTreeIterator, iter_result)
     while iter_result !== nothing
         tree, state = iter_result
         tree_copy = copy(tree)
-        if fiter.predicate(tree_copy)
+        if filter_iter.predicate(tree_copy)
             return (tree_copy, state)
         end
-        iter_result = iterate(fiter.iter, state)
+        iter_result = iterate(filter_iter.iter, state)
     end
     return nothing
 end

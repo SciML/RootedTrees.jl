@@ -515,18 +515,18 @@ struct ColoredRootedTreeIterator{T <: Integer}
         iter = RootedTreeIterator(order)
         total_color_combinations = Int(num_colors)^order
         t = ColoredRootedTree(iter.t.level_sequence, zeros(T, order), true)
-        new{T}(num_colors, total_color_combinations, iter, t)
+        return new{T}(num_colors, total_color_combinations, iter, t)
     end
 end
 
 function ColoredRootedTreeIterator(order::Integer, num_colors::Integer)
     T = promote_type(typeof(order), typeof(num_colors))
-    ColoredRootedTreeIterator(convert(T, order), convert(T, num_colors))
+    return ColoredRootedTreeIterator(convert(T, order), convert(T, num_colors))
 end
 
 Base.IteratorSize(::Type{<:ColoredRootedTreeIterator}) = Base.SizeUnknown()
 function Base.eltype(::Type{ColoredRootedTreeIterator{T}}) where {T}
-    ColoredRootedTree{T, Vector{T}, Vector{T}}
+    return ColoredRootedTree{T, Vector{T}, Vector{T}}
 end
 
 # Helper to fill color sequence using digits representation
@@ -537,14 +537,14 @@ end
     else
         digits!(color_sequence, color_id; base = num_colors)
     end
-    color_sequence
+    return color_sequence
 end
 
 @inline function Base.iterate(iter::ColoredRootedTreeIterator)
     _, inner_state = iterate(iter.iter)
     color_id = 0
     _fill_color_sequence!(iter.t.color_sequence, color_id, iter.num_colors)
-    (iter.t, (inner_state, color_id + 1))
+    return (iter.t, (inner_state, color_id + 1))
 end
 
 @inline function Base.iterate(iter::ColoredRootedTreeIterator, state)
@@ -719,7 +719,7 @@ function all_splittings(t::ColoredRootedTree)
     forests = Vector{Vector{TreeType}}()
     subtrees = Vector{TreeType}() # ordered subtrees
 
-    for node_set_value in 0:(2 ^ order(t) - 1)
+    for node_set_value in 0:(2^order(t) - 1)
         binary_digits!(node_set, node_set_value)
 
         # Check that if a node is removed then all of its descendants are removed
@@ -781,23 +781,23 @@ struct ColoredSplittingIterator{T <: ColoredRootedTree}
 
     function ColoredSplittingIterator(t::T) where {T <: ColoredRootedTree}
         node_set = zeros(Bool, order(t))
-        new{T}(t, node_set, 2^order(t) - 1)
+        return new{T}(t, node_set, 2^order(t) - 1)
     end
 end
 
 # Make SplittingIterator work for ColoredRootedTree by dispatching
 function SplittingIterator(t::ColoredRootedTree)
-    ColoredSplittingIterator(t)
+    return ColoredSplittingIterator(t)
 end
 
 Base.IteratorSize(::Type{<:ColoredSplittingIterator}) = Base.SizeUnknown()
 function Base.eltype(::Type{ColoredSplittingIterator{T}}) where {T}
-    Tuple{Vector{T}, T}
+    return Tuple{Vector{T}, T}
 end
 
 @inline function Base.iterate(splittings::ColoredSplittingIterator)
     node_set_value = 0
-    iterate(splittings, node_set_value)
+    return iterate(splittings, node_set_value)
 end
 
 @inline function Base.iterate(splittings::ColoredSplittingIterator, node_set_value)
@@ -832,8 +832,10 @@ end
                     idx = subtree_root_index:subtree_last_index
                     level_sequence = ls[idx]
                     color_sequence = cs[idx]
-                    push!(forest,
-                          ColoredRootedTree(level_sequence, color_sequence, iscanonical(t)))
+                    push!(
+                        forest,
+                        ColoredRootedTree(level_sequence, color_sequence, iscanonical(t))
+                    )
                     subtree_root_index = subtree_last_index + 1
                 else
                     break

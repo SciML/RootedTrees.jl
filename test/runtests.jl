@@ -909,8 +909,12 @@ using JET: @test_opt
             # Test filtering RootedTreeIterator
             for order in 1:5
                 # Filter by symmetry == 1 (asymmetric trees)
-                filtered = collect(FilteredTreeIterator(t -> symmetry(t) == 1,
-                                                        RootedTreeIterator(order)))
+                filtered = collect(
+                    FilteredTreeIterator(
+                        t -> symmetry(t) == 1,
+                        RootedTreeIterator(order)
+                    )
+                )
                 # Note: RootedTreeIterator returns views, so we need to copy
                 all_trees = [copy(t) for t in RootedTreeIterator(order)]
                 expected = filter(t -> symmetry(t) == 1, all_trees)
@@ -925,15 +929,23 @@ using JET: @test_opt
             # Test filtering BicoloredRootedTreeIterator by root color
             for order in 1:4
                 # Filter by root color == false
-                filtered = collect(FilteredTreeIterator(t -> root_color(t) == false,
-                                                        BicoloredRootedTreeIterator(order)))
+                filtered = collect(
+                    FilteredTreeIterator(
+                        t -> root_color(t) == false,
+                        BicoloredRootedTreeIterator(order)
+                    )
+                )
                 for t in filtered
                     @test root_color(t) == false
                 end
 
                 # Filter by root color == true
-                filtered = collect(FilteredTreeIterator(t -> root_color(t) == true,
-                                                        BicoloredRootedTreeIterator(order)))
+                filtered = collect(
+                    FilteredTreeIterator(
+                        t -> root_color(t) == true,
+                        BicoloredRootedTreeIterator(order)
+                    )
+                )
                 for t in filtered
                     @test root_color(t) == true
                 end
@@ -946,22 +958,34 @@ using JET: @test_opt
                     original_level = copy(trees[1].level_sequence)
                     trees[1].level_sequence[1] = 999
                     # Verify that modifying doesn't affect other iterations
-                    new_trees = collect(FilteredTreeIterator(t -> order(t) == 4,
-                                                             RootedTreeIterator(4)))
+                    new_trees = collect(
+                        FilteredTreeIterator(
+                            t -> order(t) == 4,
+                            RootedTreeIterator(4)
+                        )
+                    )
                     @test !isempty(new_trees)
                     @test new_trees[1].level_sequence[1] != 999
                 end
             end
 
             # Test with predicate that matches nothing
-            let filtered = collect(FilteredTreeIterator(t -> false,
-                                                        RootedTreeIterator(3)))
+            let filtered = collect(
+                    FilteredTreeIterator(
+                        t -> false,
+                        RootedTreeIterator(3)
+                    )
+                )
                 @test isempty(filtered)
             end
 
             # Test with predicate that matches everything
-            let filtered = collect(FilteredTreeIterator(t -> true,
-                                                        RootedTreeIterator(3)))
+            let filtered = collect(
+                    FilteredTreeIterator(
+                        t -> true,
+                        RootedTreeIterator(3)
+                    )
+                )
                 # Note: RootedTreeIterator returns views, so we count instead
                 all_count = sum(1 for _ in RootedTreeIterator(3))
                 @test length(filtered) == all_count
@@ -969,9 +993,15 @@ using JET: @test_opt
 
             # Test with ColoredRootedTreeIterator
             for order in 1:3
-                filtered = collect(FilteredTreeIterator(t -> all(c -> c == 0,
-                                                                 t.color_sequence),
-                                                        ColoredRootedTreeIterator(order, 3)))
+                filtered = collect(
+                    FilteredTreeIterator(
+                        t -> all(
+                            c -> c == 0,
+                            t.color_sequence
+                        ),
+                        ColoredRootedTreeIterator(order, 3)
+                    )
+                )
                 for t in filtered
                     @test all(c -> c == 0, t.color_sequence)
                 end
@@ -1708,8 +1738,10 @@ using JET: @test_opt
             for order in 1:5
                 bicolored_trees = Set{Tuple{Vector{Int}, Vector{Int}}}()
                 for t in BicoloredRootedTreeIterator(order)
-                    push!(bicolored_trees,
-                          (copy(t.level_sequence), Int.(copy(t.color_sequence))))
+                    push!(
+                        bicolored_trees,
+                        (copy(t.level_sequence), Int.(copy(t.color_sequence)))
+                    )
                 end
 
                 colored_trees = Set{Tuple{Vector{Int}, Vector{Int}}}()
@@ -1762,7 +1794,7 @@ using JET: @test_opt
 
                 iterator_results = collect(SplittingIterator(t))
                 @test collect(zip(splittings.forests, splittings.subtrees)) ==
-                      iterator_results
+                    iterator_results
             end
         end
     end # @testset "ColoredRootedTree"
