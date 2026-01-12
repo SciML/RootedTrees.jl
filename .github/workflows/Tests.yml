@@ -18,12 +18,20 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        group:
+          - "Core"
+          - "nopre"
         version:
           - "1"
           - "lts"
           - "pre"
+        exclude:
+          # nopre group should not run on prerelease Julia
+          - group: "nopre"
+            version: "pre"
     uses: "SciML/.github/.github/workflows/tests.yml@v1"
     with:
       julia-version: "${{ matrix.version }}"
+      group: "${{ matrix.group }}"
       julia-runtest-depwarn: "yes"
     secrets: "inherit"
