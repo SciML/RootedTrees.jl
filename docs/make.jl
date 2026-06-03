@@ -1,6 +1,9 @@
 using Documenter
 import Pkg
 
+# Use a headless GR backend so Plots-based examples render in CI without a display
+ENV["GKSwstype"] = "100"
+
 # Fix for https://github.com/trixi-framework/Trixi.jl/issues/668
 # to allow building the docs locally
 if (get(ENV, "CI", nothing) != "true") &&
