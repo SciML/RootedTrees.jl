@@ -1,30 +1,27 @@
 using Test
-using StaticArrays
-using RootedTrees
 using Pkg
-
-using RootedTrees.Latexify: latexify
-
-using Plots: Plots, plot
-Plots.unicodeplots()
-
-using LaTeXStrings: @L_str
-
-using Aqua: Aqua
-using ExplicitImports: check_no_implicit_imports, check_no_stale_explicit_imports
 
 # Get test group from environment
 const GROUP = lowercase(get(ENV, "GROUP", "all"))
 
-# Core group runs all tests except JET
-# nopre group runs only JET tests (should not run on prerelease Julia via CI exclusion)
-# all group (default for local testing) runs everything
+# Core group runs the functional test suite.
+# QA group runs Aqua / ExplicitImports / JET in an isolated environment.
+# all group (default for local testing) runs everything.
 const RUN_CORE_TESTS = GROUP in ("core", "all")
-const RUN_JET_TESTS = GROUP in ("nopre", "all") && isempty(VERSION.prerelease)
+const RUN_QA_TESTS = GROUP in ("qa", "all")
 
-if RUN_JET_TESTS
-    Pkg.add("JET")
-    Pkg.instantiate()
+# Macros (`@L_str`, `@SArray`/`@SVector`/`@SMatrix`) are expanded at lowering
+# time wherever they appear in the Core testset body, so they must be in scope
+# even when RUN_CORE_TESTS is false (e.g. GROUP=QA); otherwise the file fails to
+# load before any test runs. The actual call sites remain runtime-guarded below.
+using LaTeXStrings: @L_str
+using StaticArrays
+
+if RUN_CORE_TESTS
+    using RootedTrees
+    using RootedTrees.Latexify: latexify
+    using Plots: Plots, plot
+    Plots.unicodeplots()
 end
 
 @testset "RootedTrees" begin
@@ -1974,23 +1971,12 @@ end
                 end
             end
         end # @testset "plots"
-
-        @testset "Aqua" begin
-            Aqua.test_all(
-                RootedTrees;
-                ambiguities = (; exclude = [getindex]),
-                # Requires.jl is not loaded on new versions of Julia
-                stale_deps = (; ignore = [:Requires])
-            )
-        end
-
-        @testset "ExplicitImports" begin
-            @test isnothing(check_no_implicit_imports(RootedTrees))
-            @test isnothing(check_no_stale_explicit_imports(RootedTrees))
-        end
     end # RUN_CORE_TESTS
-
-    if RUN_JET_TESTS
-        include("jet_tests.jl")
-    end
 end # @testset "RootedTrees"
+
+if RUN_QA_TESTS
+    Pkg.activate(joinpath(@__DIR__, "qa"))
+    Pkg.develop(PackageSpec(path = joinpath(@__DIR__, "..")))
+    Pkg.instantiate()
+    include(joinpath(@__DIR__, "qa", "qa.jl"))
+end
