@@ -10,13 +10,18 @@ const GROUP = lowercase(get(ENV, "GROUP", "all"))
 const RUN_CORE_TESTS = GROUP in ("core", "all")
 const RUN_QA_TESTS = GROUP in ("qa", "all")
 
+# Macros (`@L_str`, `@SArray`/`@SVector`/`@SMatrix`) are expanded at lowering
+# time wherever they appear in the Core testset body, so they must be in scope
+# even when RUN_CORE_TESTS is false (e.g. GROUP=QA); otherwise the file fails to
+# load before any test runs. The actual call sites remain runtime-guarded below.
+using LaTeXStrings: @L_str
+using StaticArrays
+
 if RUN_CORE_TESTS
-    using StaticArrays
     using RootedTrees
     using RootedTrees.Latexify: latexify
     using Plots: Plots, plot
     Plots.unicodeplots()
-    using LaTeXStrings: @L_str
 end
 
 @testset "RootedTrees" begin
