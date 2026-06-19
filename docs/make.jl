@@ -4,6 +4,18 @@ import Pkg
 # Use a headless GR backend so Plots-based examples render in CI without a display
 ENV["GKSwstype"] = "100"
 
+# The RK order conditions tutorial uses SymPy, which relies on PyCall. By
+# default PyCall builds against any system Python it finds on `PATH` (e.g.
+# `/usr/bin/python3` on the GitHub runners), which has no `sympy` installed, so
+# `using SymPy` fails. Setting `PYTHON=""` makes PyCall use the private Conda.jl
+# Python into which SymPy installs `sympy` automatically. The repository's
+# previous (non-centralized) documentation workflow set this as an environment
+# variable; doing it here keeps the docs build self-contained regardless of the
+# CI workflow.
+ENV["PYTHON"] = ""
+Pkg.build("PyCall")
+Pkg.build("SymPy")
+
 # Fix for https://github.com/trixi-framework/Trixi.jl/issues/668
 # to allow building the docs locally
 if (get(ENV, "CI", nothing) != "true") &&
