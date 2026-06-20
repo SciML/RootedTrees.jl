@@ -31,5 +31,28 @@ concurrency:
 
 jobs:
   build:
-    uses: "SciML/.github/.github/workflows/documentation.yml@v1"
-    secrets: "inherit"
+    name: "Build and Deploy Documentation"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: julia-actions/setup-julia@v3
+        with:
+          version: '1'
+          show-versioninfo: true
+      - uses: julia-actions/cache@v2
+      # The RK order conditions tutorial loads SymPy (via PyCall). Setting
+      # `PYTHON: ""` forces PyCall to build against the private Conda.jl Python
+      # into which SymPy installs `sympy`, instead of the system `python3` on
+      # the runner (which has no usable `libpython`/`sympy`). The shared
+      # SciML reusable documentation workflow does not set this, so this job is
+      # kept self-contained.
+      - name: Install dependencies
+        env:
+          PYTHON: ""
+        run: julia --color=yes --project=docs/ -e 'using Pkg; Pkg.develop(PackageSpec(path=pwd())); Pkg.instantiate()'
+      - name: Build and deploy documentation
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DOCUMENTER_KEY: ${{ secrets.DOCUMENTER_KEY }}
+          PYTHON: ""
+        run: julia --color=yes --project=docs/ docs/make.jl
