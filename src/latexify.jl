@@ -87,7 +87,7 @@ function latexify(t::BicoloredRootedTree)
 end
 
 Latexify.@latexrecipe function _(t::Union{RootedTree, BicoloredRootedTree})
-    return Latexify.LaTeXString(RootedTrees.latexify(t))
+    return LaTeXStrings.LaTeXString(RootedTrees.latexify(t))
 end
 
 """

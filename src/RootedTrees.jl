@@ -4,7 +4,7 @@ module RootedTrees
 
 using LinearAlgebra: dot
 
-using LaTeXStrings: latexstring
+using LaTeXStrings: LaTeXStrings, latexstring
 
 using Latexify: Latexify
 using Preferences: @set_preferences!, @load_preference
