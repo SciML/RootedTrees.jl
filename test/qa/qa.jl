@@ -1,6 +1,8 @@
 using SciMLTesting, RootedTrees, Test
 using JET
 
+include("public_api_docs.jl")
+
 run_qa(
     RootedTrees;
     explicit_imports = true,

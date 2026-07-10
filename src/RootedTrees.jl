@@ -1499,6 +1499,21 @@ end
 
 @deprecate elementary_differential(t::RootedTree) elementary_differential_latexstring(t)
 
+@doc """
+    elementary_differential(t::RootedTree)
+
+Deprecated alias for [`elementary_differential_latexstring`](@ref).
+
+# Examples
+
+```julia
+using RootedTrees
+
+t = rootedtree([1])
+elementary_differential_latexstring(t)
+```
+""" elementary_differential
+
 """
     elementary_differential_latexstring(t::RootedTree)
 
