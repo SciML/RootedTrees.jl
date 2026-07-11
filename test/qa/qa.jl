@@ -1,11 +1,10 @@
-using SciMLTesting, RootedTrees, Test
+using SciMLTesting, RootedTrees
 using JET
-
-include("public_api_docs.jl")
 
 run_qa(
     RootedTrees;
     explicit_imports = true,
+    api_docs_kwargs = (; rendered = true),
     aqua_kwargs = (;
         ambiguities = (; exclude = [getindex]),
         # Requires.jl is not loaded on new versions of Julia
