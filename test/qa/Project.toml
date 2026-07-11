@@ -7,7 +7,7 @@ SciMLTesting = "09d9d899-5365-40a9-917a-5f67fddea283"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
-RootedTrees = {path = "../.."}
+RootedTrees = {path = "/home/crackauc/sandbox/tmp_20260708_051717_3275/repos/RootedTrees.jl"}
 
 [compat]
 Aqua = "0.8"
