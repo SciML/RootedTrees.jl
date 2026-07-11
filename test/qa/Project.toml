@@ -7,8 +7,7 @@ SciMLTesting = "09d9d899-5365-40a9-917a-5f67fddea283"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [sources]
-RootedTrees = { path = "../.." }
-SciMLTesting = { url = "https://github.com/SciML/SciMLTesting.jl", rev = "a5cecca928f2c684c23505c3cd83921d71753e2e" }
+RootedTrees = {path = "../.."}
 
 [compat]
 Aqua = "0.8"
