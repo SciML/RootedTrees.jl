@@ -1,6 +1,10 @@
-module RootedTrees
+"""
+    RootedTrees
 
-@doc read(joinpath(dirname(@__DIR__), "README.md"), String) RootedTrees
+Construct rooted and colored rooted trees, enumerate their combinatorial
+structures, and evaluate order conditions for time-integration methods.
+"""
+module RootedTrees
 
 using LinearAlgebra: dot
 
@@ -14,7 +18,7 @@ export RootedTree, rootedtree, rootedtree!, RootedTreeIterator,
     ColoredRootedTree, BicoloredRootedTree, BicoloredRootedTreeIterator
 
 export butcher_representation, elementary_differential_latexstring,
-    elementary_weight_latexstring
+    elementary_weight_latexstring, elementary_differential
 
 export α, β, γ, density, σ, symmetry, order, root_color
 
@@ -40,11 +44,36 @@ abstract type AbstractRootedTree end
 """
     RootedTree(level_sequence, is_canonical::Bool=false)
 
-Represents a rooted tree using its level sequence.
+Represent a rooted tree using its level sequence.
+
+# Fields
+
+- `level_sequence`: Integer level of every node in depth-first order. The first
+  entry is the root level; every later entry must be larger than the root level
+  and at most one greater than its predecessor.
+- `iscanonical`: Whether `level_sequence` is already in the package's canonical
+  ordering. Call [`rootedtree`](@ref) when this invariant is not known.
+
+# Arguments
+
+- `level_sequence`: An integer vector that stores the tree representation.
+- `is_canonical=false`: Whether the caller guarantees canonical ordering.
 
 !!! warning
     This is a low-overhead and unsafe constructor. Please consider calling
     [`rootedtree`](@ref) instead.
+
+# Examples
+
+```jldoctest
+julia> t = rootedtree([1, 2, 2]);
+
+julia> t.level_sequence
+3-element Vector{Int64}:
+ 1
+ 2
+ 2
+```
 
 # References
 
@@ -73,6 +102,18 @@ end
 
 Construct a canonical [`RootedTree`](@ref) object from a `level_sequence`, i.e.,
 a vector of integers representing the levels of each node of the tree.
+
+# Arguments
+
+- `level_sequence`: An integer vector satisfying the rooted-tree level-sequence
+  rules. The input is not mutated.
+
+# Examples
+
+```jldoctest
+julia> rootedtree([1, 2, 3, 2]) |> butcher_representation
+"[[τ]τ]"
+```
 
 # References
 
@@ -115,6 +156,11 @@ end
 
 Construct a canonical [`RootedTree`](@ref) object from a `level_sequence` which
 may be modified in this process. See also [`rootedtree`](@ref).
+
+# Arguments
+
+- `level_sequence`: A mutable integer vector satisfying the rooted-tree
+  level-sequence rules. Its contents may be reordered in place.
 
 !!! warning
     This may modify the `level_sequence` and further modifications of the
@@ -576,6 +622,16 @@ end
 Iterator over all rooted trees of given `order`. The returned trees are views to
 an internal tree modified during the iteration. If the returned trees shall be
 stored or modified during the iteration, a `copy` has to be made.
+
+# Arguments
+
+- `order`: Number of nodes in every yielded tree.
+
+# Iterator interface
+
+This iterator implements `iterate`, `eltype`, and `length`. Iteration reuses
+one mutable tree buffer; copy a yielded tree before retaining it. Computing
+`length` enumerates the trees.
 """
 struct RootedTreeIterator{T <: Integer}
     order::T
@@ -586,13 +642,24 @@ struct RootedTreeIterator{T <: Integer}
     end
 end
 
-Base.IteratorSize(::Type{<:RootedTreeIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{RootedTreeIterator{T}}) where {T} = RootedTree{T, Vector{T}}
 
 @inline function Base.iterate(iter::RootedTreeIterator{T}) where {T}
     iter.t.level_sequence[:] = one(T):(iter.order)
     return (iter.t, iter.order <= 0)
 end
+
+function _iteration_length(iter)
+    result = iterate(iter)
+    count = 0
+    while !isnothing(result)
+        count += 1
+        result = iterate(iter, last(result))
+    end
+    return count
+end
+
+Base.length(iter::RootedTreeIterator) = _iteration_length(iter)
 
 @inline function Base.iterate(iter::RootedTreeIterator{T}, state) where {T}
     state && return nothing
@@ -790,7 +857,6 @@ function PartitionForestIterator(t::AbstractRootedTree, edge_set)
     return PartitionForestIterator(t_iter, t_temp, copy(edge_set))
 end
 
-Base.IteratorSize(::Type{<:PartitionForestIterator}) = Base.HasLength()
 Base.length(forest::PartitionForestIterator) = count(==(false), forest.edge_set) + 1
 Base.eltype(::Type{PartitionForestIterator{Tree}}) where {Tree} = Tree
 
@@ -1043,7 +1109,6 @@ function PartitionIterator(t::RootedTree{Int, Vector{Int}})
     )
 end
 
-Base.IteratorSize(::Type{<:PartitionIterator}) = Base.HasLength()
 Base.length(partitions::PartitionIterator) = 2^length(partitions.edge_set)
 function Base.eltype(::Type{PartitionIterator{TreeInput, TreeOutput}}) where {
         TreeInput,
@@ -1175,6 +1240,16 @@ end
 Iterator over all splitting forests and subtrees of the rooted tree `t`.
 This is basically an iterator version of [`all_splittings`](@ref).
 
+# Arguments
+
+- `t`: Rooted tree whose ordered subtrees define the splittings.
+
+# Iterator interface
+
+This iterator implements `iterate`, `eltype`, and `length`. Each iterate is a
+`(forest, subtree)` pair. The `forest` vector and its trees are mutable working
+storage; copy values that must outlive the next iteration.
+
 See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
 
 # References
@@ -1196,8 +1271,8 @@ struct SplittingIterator{T <: RootedTree}
     end
 end
 
-Base.IteratorSize(::Type{<:SplittingIterator}) = Base.SizeUnknown()
 Base.eltype(::Type{SplittingIterator{T}}) where {T} = Tuple{Vector{T}, T}
+Base.length(splittings::SplittingIterator) = _iteration_length(splittings)
 
 @inline function Base.iterate(splittings::SplittingIterator)
     node_set_value = 0
@@ -1497,22 +1572,21 @@ function butcher_representation(t::RootedTree, normalize::Bool = true)
     return result
 end
 
-@deprecate elementary_differential(t::RootedTree) elementary_differential_latexstring(t)
-
-@doc """
+"""
     elementary_differential(t::RootedTree)
 
 Deprecated alias for [`elementary_differential_latexstring`](@ref).
 
-# Examples
-
-```julia
-using RootedTrees
-
-t = rootedtree([1])
-elementary_differential_latexstring(t)
-```
-""" elementary_differential
+Use [`elementary_differential_latexstring`](@ref) for new code.
+"""
+function elementary_differential(t::RootedTree)
+    Base.depwarn(
+        "`elementary_differential(t::RootedTree)` is deprecated; use " *
+            "`elementary_differential_latexstring(t)` instead.",
+        :elementary_differential
+    )
+    return elementary_differential_latexstring(t)
+end
 
 """
     elementary_differential_latexstring(t::RootedTree)
@@ -1634,46 +1708,24 @@ include("latexify.jl")
 include("plot_recipes.jl")
 include("time_integration_methods.jl")
 
-function __init__()
-    # canonical_representation!
-    Threads.resize_nthreads!(
-        CANONICAL_REPRESENTATION_BUFFER,
-        Vector{Int}(undef, BUFFER_LENGTH)
-    )
+function initialize_thread_buffers!(buffers::Vector{Vector{T}}) where {T}
+    resize!(buffers, Threads.nthreads())
+    for index in eachindex(buffers)
+        buffers[index] = Vector{T}(undef, BUFFER_LENGTH)
+    end
+    return nothing
+end
 
-    # PartitionIterator
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_FOREST_T,
-        Vector{Int}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS,
-        Vector{Bool}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE,
-        Vector{Int}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE,
-        Vector{Bool}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_SKELETON,
-        Vector{Int}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_SKELETON_COLORS,
-        Vector{Bool}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_EDGE_SET,
-        Vector{Bool}(undef, BUFFER_LENGTH)
-    )
-    Threads.resize_nthreads!(
-        PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP,
-        Vector{Bool}(undef, BUFFER_LENGTH)
-    )
+function __init__()
+    initialize_thread_buffers!(CANONICAL_REPRESENTATION_BUFFER)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_FOREST_T)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_FOREST_T_COLORS)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_FOREST_LEVEL_SEQUENCE)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_FOREST_COLOR_SEQUENCE)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_SKELETON)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_SKELETON_COLORS)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_EDGE_SET)
+    initialize_thread_buffers!(PARTITION_ITERATOR_BUFFER_EDGE_SET_TMP)
 
     return nothing
 end

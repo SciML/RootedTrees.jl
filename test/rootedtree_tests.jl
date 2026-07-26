@@ -282,6 +282,11 @@ end
     end
 end
 
+@testset "deprecated elementary differential" begin
+    t = rootedtree([1, 2])
+    @test_deprecated elementary_differential(t) == elementary_differential_latexstring(t)
+end
+
 # see Table 301(I) etc. in butcher2016numerical
 @testset "functions on trees" begin
     t1 = rootedtree([1])

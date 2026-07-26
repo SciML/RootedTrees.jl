@@ -6,6 +6,30 @@ abstract type AbstractTimeIntegrationMethod end
 Represent a Runge-Kutta method with Butcher coefficients `A`, `b`, and `c`.
 If `c` is not provided, the usual "row sum" requirement of consistency with
 autonomous problems is applied.
+
+# Fields
+
+- `A`: Stage-coefficient matrix.
+- `b`: Final-update weights.
+- `c`: Stage abscissae.
+
+# Arguments
+
+- `A`: Square matrix of stage coefficients.
+- `b`: Final-update weights, one per stage.
+- `c=vec(sum(A, dims=2))`: Stage abscissae, one per stage. The default uses row
+  sums of `A`.
+
+# Examples
+
+```jldoctest
+julia> rk = RungeKuttaMethod([0.0 0.0; 1.0 0.0], [0.5, 0.5]);
+
+julia> rk.c
+2-element Vector{Float64}:
+ 0.0
+ 1.0
+```
 """
 struct RungeKuttaMethod{T, MatT <: AbstractMatrix{T}, VecT <: AbstractVector{T}} <:
     AbstractTimeIntegrationMethod
@@ -151,6 +175,19 @@ coefficients `As`, `bs`, and `cs`. Alternatively, you can pass a collection of
 [`RungeKuttaMethod`](@ref)s to the constructor.
 If the `cs` are not provided, the usual "row sum" requirement of consistency
 with autonomous problems is applied.
+
+# Fields
+
+- `rks`: The Runge-Kutta method for each additive component.
+
+# Arguments
+
+- `rks`: A collection of [`RungeKuttaMethod`](@ref)s. Coefficients are promoted
+  to a shared element type.
+- `As`: A collection of stage-coefficient matrices.
+- `bs`: A collection of final-update-weight vectors.
+- `cs=map(A -> vec(sum(A, dims=2)), As)`: A collection of stage-abscissa
+  vectors; defaults to the row sums of the corresponding matrices.
 
 An additive Runge-Kutta method applied to the ODE problem
 ```math
@@ -309,6 +346,21 @@ Represent a Rosenbrock (or Rosenbrock-Wanner, ROW) method with
 coefficients `γ`, `A`, `b`, and `c`.
 If `c` is not provided, the usual "row sum" requirement of consistency with
 autonomous problems is applied.
+
+# Fields
+
+- `γ`: Rosenbrock coupling matrix.
+- `A`: Stage-coefficient matrix.
+- `b`: Final-update weights.
+- `c`: Stage abscissae.
+
+# Arguments
+
+- `γ`: Rosenbrock coupling matrix.
+- `A`: Square stage-coefficient matrix.
+- `b`: Final-update weights, one per stage.
+- `c=vec(sum(A, dims=2))`: Stage abscissae, one per stage. The default uses row
+  sums of `A`.
 
 # Reference
 

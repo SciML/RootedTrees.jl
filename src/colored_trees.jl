@@ -1,8 +1,24 @@
 """
     ColoredRootedTree(level_sequence, color_sequence, is_canonical::Bool=false)
 
-Represents a colored rooted tree using its level sequence. The single-colored
+Represent a colored rooted tree using its level sequence. The single-colored
 version is [`RootedTree`](@ref).
+
+# Fields
+
+- `level_sequence`: Integer level of every node in depth-first order.
+- `color_sequence`: One color for each node, with the same axes as
+  `level_sequence`.
+- `iscanonical`: Whether the level and color sequences are in the package's
+  canonical ordering.
+
+# Arguments
+
+- `level_sequence`: An integer vector satisfying the rooted-tree level-sequence
+  rules.
+- `color_sequence`: A vector of node colors with the same axes as
+  `level_sequence`.
+- `is_canonical=false`: Whether the caller guarantees canonical ordering.
 
 See also [`BicoloredRootedTree`](@ref), [`rootedtree`](@ref).
 
@@ -63,6 +79,22 @@ and a `color_sequence`, i.e., a vector of integers representing the levels of
 each node of the tree and a vector of associated colors (e.g., `Bool`s or
 `Integers`).
 
+# Arguments
+
+- `level_sequence`: An integer vector satisfying the rooted-tree level-sequence
+  rules.
+- `color_sequence`: A vector of node colors with axes equal to
+  `axes(level_sequence)`. The input vectors are not mutated.
+
+# Examples
+
+```jldoctest
+julia> rootedtree([1, 2], Bool[false, true]).color_sequence
+2-element Vector{Bool}:
+ 0
+ 1
+```
+
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
@@ -87,6 +119,13 @@ end
 Construct a canonical [`ColoredRootedTree`](@ref) object from a `level_sequence`
 and a `color_sequence` which may be modified in this process. See also
 [`rootedtree`](@ref).
+
+# Arguments
+
+- `level_sequence`: A mutable integer vector satisfying the rooted-tree
+  level-sequence rules. Its contents may be reordered in place.
+- `color_sequence`: A mutable color vector with the same axes as
+  `level_sequence`. Its contents may be reordered in place in tandem.
 
 # References
 
@@ -433,6 +472,16 @@ end
 Iterator over all bicolored rooted trees of given `order`. The returned trees
 are views to an internal tree modified during the iteration. If the returned
 trees shall be stored or modified during the iteration, a `copy` has to be made.
+
+# Arguments
+
+- `order`: Number of nodes in every yielded tree.
+
+# Iterator interface
+
+This iterator implements `iterate`, `eltype`, and `length`. `length` counts
+only canonical bicolored trees. Iteration reuses one mutable tree buffer; copy a
+yielded tree before retaining it.
 """
 struct BicoloredRootedTreeIterator{T <: Integer}
     number_of_colors::T
@@ -447,10 +496,11 @@ struct BicoloredRootedTreeIterator{T <: Integer}
     end
 end
 
-Base.IteratorSize(::Type{<:BicoloredRootedTreeIterator}) = Base.SizeUnknown()
 function Base.eltype(::Type{BicoloredRootedTreeIterator{T}}) where {T}
     return BicoloredRootedTree{T, Vector{T}, Vector{Bool}}
 end
+
+Base.length(iter::BicoloredRootedTreeIterator) = _iteration_length(iter)
 
 @inline function Base.iterate(iter::BicoloredRootedTreeIterator)
     _, inner_state = iterate(iter.iter)
