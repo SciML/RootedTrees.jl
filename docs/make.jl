@@ -75,6 +75,8 @@ end
 makedocs(
     modules = [RootedTrees],
     sitename = "RootedTrees.jl",
+    doctest = true,
+    checkdocs = :exports,
     format = Documenter.HTML(
         prettyurls = get(ENV, "CI", nothing) == "true",
         canonical = "https://SciML.github.io/RootedTrees.jl/stable",
@@ -92,6 +94,7 @@ makedocs(
         ],
         # "Benchmarks" => "benchmarks.md",
         "API reference" => "api_reference.md",
+        "Developer interfaces" => "developer_interfaces.md",
         "Contributing" => "contributing.md",
         "License" => "license.md",
     ]
