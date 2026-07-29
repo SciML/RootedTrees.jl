@@ -39,7 +39,7 @@ jobs:
         with:
           version: '1'
           show-versioninfo: true
-      - uses: julia-actions/cache@v2
+      - uses: julia-actions/cache@v3
       # The RK order conditions tutorial loads SymPy (via PyCall). Setting
       # `PYTHON: ""` forces PyCall to build against the private Conda.jl Python
       # into which SymPy installs `sympy`, instead of the system `python3` on
