@@ -108,6 +108,15 @@ a vector of integers representing the levels of each node of the tree.
 - `level_sequence`: An integer vector satisfying the rooted-tree level-sequence
   rules. The input is not mutated.
 
+# Returns
+
+- `RootedTree`: Canonical rooted tree backed by a copy of `level_sequence`.
+
+# Throws
+
+- `ArgumentError`: If `level_sequence` is not a valid rooted-tree level
+  sequence.
+
 # Examples
 
 ```jldoctest
@@ -161,6 +170,10 @@ may be modified in this process. See also [`rootedtree`](@ref).
 
 - `level_sequence`: A mutable integer vector satisfying the rooted-tree
   level-sequence rules. Its contents may be reordered in place.
+
+# Returns
+
+- `RootedTree`: Canonical rooted tree backed by `level_sequence`.
 
 !!! warning
     This may modify the `level_sequence` and further modifications of the
@@ -632,6 +645,18 @@ stored or modified during the iteration, a `copy` has to be made.
 This iterator implements `iterate`, `eltype`, and `length`. Iteration reuses
 one mutable tree buffer; copy a yielded tree before retaining it. Computing
 `length` enumerates the trees.
+
+# Examples
+
+```jldoctest
+julia> trees = collect(RootedTreeIterator(2));
+
+julia> length(trees)
+1
+
+julia> butcher_representation(first(trees))
+"[τ]"
+```
 """
 struct RootedTreeIterator{T <: Integer}
     order::T
@@ -691,7 +716,26 @@ end
 """
     count_trees(order)
 
-Counts all rooted trees of `order`.
+Count all rooted trees with `order` nodes.
+
+# Arguments
+
+- `order::Integer`: Number of nodes in each tree. Must be nonnegative.
+
+# Returns
+
+- `Int`: Number of canonical rooted trees of the requested order.
+
+# Throws
+
+- `ArgumentError`: If `order` is negative.
+
+# Examples
+
+```jldoctest
+julia> count_trees(4)
+4
+```
 """
 function count_trees(order)
     order < 0 && throw(ArgumentError("The `order` must be at least zero."))
@@ -712,6 +756,27 @@ tree `t`.
 Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
 if you want to store or modify them during the iteration since they may be
 views to internal caches.
+
+# Arguments
+
+- `t`: Rooted tree whose child subtrees should be traversed.
+
+# Iterator interface
+
+This lazy iterator guarantees the two-argument `iterate` protocol. It yields
+each subtree rooted at a child of `t` in level-sequence order. The yielded trees
+may share storage with `t`; copy a value before retaining or mutating it.
+
+Use a `for` loop or a manual `iterate` consumer. This type does not guarantee
+`length` or `eltype` and is therefore not intended to be materialized with
+`collect`.
+
+# Examples
+
+```jldoctest
+julia> sum(1 for _ in SubtreeIterator(rootedtree([1, 2, 2])))
+2
+```
 """
 struct SubtreeIterator{Tree <: AbstractRootedTree}
     t::Tree
@@ -748,9 +813,25 @@ end
 """
     subtrees(t::RootedTree)
 
-Returns a vector of all subtrees of `t`.
+Return an allocated vector containing all child subtrees of `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree to decompose.
+
+# Returns
+
+- `Vector{<:RootedTree}`: One tree for each child subtree of `t`. The result is
+  independent of `t` and can be retained safely.
 
 See also [`SubtreeIterator`](@ref).
+
+# Examples
+
+```jldoctest
+julia> length(subtrees(rootedtree([1, 2, 2])))
+2
+```
 """
 function subtrees(t::RootedTree)
     subtr = typeof(t)[]
@@ -779,8 +860,32 @@ Form the partition forest of the rooted tree `t` where edges marked with `false`
 in the `edge_set` are removed. The ith value in the Boolean iterable `edge_set`
 corresponds to the edge connecting node `i+1` in the level sequence to its parent.
 
+# Arguments
+
+- `t::RootedTree`: Rooted tree to partition.
+- `edge_set`: Boolean iterable of length `order(t) - 1`; `false` removes the
+  corresponding edge and `true` keeps it.
+
+# Returns
+
+- `Vector{<:RootedTree}`: Connected trees in the partition forest, ordered from
+  the deepest removed subtree to the remaining tree.
+
+# Throws
+
+- `AssertionError`: If `edge_set` does not have one entry per non-root node.
+
 See also [`partition_skeleton`](@ref), [`PartitionIterator`](@ref), and
 [`PartitionForestIterator`](@ref).
+
+# Examples
+
+```jldoctest
+julia> forest = partition_forest(rootedtree([1, 2, 2]), Bool[false, true]);
+
+julia> length(forest)
+2
+```
 
 # References
 
@@ -833,6 +938,26 @@ tree `t`.
 Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
 if you want to store or modify them during the iteration since they may be
 views to internal caches.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Tree whose partition forests are enumerated.
+- `edge_set`: Boolean vector of length `order(t) - 1`. Each `false` edge is
+  removed in the next forest.
+
+# Iterator interface
+
+This iterator implements `iterate`, `eltype`, and `length`. It yields one tree
+for each possible forest obtained by removing a suffix-compatible set of
+edges. The yielded tree uses internal working storage; copy it before storing
+it.
+
+# Examples
+
+```jldoctest
+julia> length(PartitionForestIterator(rootedtree([1, 2, 2]), Bool[false, true]))
+2
+```
 
 See also [`partition_forest`](@ref), [`partition_skeleton`](@ref), and
 [`PartitionIterator`](@ref).
@@ -923,7 +1048,31 @@ Form the partition skeleton of the rooted tree `t`, i.e., the rooted tree
 obtained by contracting each tree of the partition forest to a single vertex
 and re-establishing the edges removed to obtain the partition forest.
 
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to partition.
+- `edge_set`: Boolean iterable of length `order(t) - 1`; the same convention as
+  [`partition_forest`](@ref) is used.
+
+# Returns
+
+- `AbstractRootedTree`: Canonical partition skeleton with the same concrete tree
+  type as `t`.
+
+# Throws
+
+- `AssertionError`: If `edge_set` does not have one entry per non-root node.
+
 See also [`partition_forest`](@ref) and [`PartitionIterator`](@ref).
+
+# Examples
+
+```jldoctest
+julia> skeleton = partition_skeleton(rootedtree([1, 2, 2]), Bool[false, true]);
+
+julia> order(skeleton)
+2
+```
 
 # References
 
@@ -986,7 +1135,23 @@ Create all partition forests and skeletons of a rooted tree `t`. This returns
 vectors of the return values of [`partition_forest`](@ref) and
 [`partition_skeleton`](@ref) when looping over all possible edge sets.
 
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose edge partitions should be enumerated.
+
+# Returns
+
+- `NamedTuple`: A pair of vectors `(forests, skeletons)`. Corresponding entries
+  describe the same edge set, and there are `2^(order(t) - 1)` entries.
+
 See also [`PartitionIterator`](@ref).
+
+# Examples
+
+```jldoctest
+julia> length(all_partitions(rootedtree([1, 2, 2])).forests)
+4
+```
 
 # References
 
@@ -1031,6 +1196,23 @@ In particular, the partition forest may only be realized as an iterator.
 Similar to [`RootedTreeIterator`](@ref), you should `copy` the iterates
 if you want to store or modify them during the iteration since they may be
 views to internal caches.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree whose partitions should be enumerated.
+
+# Iterator interface
+
+This iterator implements `iterate`, `eltype`, and `length`. Each value is a
+`(forest_iterator, skeleton)` pair. The forest iterator and skeleton use
+working storage and must be copied before being retained across iterations.
+
+# Examples
+
+```jldoctest
+julia> length(PartitionIterator(rootedtree([1, 2, 2])))
+4
+```
 
 See also [`partition_forest`](@ref), [`partition_skeleton`](@ref),
 and [`PartitionForestIterator`](@ref).
@@ -1180,7 +1362,23 @@ end
 Create all splitting forests and subtrees associated to ordered subtrees of a
 rooted tree `t`.
 
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose ordered subtrees define the splittings.
+
+# Returns
+
+- `NamedTuple`: Vectors `forests` and `subtrees`, with matching entries for
+  every valid ordered splitting.
+
 See also [`SplittingIterator`](@ref).
+
+# Examples
+
+```jldoctest
+julia> length(all_splittings(rootedtree([1, 2, 2])).forests)
+5
+```
 
 # References
 
@@ -1249,6 +1447,13 @@ This is basically an iterator version of [`all_splittings`](@ref).
 This iterator implements `iterate`, `eltype`, and `length`. Each iterate is a
 `(forest, subtree)` pair. The `forest` vector and its trees are mutable working
 storage; copy values that must outlive the next iteration.
+
+# Examples
+
+```jldoctest
+julia> first(collect(SplittingIterator(rootedtree([1, 2, 2]))))[2] isa RootedTree
+true
+```
 
 See also [`partition_forest`](@ref) and [`partition_skeleton`](@ref).
 
@@ -1338,7 +1543,23 @@ end
 """
     order(t::AbstractRootedTree)
 
-The `order` of a rooted tree `t`, i.e., the length of its level sequence.
+Return the `order` of a rooted tree `t`, i.e., the number of nodes in its level
+sequence.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to inspect.
+
+# Returns
+
+- `Int`: Number of nodes in `t`.
+
+# Examples
+
+```jldoctest
+julia> order(rootedtree([1, 2, 2]))
+3
+```
 """
 order(t::AbstractRootedTree) = length(t.level_sequence)
 
@@ -1348,6 +1569,22 @@ order(t::AbstractRootedTree) = length(t.level_sequence)
 
 The symmetry `σ` of a rooted tree `t`, i.e., the order of the group of automorphisms
 on a particular labelling (of the vertices) of `t`.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to inspect. It is canonicalized if
+  necessary without modifying the input.
+
+# Returns
+
+- `Integer`: Symmetry factor of `t`.
+
+# Examples
+
+```jldoctest
+julia> symmetry(rootedtree([1, 2, 2]))
+2
+```
 
 Reference: Section 301 of
 - Butcher, John Charles.
@@ -1394,6 +1631,20 @@ function symmetry(t::AbstractRootedTree)
     return result
 end
 
+"""
+    σ(t::AbstractRootedTree)
+
+Alias for [`symmetry`](@ref). Return the order of the automorphism group of the
+rooted tree `t`.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to inspect.
+
+# Returns
+
+- `Integer`: Symmetry factor of `t`.
+"""
 const σ = symmetry
 
 """
@@ -1402,6 +1653,21 @@ const σ = symmetry
 
 The density `γ(t)` of a rooted tree, i.e., the product over all vertices of `t`
 of the order of the subtree rooted at that vertex.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to inspect.
+
+# Returns
+
+- `Integer`: Density of `t`; the empty tree has density one.
+
+# Examples
+
+```jldoctest
+julia> density(rootedtree([1, 2, 2]))
+3
+```
 
 Reference: Section 301 of
 - Butcher, John Charles.
@@ -1418,12 +1684,41 @@ function density(t::AbstractRootedTree)
     return result
 end
 
+"""
+    γ(t::AbstractRootedTree)
+
+Alias for [`density`](@ref). Return the product of the orders of the subtrees
+rooted at every vertex of `t`.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to inspect.
+
+# Returns
+
+- `Integer`: Density of `t`.
+"""
 const γ = density
 
 """
     α(t::AbstractRootedTree)
 
 The number of monotonic labelings of `t` not equivalent under the symmetry group.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to label.
+
+# Returns
+
+- `Integer`: Number of inequivalent monotonic labelings.
+
+# Examples
+
+```jldoctest
+julia> α(rootedtree([1, 2, 2]))
+1
+```
 
 Reference: Section 302 of
 - Butcher, John Charles.
@@ -1438,6 +1733,21 @@ end
     β(t::AbstractRootedTree)
 
 The total number of labelings of `t` not equivalent under the symmetry group.
+
+# Arguments
+
+- `t::AbstractRootedTree`: Rooted tree to label.
+
+# Returns
+
+- `Integer`: Number of inequivalent labelings.
+
+# Examples
+
+```jldoctest
+julia> β(rootedtree([1, 2, 2]))
+3
+```
 
 Reference: Section 302 of
 - Butcher, John Charles.
@@ -1475,6 +1785,27 @@ Compute the non-associative Butcher product `t = t1 ∘ t2` of rooted trees
 in-place. It is formed by adding an edge from the root of `t1` to the root
 of `t2`.
 
+# Arguments
+
+- `t::RootedTree`: Mutable destination with enough storage for the result.
+- `t1::RootedTree`: Left factor of the Butcher product.
+- `t2::RootedTree`: Right factor of the Butcher product.
+
+# Returns
+
+- `RootedTree`: The mutated destination `t`, in canonical representation.
+
+# Examples
+
+```jldoctest
+julia> t = rootedtree([1]);
+
+julia> butcher_product!(t, rootedtree([1]), rootedtree([1]));
+
+julia> butcher_representation(t)
+"[τ]"
+```
+
 See also [`∘`](@ref) (available as `\\circ` plus TAB).
 
 Reference: Section 301 of
@@ -1510,12 +1841,22 @@ end
 """
     butcher_representation(t::RootedTree)
 
-Returns the representation of `t::RootedTree` introduced by Butcher as a string.
+Return the representation of `t::RootedTree` introduced by Butcher as a string.
 Thus, the rooted tree consisting whose only vertex is the root itself is
 represented as `τ`. The representation of other trees is defined recursively;
 if `t₁, t₂, ... tₙ` are the [`subtrees`](@ref) of the rooted tree `t`, it is
 represented as `t = [t₁ t₂ ... tₙ]`. If multiple subtrees are the same, their
 number of occurrences is written as a power.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree to represent.
+- `normalize::Bool=true`: Whether repeated leaf subtrees should be written as
+  superscript powers.
+
+# Returns
+
+- `String`: Butcher bracket representation of `t`.
 
 # Examples
 
@@ -1578,6 +1919,21 @@ end
 Deprecated alias for [`elementary_differential_latexstring`](@ref).
 
 Use [`elementary_differential_latexstring`](@ref) for new code.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose elementary differential is represented.
+
+# Returns
+
+- `LaTeXString`: Deprecated elementary-differential representation.
+
+# Examples
+
+```jldoctest
+julia> elementary_differential(rootedtree([1])) isa AbstractString
+true
+```
 """
 function elementary_differential(t::RootedTree)
     Base.depwarn(
@@ -1593,6 +1949,21 @@ end
 
 Returns the elementary differential as a `LaTeXString`
 from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree to represent.
+
+# Returns
+
+- `LaTeXString`: LaTeX representation of the elementary differential.
+
+# Examples
+
+```jldoctest
+julia> elementary_differential_latexstring(rootedtree([1])) isa AbstractString
+true
+```
 
 """
 function elementary_differential_latexstring(t::RootedTree)
@@ -1629,6 +2000,21 @@ end
 
 Returns the elementary_weight as a `LaTeXString`
 from the package [LaTeXStrings.jl](https://github.com/JuliaStrings/LaTeXStrings.jl).
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree to represent.
+
+# Returns
+
+- `LaTeXString`: LaTeX representation of the elementary weight.
+
+# Examples
+
+```jldoctest
+julia> elementary_weight_latexstring(rootedtree([1])) isa AbstractString
+true
+```
 """
 function elementary_weight_latexstring(t::RootedTree)
     # Creating the alphabet for the indices

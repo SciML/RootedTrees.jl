@@ -79,6 +79,17 @@ end
 Compute the elementary weight Φ(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
 with Butcher coefficients `A, b, c` for a rooted tree `t`.
 
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose weight is evaluated.
+- `rk::RungeKuttaMethod`: Runge-Kutta coefficients used for the evaluation.
+- `A`, `b`, `c`: Alternative coefficient arguments used by the compatibility
+  method; they are passed to [`RungeKuttaMethod`](@ref).
+
+# Returns
+
+- `Number`: Elementary weight of `t` for the supplied method.
+
 Reference: Section 312 of
 - Butcher, John Charles.
   Numerical methods for ordinary differential equations.
@@ -101,6 +112,15 @@ end
 
 Compute the derivative weight (ΦᵢD)(`t`) of the [`RungeKuttaMethod`](@ref) `rk`
 with Butcher coefficients `A, b, c` for the rooted tree `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose derivative weight is evaluated.
+- `rk::RungeKuttaMethod`: Runge-Kutta coefficients used for the evaluation.
+
+# Returns
+
+- `AbstractVector`: Derivative weight for each stage of `rk`.
 
 Reference: Section 312 of
 - Butcher, John Charles.
@@ -141,6 +161,15 @@ The residual of the order condition
 with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
 [`symmetry`](@ref) `σ(t)` of the [`RungeKuttaMethod`](@ref) `rk` with Butcher
 coefficients `A, b, c` for the rooted tree `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose order condition is evaluated.
+- `rk::RungeKuttaMethod`: Runge-Kutta coefficients used for the evaluation.
+
+# Returns
+
+- `Number`: Residual of the order condition for `t`.
 
 Reference: Section 315 of
 - Butcher, John Charles.
@@ -209,6 +238,16 @@ methods, which are applied to partitioned problems of the form
   (u^2)'(t) = f^2(t, u^1, u^2).
 ```
 
+# Examples
+
+```jldoctest
+julia> ark = AdditiveRungeKuttaMethod(
+           [[0.0;;], [1.0;;]], [[1.0], [1.0]]);
+
+julia> length(ark.rks)
+2
+```
+
 # References
 
 - A. L. Araujo, A. Murua, and J. M. Sanz-Serna.
@@ -259,6 +298,16 @@ color_to_index(color::Bool) = 1 + color
 Compute the elementary weight Φ(`t`) of the [`AdditiveRungeKuttaMethod`](@ref)
 `ark` for a colored rooted tree `t`.
 
+# Arguments
+
+- `t::ColoredRootedTree`: Colored rooted tree whose weight is evaluated.
+- `ark::AdditiveRungeKuttaMethod`: Additive Runge-Kutta coefficients used for
+  the evaluation.
+
+# Returns
+
+- `Number`: Elementary weight of `t` for `ark`.
+
 # References
 
 - A. L. Araujo, A. Murua, and J. M. Sanz-Serna.
@@ -285,6 +334,17 @@ end
 
 Compute the derivative weight (ΦᵢD)(`t`) of the [`AdditiveRungeKuttaMethod`](@ref)
 `ark` for the colored rooted tree `t`.
+
+# Arguments
+
+- `t::ColoredRootedTree`: Colored rooted tree whose derivative weight is
+  evaluated.
+- `ark::AdditiveRungeKuttaMethod`: Additive Runge-Kutta coefficients used for
+  the evaluation.
+
+# Returns
+
+- `AbstractVector`: Derivative weight for each stage of `ark`.
 
 # References
 
@@ -320,6 +380,16 @@ The residual of the order condition
 with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
 [`symmetry`](@ref) `σ(t)` of the [`AdditiveRungeKuttaMethod`](@ref) `ark`
 for the colored rooted tree `t`.
+
+# Arguments
+
+- `t::ColoredRootedTree`: Colored rooted tree whose order condition is evaluated.
+- `ark::AdditiveRungeKuttaMethod`: Additive Runge-Kutta coefficients used for
+  the evaluation.
+
+# Returns
+
+- `Number`: Residual of the order condition for `t`.
 
 # References
 
@@ -361,6 +431,16 @@ autonomous problems is applied.
 - `b`: Final-update weights, one per stage.
 - `c=vec(sum(A, dims=2))`: Stage abscissae, one per stage. The default uses row
   sums of `A`.
+
+# Examples
+
+```jldoctest
+julia> ros = RosenbrockMethod([1.0;;], [0.0;;], [1.0]);
+
+julia> ros.c
+1-element Vector{Float64}:
+ 0.0
+```
 
 # Reference
 
@@ -422,6 +502,15 @@ end
 
 Compute the elementary weight Φ(`t`) of the [`RosenbrockMethod`](@ref) `ros`
 for a rooted tree `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose weight is evaluated.
+- `ros::RosenbrockMethod`: Rosenbrock coefficients used for the evaluation.
+
+# Returns
+
+- `Number`: Elementary weight of `t` for `ros`.
 """
 function elementary_weight(t::RootedTree, ros::RosenbrockMethod)
     return dot(ros.b, derivative_weight(t, ros))
@@ -432,6 +521,15 @@ end
 
 Compute the derivative weight (ΦᵢD)(`t`) of the [`RosenbrockMethod`](@ref) `ros`
 for the rooted tree `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose derivative weight is evaluated.
+- `ros::RosenbrockMethod`: Rosenbrock coefficients used for the evaluation.
+
+# Returns
+
+- `AbstractVector`: Derivative weight for each stage of `ros`.
 """
 function derivative_weight(t::RootedTree, ros::RosenbrockMethod)
     γ = ros.γ
@@ -469,6 +567,15 @@ The residual of the order condition
 with [`elementary_weight`](@ref) `Φ(t)`, [`density`](@ref) `γ(t)`, and
 [`symmetry`](@ref) `σ(t)` of the [`RosenbrockMethod`](@ref) `ros`
 for the rooted tree `t`.
+
+# Arguments
+
+- `t::RootedTree`: Rooted tree whose order condition is evaluated.
+- `ros::RosenbrockMethod`: Rosenbrock coefficients used for the evaluation.
+
+# Returns
+
+- `Number`: Residual of the order condition for `t`.
 
 # Reference
 
