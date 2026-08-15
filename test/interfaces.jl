@@ -57,9 +57,18 @@ end
 end
 
 @testset "exported names are documented" begin
-    undocumented = [
-        name for name in names(RootedTrees; all = false, imported = false)
-            if !Base.Docs.hasdoc(RootedTrees, name)
-    ]
+    exported = names(RootedTrees; all = false, imported = false)
+    undocumented = filter(exported) do name
+        if isdefined(Base.Docs, :hasdoc)
+            !Base.Docs.hasdoc(RootedTrees, name)
+        else
+            ref = Expr(:., :RootedTrees, QuoteNode(name))
+            call = Expr(
+                :macrocall, GlobalRef(Base.Docs, Symbol("@doc")), LineNumberNode(0), ref
+            )
+            doc = Core.eval(@__MODULE__, call)
+            occursin("No documentation found", sprint(show, MIME"text/plain"(), doc))
+        end
+    end
     @test isempty(undocumented)
 end
