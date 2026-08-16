@@ -58,7 +58,30 @@ end
 """
     BicoloredRootedTree{T<:Integer}
 
-Representation of bicolored rooted trees.
+Alias for [`ColoredRootedTree`](@ref) whose `color_sequence` contains `Bool`
+values. `false` and `true` are conventionally used for the two colors.
+
+# Fields
+
+- `level_sequence`: Integer level of every node in depth-first order.
+- `color_sequence`: Boolean color for each node, with the same axes as
+  `level_sequence`.
+- `iscanonical`: Whether both sequences use the package's canonical ordering.
+
+# Arguments
+
+- `level_sequence`: Integer vector satisfying the rooted-tree level-sequence
+  rules.
+- `color_sequence`: Boolean vector with the same axes as `level_sequence`.
+
+# Examples
+
+```jldoctest
+julia> t = rootedtree([1, 2], Bool[false, true]);
+
+julia> t isa BicoloredRootedTree
+true
+```
 
 See also [`ColoredRootedTree`](@ref), [`RootedTree`](@ref), [`rootedtree`](@ref).
 """
@@ -85,6 +108,17 @@ each node of the tree and a vector of associated colors (e.g., `Bool`s or
   rules.
 - `color_sequence`: A vector of node colors with axes equal to
   `axes(level_sequence)`. The input vectors are not mutated.
+
+# Returns
+
+- `ColoredRootedTree`: Canonical colored tree backed by copies of both input
+  vectors.
+
+# Throws
+
+- `DimensionMismatch`: If the input vectors have different axes.
+- `ArgumentError`: If `level_sequence` is not a valid rooted-tree level
+  sequence.
 
 # Examples
 
@@ -127,6 +161,10 @@ and a `color_sequence` which may be modified in this process. See also
 - `color_sequence`: A mutable color vector with the same axes as
   `level_sequence`. Its contents may be reordered in place in tandem.
 
+# Returns
+
+- `ColoredRootedTree`: Canonical colored tree backed by the input vectors.
+
 # References
 
 - Terry Beyer and Sandra Mitchell Hedetniemi.
@@ -162,6 +200,21 @@ end
     root_color(t::ColoredRootedTree)
 
 Return the color of the root of `t`.
+
+# Arguments
+
+- `t::ColoredRootedTree`: Colored rooted tree to inspect.
+
+# Returns
+
+- `eltype(t.color_sequence)`: Color stored at the root node.
+
+# Examples
+
+```jldoctest
+julia> root_color(rootedtree([1, 2], Bool[false, true]))
+false
+```
 """
 root_color(t::ColoredRootedTree) = first(t.color_sequence)
 
@@ -482,6 +535,18 @@ trees shall be stored or modified during the iteration, a `copy` has to be made.
 This iterator implements `iterate`, `eltype`, and `length`. `length` counts
 only canonical bicolored trees. Iteration reuses one mutable tree buffer; copy a
 yielded tree before retaining it.
+
+# Examples
+
+```jldoctest
+julia> trees = collect(BicoloredRootedTreeIterator(1));
+
+julia> length(trees)
+2
+
+julia> first(trees).color_sequence isa AbstractVector{Bool}
+true
+```
 """
 struct BicoloredRootedTreeIterator{T <: Integer}
     number_of_colors::T
