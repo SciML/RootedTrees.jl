@@ -11,6 +11,7 @@ using LinearAlgebra: dot
 using LaTeXStrings: LaTeXStrings, latexstring
 
 using Latexify: Latexify
+using PrecompileTools: @compile_workload, @setup_workload
 using Preferences: @set_preferences!, @load_preference
 using RecipesBase: RecipesBase
 
@@ -2093,6 +2094,29 @@ include("colored_trees.jl")
 include("latexify.jl")
 include("plot_recipes.jl")
 include("time_integration_methods.jl")
+
+@setup_workload begin
+    @compile_workload begin
+        t = RootedTree(Int[1, 2, 3, 2], true)
+        butcher_representation(t)
+        order(t)
+        symmetry(t)
+
+        A = [0 0; 1 // 2 0]
+        b = [1 // 2, 1 // 2]
+        rk = RungeKuttaMethod(A, b)
+        elementary_weight(t, rk)
+
+        for tree in RootedTreeIterator(3)
+            order(tree)
+        end
+
+        colored = ColoredRootedTree(Int[1, 2], Bool[false, true], true)
+        symmetry(colored)
+        ark = AdditiveRungeKuttaMethod([A, A], [b, b])
+        residual_order_condition(colored, ark)
+    end
+end
 
 function initialize_thread_buffers!(buffers::Vector{Vector{T}}) where {T}
     resize!(buffers, Threads.nthreads())
