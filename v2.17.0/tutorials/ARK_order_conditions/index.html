@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Additive Runge-Kutta methods · RootedTrees.jl</title><script data-outdated-warner src="../../assets/warner.js"></script><link rel="canonical" href="https://SciML.github.io/RootedTrees.jl/stable/tutorials/ARK_order_conditions/"/><link href="https://cdnjs.cloudflare.com/ajax/libs/lato-font/3.0.0/css/lato-font.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/juliamono/0.045/juliamono.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/fontawesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/solid.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/brands.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.13.24/katex.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.6/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-dark.css" data-theme-name="documenter-dark" data-theme-primary-dark/><link class="docs-theme-link" rel="stylesheet" type="text/css" href="../../assets/themes/documenter-light.css" data-theme-name="documenter-light" data-theme-primary/><script src="../../assets/themeswap.js"></script></head><body><div id="documenter"><nav class="docs-sidebar"><div class="docs-package-name"><span class="docs-autofit"><a href="../../">RootedTrees.jl</a></span></div><form class="docs-search" action="../../search/"><input class="docs-search-query" id="documenter-search-query" name="q" type="text" placeholder="Search docs"/></form><ul class="docs-menu"><li><a class="tocitem" href="../../">Home</a></li><li><a class="tocitem" href="../../introduction/">Introduction</a></li><li><span class="tocitem">Tutorials</span><ul><li><a class="tocitem" href="../basics/">Basics, printing, and visualization</a></li><li><a class="tocitem" href="../RK_order_conditions/">Runge-Kutta methods</a></li><li class="is-active"><a class="tocitem" href>Additive Runge-Kutta methods</a><ul class="internal"><li><a class="tocitem" href="#Order-conditions"><span>Order conditions</span></a></li></ul></li><li><a class="tocitem" href="../Rosenbrock_order_conditions/">Rosenbrock methods</a></li></ul></li><li><a class="tocitem" href="../../api_reference/">API reference</a></li><li><a class="tocitem" href="../../contributing/">Contributing</a></li><li><a class="tocitem" href="../../license/">License</a></li></ul><div class="docs-version-selector field has-addons"><div class="control"><span class="docs-label button is-static is-size-7">Version</span></div><div class="docs-selector control is-expanded"><div class="select is-fullwidth is-size-7"><select id="documenter-version-selector"></select></div></div></div></nav><div class="docs-main"><header class="docs-navbar"><nav class="breadcrumb"><ul class="is-hidden-mobile"><li><a class="is-disabled">Tutorials</a></li><li class="is-active"><a href>Additive Runge-Kutta methods</a></li></ul><ul class="is-hidden-tablet"><li class="is-active"><a href>Additive Runge-Kutta methods</a></li></ul></nav><div class="docs-right"><a class="docs-edit-link" href="https://github.com/SciML/RootedTrees.jl/blob/main/docs/src/tutorials/ARK_order_conditions.md" title="Edit on GitHub"><span class="docs-icon fab"></span><span class="docs-label is-hidden-touch">Edit on GitHub</span></a><a class="docs-settings-button fas fa-cog" id="documenter-settings-button" href="#" title="Settings"></a><a class="docs-sidebar-button fa fa-bars is-hidden-desktop" id="documenter-sidebar-button" href="#"></a></div></header><article class="content" id="documenter-page"><h1 id="Additive-Runge-Kutta-methods"><a class="docs-heading-anchor" href="#Additive-Runge-Kutta-methods">Additive Runge-Kutta methods</a><a id="Additive-Runge-Kutta-methods-1"></a><a class="docs-heading-anchor-permalink" href="#Additive-Runge-Kutta-methods" title="Permalink"></a></h1><p>Consider an ordinary differential equation (ODE) of the form</p><p class="math-container">\[u&#39;(t) = \sum_\nu^N f^\nu(t, u(t)).\]</p><p>An additive Runge-Kutta (ARK) method with <span>$s$</span> stages is given by its Butcher coefficients</p><p class="math-container">\[A^\nu = (a^\nu_{i,j})_{i,j} \in \mathbb{R}^{s \times s}, \quad
+b^\nu = (b^\nu_i)_i \in \mathbb{R}^{s}, \quad
+c^\nu = (c^\nu_i)_i \in \mathbb{R}^{s}.\]</p><p>Usually, the consistency condition</p><p class="math-container">\[\forall i\colon \quad c^\nu_i = \sum_j a^\nu_{i,j}\]</p><p>is assumed, which reduces all analysis to autonomous problems.</p><p>The step from <span>$u^{n}$</span> to <span>$u^{n+1}$</span> is given by</p><p class="math-container">\[\begin{aligned}
+  y^i &amp;= u^n + \Delta t \sum_\nu \sum_j a^\nu_{i,j} f^\nu(y^i), \\
+  u^{n+1} &amp;= u^n + \Delta t \sum_\nu \sum_i b^\nu_{i} f^\nu(y^i),
+\end{aligned}\]</p><p>where <span>$y^i$</span> are the stage values.</p><p>In <a href="https://github.com/SciML/RootedTrees.jl">RootedTrees.jl</a>, ARK methods are represented as <a href="../../api_reference/#RootedTrees.AdditiveRungeKuttaMethod"><code>AdditiveRungeKuttaMethod</code></a>s.</p><h2 id="Order-conditions"><a class="docs-heading-anchor" href="#Order-conditions">Order conditions</a><a id="Order-conditions-1"></a><a class="docs-heading-anchor-permalink" href="#Order-conditions" title="Permalink"></a></h2><p>The order conditions of RK methods can be derived using colored rooted trees. In <a href="https://github.com/SciML/RootedTrees.jl">RootedTrees.jl</a>, this functionality is implemented in <a href="../../api_reference/#RootedTrees.residual_order_condition-Tuple{ColoredRootedTree, AdditiveRungeKuttaMethod}"><code>residual_order_condition</code></a>. Thus, an <a href="../../api_reference/#RootedTrees.AdditiveRungeKuttaMethod"><code>AdditiveRungeKuttaMethod</code></a> is of order <span>$p$</span> if the <a href="../../api_reference/#RootedTrees.residual_order_condition-Tuple{ColoredRootedTree, AdditiveRungeKuttaMethod}"><code>residual_order_condition</code></a> vanishes for all colored rooted trees with <a href="../../api_reference/#RootedTrees.order-Tuple{RootedTrees.AbstractRootedTree}"><code>order</code></a> up to <span>$p$</span> and <span>$N$</span> colors. The most important case is <span>$N = 2$</span>, i.e., <a href="../../api_reference/#RootedTrees.BicoloredRootedTree"><code>BicoloredRootedTree</code></a>s as special case of <a href="../../api_reference/#RootedTrees.ColoredRootedTree"><code>ColoredRootedTree</code></a>s.</p><p>For example, the classical Störmer-Verlet method can be written as follows, see Table II.2.1 of Hairer, Lubich, Wanner (2002) <a href="https://doi.org/10.1007/3-540-30666-8">Geometric numerical integration</a>.</p><pre><code class="language-julia hljs">using RootedTrees
+
+As = [
+  [0 0; 1//2 1//2],
+  [1//2 0; 1//2 0]
+]
+bs = [
+  [1//2, 1//2],
+  [1//2, 1//2]
+]
+ark = AdditiveRungeKuttaMethod(As, bs)</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi">AdditiveRungeKuttaMethod{Rational{Int64}} with methods
+1. RungeKuttaMethod{Rational{Int64}} with
+A: 2×2 Matrix{Rational{Int64}}:
+ 0//1  0//1
+ 1//2  1//2
+b: 2-element Vector{Rational{Int64}}:
+ 1//2
+ 1//2
+c: 2-element Vector{Rational{Int64}}:
+ 0//1
+ 1//1
+2. RungeKuttaMethod{Rational{Int64}} with
+A: 2×2 Matrix{Rational{Int64}}:
+ 1//2  0//1
+ 1//2  0//1
+b: 2-element Vector{Rational{Int64}}:
+ 1//2
+ 1//2
+c: 2-element Vector{Rational{Int64}}:
+ 1//2
+ 1//2
+</code></pre><p>To verify that this method is at least second-order accurate, we can check the <a href="../../api_reference/#RootedTrees.residual_order_condition-Tuple{ColoredRootedTree, AdditiveRungeKuttaMethod}"><code>residual_order_condition</code></a>s up to this order.</p><pre><code class="language-julia hljs">using Test
+
+@testset &quot;Störmer-Verlet, order 2&quot; begin
+  for o in 1:2
+    for t in BicoloredRootedTreeIterator(o)
+      @test iszero(residual_order_condition(t, ark))
+    end
+  end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Test Summary:           | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
+Störmer-Verlet, order 2 | <span class="sgr32">   6  </span><span class="sgr36">    6  </span>0.8s</code></pre><p>To verify that this method does not satisfy any of the order conditions for an order of accuracy of three, we can use the following code.</p><pre><code class="language-julia hljs">using Test
+
+@testset &quot;Störmer-Verlet, not order 3&quot; begin
+  for t in BicoloredRootedTreeIterator(3)
+    @test !iszero(residual_order_condition(t, ark))
+  end
+end</code></pre><pre class="documenter-example-output"><code class="nohighlight hljs ansi"><span class="sgr1">Test Summary:               | <span class="sgr32">Pass  </span><span class="sgr36">Total  </span>Time</span>
+Störmer-Verlet, not order 3 | <span class="sgr32">  14  </span><span class="sgr36">   14  </span>0.1s</code></pre></article><nav class="docs-footer"><a class="docs-footer-prevpage" href="../RK_order_conditions/">« Runge-Kutta methods</a><a class="docs-footer-nextpage" href="../Rosenbrock_order_conditions/">Rosenbrock methods »</a><div class="flexbox-break"></div><p class="footer-message">Powered by <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> and the <a href="https://julialang.org/">Julia Programming Language</a>.</p></nav></div><div class="modal" id="documenter-settings"><div class="modal-background"></div><div class="modal-card"><header class="modal-card-head"><p class="modal-card-title">Settings</p><button class="delete"></button></header><section class="modal-card-body"><p><label class="label">Theme</label><div class="select"><select id="documenter-themepicker"><option value="documenter-light">documenter-light</option><option value="documenter-dark">documenter-dark</option></select></div></p><hr/><p>This document was generated with <a href="https://github.com/JuliaDocs/Documenter.jl">Documenter.jl</a> version 0.27.24 on <span class="colophon-date" title="Sunday 19 February 2023 12:59">Sunday 19 February 2023</span>. Using Julia version 1.8.5.</p></section><footer class="modal-card-foot"></footer></div></div></div></body></html>
